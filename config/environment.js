@@ -6,8 +6,9 @@ module.exports = function(environment) {
     environment: environment,
     baseURL: '/',
     locationType: 'auto',
+    namespace: "api",
     contentSecurityPolicy: { 
-      'connect-src': "'self' ws://localhost:4000 https://*.amazonaws.com http://*.simwms.com",
+      'connect-src': "'self' ws://localhost:4000 https://*.amazonaws.com http://*.simwms.com https://*.herokuapp.com",
       "img-src": "*",
       "media-src": "'self' http://localhost:*",
       "font-src": "*",
@@ -46,6 +47,11 @@ module.exports = function(environment) {
     ENV.APP.LOG_VIEW_LOOKUPS = false;
 
     ENV.APP.rootElement = '#ember-testing';
+  }
+
+  if (environment === 'staging') {
+    ENV.locationType = "hash";
+    ENV.host = "https://lit-atoll-7843.herokuapp.com"
   }
 
   if (environment === 'production') {
