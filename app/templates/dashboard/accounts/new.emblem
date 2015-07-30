@@ -1,0 +1,27 @@
+.col.s12
+  link-to "dashboard.accounts.index" classNames="waves-effect waves-light btn-large"
+    i.material-icons.left skip_previous
+    span Back
+
+.col.s12
+  h4 New Warehouse Account Setup
+
+.col.s12.m10.l9
+  md-card-collapsible
+    md-collapsible title="Step One. Basic Warehouse Information" active=true
+      if isBusy
+        md-loader mode="circular" color="yellow"
+      else
+        form submit="submit"
+          md-input value=model.companyName label="Warehouse Name" type="text"
+
+          label for="timezone" Select Warehouse Timezone
+          em-timezone-input name="timezone" value=model.region selectClass="browser-default"
+          
+          .actions
+            md-btn-submit icon="mdi-content-send" iconPosition="right" text="submit" classNames="btn-large red white-text"
+    md-collapsible title="Step Two. Specific Dock and Camera Setup"
+      span Takes you to the configuration page of your warehouse management software instance. Here, you can setup your warehouse grid, place docks, scales, configure cameras, etc.
+    md-collapsible title="Step Three. Deploy!"
+      span Specify the payment method and finalize your deployment.
+  
