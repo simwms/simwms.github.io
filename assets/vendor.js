@@ -92434,6 +92434,7 @@ define('ember-cli-materialize/components/md-navbar', ['exports', 'ember', 'ember
   exports['default'] = Ember['default'].Component.extend({
     tagName: 'nav',
     layout: layout['default'],
+    homeRoute: 'index',
 
     didInsertElement: function didInsertElement() {
       this._super.apply(this, arguments);
@@ -92661,16 +92662,18 @@ define('ember-cli-materialize/components/md-select', ['exports', 'ember', 'ember
     errorsDidChange: Ember['default'].observer('errors', function () {
       var inputSelector = this.$('input');
       // monitor the select's validity and copy the appropriate validation class to the materialize input element.
-      Ember['default'].run.later(this, function () {
-        var isValid = this.$('select').hasClass('valid');
-        if (isValid) {
-          inputSelector.removeClass('invalid');
-          inputSelector.addClass('valid');
-        } else {
-          inputSelector.removeClass('valid');
-          inputSelector.addClass('invalid');
-        }
-      }, 150);
+      if (!Ember['default'].isNone(inputSelector)) {
+        Ember['default'].run.later(this, function () {
+          var isValid = this.$('select').hasClass('valid');
+          if (isValid) {
+            inputSelector.removeClass('invalid');
+            inputSelector.addClass('valid');
+          } else {
+            inputSelector.removeClass('valid');
+            inputSelector.addClass('invalid');
+          }
+        }, 150);
+      }
     })
   });
 
@@ -93124,11 +93127,12 @@ define('ember-cli-materialize/services/md-settings', ['exports', 'ember'], funct
 
   'use strict';
 
-  var keys = Ember['default'].keys;
   var getWithDefault = Ember['default'].getWithDefault;
   var set = Ember['default'].set;
   var oneWay = Ember['default'].computed.oneWay;
   var classify = Ember['default'].String.classify;
+
+  var keys = Object.keys || Ember['default'].keys;
 
   exports['default'] = Ember['default'].Service.extend({
     // Footer
@@ -94947,7 +94951,7 @@ define('ember-cli-materialize/templates/components/md-loader', ['exports'], func
       },
       statements: [
         ["block","if",[["get","isBarType",["loc",[null,[1,6],[1,15]]]]],[],0,null,["loc",[null,[1,0],[3,7]]]],
-        ["block","each",[["get","spinnerClassNames",["loc",[null,[5,28],[5,45]]]]],[],1,null,["loc",[null,[5,0],[15,9]]]]
+        ["block","each",[["get","spinnerClassNames",["loc",[null,[5,8],[5,25]]]]],[],1,null,["loc",[null,[5,0],[15,9]]]]
       ],
       locals: [],
       templates: [child0, child1]
@@ -95117,7 +95121,7 @@ define('ember-cli-materialize/templates/components/md-navbar', ['exports'], func
             },
             "end": {
               "line": 3,
-              "column": 51
+              "column": 53
             }
           },
           "moduleName": "modules/ember-cli-materialize/templates/components/md-navbar.hbs"
@@ -95139,7 +95143,7 @@ define('ember-cli-materialize/templates/components/md-navbar', ['exports'], func
           return morphs;
         },
         statements: [
-          ["content","name",["loc",[null,[3,43],[3,51]]]]
+          ["content","name",["loc",[null,[3,45],[3,53]]]]
         ],
         locals: [],
         templates: []
@@ -95234,7 +95238,7 @@ define('ember-cli-materialize/templates/components/md-navbar', ['exports'], func
         return morphs;
       },
       statements: [
-        ["block","link-to",["index"],["class","brand-logo"],0,null,["loc",[null,[3,4],[3,63]]]],
+        ["block","link-to",[["get","homeRoute",["loc",[null,[3,15],[3,24]]]]],["class","brand-logo"],0,null,["loc",[null,[3,4],[3,65]]]],
         ["content","yield",["loc",[null,[5,6],[5,15]]]],
         ["attribute","data-activates",["concat",[["get","_sideNavId",["loc",[null,[9,47],[9,57]]]]]]],
         ["attribute","id",["concat",[["get","_sideNavId",["loc",[null,[14,10],[14,20]]]]]]],
@@ -96179,7 +96183,7 @@ define('ember-cli-materialize/templates/components/md-tabs', ['exports'], functi
         return morphs;
       },
       statements: [
-        ["block","each",[["get","_content",["loc",[null,[3,19],[3,27]]]]],[],0,null,["loc",[null,[3,4],[5,13]]]],
+        ["block","each",[["get","_content",["loc",[null,[3,12],[3,20]]]]],[],0,null,["loc",[null,[3,4],[5,13]]]],
         ["content","yield",["loc",[null,[6,4],[6,13]]]]
       ],
       locals: [],
@@ -97970,6 +97974,8 @@ define('ember-modal-dialog/components/modal-dialog', ['exports', 'ember', 'ember
 
   var dasherize = Ember['default'].String.dasherize;
   var computed = Ember['default'].computed;
+  var get = Ember['default'].get;
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   var injectService = Ember['default'].inject.service;
   var reads = Ember['default'].computed.reads;
@@ -97985,10 +97991,9 @@ define('ember-modal-dialog/components/modal-dialog', ['exports', 'ember', 'ember
     layout: template['default'],
     modalService: injectService('modal-dialog'),
     destinationElementId: reads('modalService.destinationElementId'),
-    hasEmberTether: reads('modalService.hasEmberTether'),
 
-    useEmberTether: computed('hasEmberTether', 'alignment', 'renderInPlace', function () {
-      return this.get('hasEmberTether') && this.get('alignment') !== 'none' && !this.get('renderInPlace');
+    useEmberTether: computed('modalService.useEmberTether', 'alignment', 'renderInPlace', function () {
+      return this.get('modalService.useEmberTether') && this.get('alignment') !== 'none' && !this.get('renderInPlace');
     }),
 
     'container-class': null, // set this from templates
@@ -98084,7 +98089,11 @@ define('ember-modal-dialog/components/modal-dialog', ['exports', 'ember', 'ember
           return 'middle right';
       }
     }),
-
+    makeOverlayClickableOnIOS: Ember['default'].on('didInsertElement', function () {
+      if (isIOS && get(this, 'hasOverlay')) {
+        Ember['default'].$('div[data-ember-modal-dialog-overlay]').css('cursor', 'pointer');
+      }
+    }),
     actions: {
       close: function close() {
         this.sendAction('close');
@@ -98198,10 +98207,13 @@ define('ember-modal-dialog/initializers/add-modals-container', ['exports', 'embe
 
     application.inject('service:modal-dialog', 'destinationElementId', 'config:modals-container-id');
 
-    var hasEmberTether = Ember['default'].isPresent(container.resolve('component:ember-tether'));
-    application.register('config:has-ember-tether', hasEmberTether, { instantiate: false });
+    var useEmberTether = application.MODAL_DIALOG_USE_TETHER;
+    if (useEmberTether === undefined) {
+      useEmberTether = Ember['default'].isPresent(container.resolve('component:ember-tether'));
+    }
+    application.register('config:use-ember-tether', useEmberTether, { instantiate: false });
 
-    application.inject('service:modal-dialog', 'hasEmberTether', 'config:has-ember-tether');
+    application.inject('service:modal-dialog', 'useEmberTether', 'config:use-ember-tether');
 
     appendContainerElement(application.rootElement, modalContainerElId);
   }
@@ -98213,7 +98225,7 @@ define('ember-modal-dialog/services/modal-dialog', ['exports', 'ember'], functio
 
   exports['default'] = Ember['default'].Service.extend({
     destinationElementId: null, // injected
-    hasEmberTether: null // injected
+    useEmberTether: null // injected
   });
 
 });
@@ -98248,6 +98260,7 @@ define('ember-modal-dialog/templates/components/modal-dialog', ['exports'], func
             var el1 = dom.createTextNode("    ");
             dom.appendChild(el0, el1);
             var el1 = dom.createElement("div");
+            dom.setAttribute(el1,"data-ember-modal-dialog-overlay","");
             dom.appendChild(el0, el1);
             var el1 = dom.createTextNode("\n");
             dom.appendChild(el0, el1);
@@ -103044,6 +103057,7 @@ define('ember-wormhole/components/ember-wormhole', ['exports', 'ember'], functio
     renderInPlace: false,
 
     didInsertElement: function didInsertElement() {
+      this._super.apply(this, arguments);
       this._firstNode = this.element.firstChild;
       this._lastNode = this.element.lastChild;
       this.appendToDestination();
@@ -103052,6 +103066,7 @@ define('ember-wormhole/components/ember-wormhole', ['exports', 'ember'], functio
     willDestroyElement: function willDestroyElement() {
       var _this = this;
 
+      this._super.apply(this, arguments);
       var firstNode = this._firstNode;
       var lastNode = this._lastNode;
       run.schedule('render', function () {

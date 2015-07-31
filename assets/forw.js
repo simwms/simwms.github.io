@@ -2,15 +2,24 @@
 
 /* jshint ignore:end */
 
-define('forw/adapters/application', ['exports', 'forw/config/environment', 'active-model-adapter'], function (exports, ENV, ActiveModelAdapter) {
+define('forw/adapters/application', ['exports', 'ember', 'forw/config/environment', 'active-model-adapter'], function (exports, Ember, ENV, ActiveModelAdapter) {
 
   'use strict';
 
-  var ApplicationAdapter;
+  var ApplicationAdapter, volatile;
+
+  volatile = function () {
+    return Ember['default'].computed.apply(Ember['default'], arguments).volatile();
+  };
 
   ApplicationAdapter = ActiveModelAdapter['default'].extend({
     namespace: ENV['default'].namespace,
-    host: ENV['default'].host
+    host: ENV['default'].host,
+    headers: volatile("currentUser.rememberToken", function () {
+      return {
+        "remember_token": this.get("currentUser.rememberToken")
+      };
+    })
   });
 
   exports['default'] = ApplicationAdapter;
@@ -804,11 +813,12 @@ define('forw/controllers/session', ['exports', 'ember'], function (exports, Embe
     tab: "login",
     showLogin: Ember['default'].computed.equal("tab", "login"),
     showRegister: Ember['default'].computed.equal("tab", "register"),
-    errors: Ember['default'].computed.alias("model"),
-    passwordMatchError: Ember['default'].computed("currentUser.password", "currentUser.passwordConfirmation", function () {
+    errors: Ember['default'].Object.create(),
+    user: Ember['default'].computed.alias("model"),
+    passwordMatchError: Ember['default'].computed("model.password", "model.passwordConfirmation", function () {
       var p, pc;
-      p = this.get('currentUser.password');
-      pc = this.get('currentUser.passwordConfirmation');
+      p = this.get('model.password');
+      pc = this.get('model.passwordConfirmation');
       if (pc !== p) {
         return ["Password doesn't match confirmation"];
       }
@@ -822,29 +832,29 @@ define('forw/controllers/session', ['exports', 'ember'], function (exports, Embe
       },
       submitLogin: function submitLogin() {
         this.set("errors", Ember['default'].Object.create());
-        return this.currentUser.login(this.store)["catch"]((function (_this) {
+        return this.get("user").login(this.store).then((function (_this) {
+          return function () {
+            return _this.transitionToRoute("dashboard");
+          };
+        })(this))["catch"]((function (_this) {
           return function (arg) {
             var errors;
             errors = arg.errors;
             return _this.hashifyErrors(errors);
-          };
-        })(this)).then((function (_this) {
-          return function () {
-            return _this.transitionToRoute("dashboard");
           };
         })(this));
       },
       submitRegister: function submitRegister() {
         this.set("errors", Ember['default'].Object.create());
-        return this.currentUser.register(this.store)["catch"]((function (_this) {
+        return this.get("user").register(this.store).then((function (_this) {
+          return function () {
+            return _this.transitionToRoute("dashboard");
+          };
+        })(this))["catch"]((function (_this) {
           return function (arg) {
             var errors;
             errors = arg.errors;
             return _this.hashifyErrors(errors);
-          };
-        })(this)).then((function (_this) {
-          return function () {
-            return _this.transitionToRoute("dashboard");
           };
         })(this));
       }
@@ -1034,71 +1044,27 @@ define('forw/initializers/md-settings', ['exports', 'forw/config/environment', '
   };
 
 });
-define('forw/initializers/session', ['exports', 'ember'], function (exports, Ember) {
+define('forw/initializers/session', ['exports', 'ember', 'ember-data'], function (exports, Ember, DS) {
 
   'use strict';
 
-  var SessionInitializer, UserSession, initialize;
-
-  UserSession = Ember['default'].ObjectProxy.extend({
-    isLoggedIn: Ember['default'].computed.and("id"),
-    loginSlug: Ember['default'].computed("email", "password", "rememberMe", function () {
-      return {
-        email: this.get("email"),
-        password: this.get("password"),
-        rememberMe: this.get("rememberMe")
-      };
-    }),
-    registerSlug: Ember['default'].computed("username", "password", "email", function () {
-      return {
-        username: this.get("username"),
-        password: this.get("password"),
-        email: this.get("email")
-      };
-    }),
-    setup: function setup(store) {
-      var rememberToken;
-      rememberToken = Cookies.get("rememberToken");
-      if (rememberToken != null) {
-        return store.createRecord("session", {
-          rememberToken: rememberToken
-        }).save().then(this.handleLoginSuccess.bind(this));
-      } else {
-        return new Ember['default'].RSVP.Promise(function (resolve) {
-          return resolve();
-        });
-      }
-    },
-    init: function init() {
-      this._super.apply(this, arguments);
-      return this.set("content", {
-        rememberMe: true
-      });
-    },
-    register: function register(store) {
-      return store.createRecord("user", this.get("registerSlug")).save().then((function (_this) {
-        return function (user) {
-          return _this.login(store);
-        };
-      })(this));
-    },
-    login: function login(store) {
-      return store.createRecord("session", this.get("loginSlug")).save().then(this.handleLoginSuccess.bind(this));
-    },
-    handleLoginSuccess: function handleLoginSuccess(session) {
-      var token;
-      if (token = session.get("rememberToken")) {
-        Cookies.set("rememberToken", token);
-      }
-      this.set("session", session);
-      return this.set("content", session.get("user"));
-    }
-  });
+  var SessionInitializer, initialize;
 
   initialize = function (registry, application) {
-    application.register("session:user", UserSession);
+    var deferred, promise;
+    deferred = Ember['default'].RSVP.defer();
+    promise = DS['default'].PromiseObject.create({
+      promise: deferred.promise
+    });
+    application.register("defer-session:user", deferred, {
+      instantiate: false
+    });
+    application.register("session:user", promise, {
+      instantiate: false
+    });
     application.inject("controller", "currentUser", "session:user");
-    return application.inject("route", "currentUser", "session:user");
+    application.inject("route", "currentUser", "session:user");
+    return application.inject("adapter", "currentUser", "session:user");
   };
 
   SessionInitializer = {
@@ -1189,17 +1155,19 @@ define('forw/instance-initializers/app-version', ['exports', 'forw/config/enviro
   };
 
 });
-define('forw/instance-initializers/setup-session', ['exports'], function (exports) {
+define('forw/instance-initializers/setup-session', ['exports', 'forw/singletons/user-session'], function (exports, session) {
 
   'use strict';
 
   var SetupSessionInitializer, initialize;
 
   initialize = function (application) {
-    var session, store;
+    var deferred, store;
     store = application.container.lookup("service:store");
-    session = application.container.lookup("session:user");
-    return session.setup(store);
+    deferred = application.container.lookup("defer-session:user");
+    return session['default'].setup(store).then(function () {
+      return deferred.resolve(session['default']);
+    });
   };
 
   SetupSessionInitializer = {
@@ -1482,11 +1450,13 @@ define('forw/models/account', ['exports', 'ember', 'ember-data'], function (expo
   exports['default'] = Account;
 
 });
-define('forw/models/session', ['exports', 'ember-data'], function (exports, DS) {
+define('forw/models/session', ['exports', 'ember', 'ember-data'], function (exports, Ember, DS) {
 
   'use strict';
 
-  var Session;
+  var Session, alias;
+
+  alias = Ember['default'].computed.alias;
 
   Session = DS['default'].Model.extend({
     email: DS['default'].attr("string"),
@@ -1495,7 +1465,8 @@ define('forw/models/session', ['exports', 'ember-data'], function (exports, DS) 
     rememberMe: DS['default'].attr("boolean"),
     user: DS['default'].belongsTo("user", {
       async: false
-    })
+    }),
+    accounts: alias("user.accounts")
   });
 
   exports['default'] = Session;
@@ -1581,6 +1552,9 @@ define('forw/routes/application', ['exports', 'ember'], function (exports, Ember
         refreshModel: true
       }
     },
+    model: function model() {
+      return this.get("currentUser");
+    },
     actions: {
       closeModal: function closeModal() {
         this.set("modal", null);
@@ -1596,7 +1570,25 @@ define('forw/routes/dashboard', ['exports', 'ember'], function (exports, Ember) 
   var DashboardRoute;
 
   DashboardRoute = Ember['default'].Route.extend({
-    model: function model() {}
+    model: function model() {
+      return this.currentUser;
+    },
+    afterModel: function afterModel(model) {
+      if (!model.get("isLoggedIn")) {
+        return this.transitionTo("index");
+      }
+    },
+    actions: {
+      logout: function logout() {
+        return this.currentUser.then(function (currentUser) {
+          return currentUser.logout();
+        }).then((function (_this) {
+          return function () {
+            return _this.transitionTo("index");
+          };
+        })(this));
+      }
+    }
   });
 
   exports['default'] = DashboardRoute;
@@ -1643,7 +1635,7 @@ define('forw/routes/dashboard/accounts/new', ['exports', 'ember'], function (exp
   DashboardAccountsNewRoute = Ember['default'].Route.extend({
     model: function model() {
       return this.store.createRecord("account", {
-        user: this.currentUser.get("content")
+        user: this.currentUser.get("user")
       });
     },
     tearDown: Ember['default'].on("deactivate", function () {
@@ -1666,7 +1658,7 @@ define('forw/routes/session', ['exports', 'ember'], function (exports, Ember) {
 
   SessionRoute = Ember['default'].Route.extend({
     model: function model() {
-      return Ember['default'].Object.create();
+      return this.currentUser;
     }
   });
 
@@ -1705,6 +1697,93 @@ define('forw/services/modal-dialog', ['exports', 'ember-modal-dialog/services/mo
 	'use strict';
 
 	exports['default'] = Service['default'];
+
+});
+define('forw/singletons/user-session', ['exports', 'ember'], function (exports, Ember) {
+
+  'use strict';
+
+  var UserSession, alias, ifPresent;
+
+  alias = Ember['default'].computed.alias;
+
+  ifPresent = Ember['default'].computed.and;
+
+  UserSession = Ember['default'].Object.extend({
+    rememberMe: true,
+    user: alias("session.user"),
+    rememberToken: alias("session.rememberToken"),
+    isLoggedIn: ifPresent("session.id"),
+    loginSlug: Ember['default'].computed("email", "password", "rememberMe", function () {
+      return {
+        email: this.get("email"),
+        password: this.get("password"),
+        rememberMe: this.get("rememberMe")
+      };
+    }),
+    registerSlug: Ember['default'].computed("username", "password", "email", function () {
+      return {
+        username: this.get("username"),
+        password: this.get("password"),
+        email: this.get("email")
+      };
+    }),
+    setup: function setup(store) {
+      var rememberToken;
+      rememberToken = Cookies.get("rememberToken");
+      if (rememberToken != null) {
+        return store.createRecord("session", {
+          rememberToken: rememberToken
+        }).save().then(this.handleLoginSuccess.bind(this))["catch"](function (error) {
+          Cookies.remove("rememberToken");
+          throw error;
+        });
+      } else {
+        return new Ember['default'].RSVP.Promise(function (resolve) {
+          return resolve();
+        });
+      }
+    },
+    register: function register(store) {
+      return store.createRecord("user", this.get("registerSlug")).save().then((function (_this) {
+        return function (user) {
+          return _this.login(store);
+        };
+      })(this));
+    },
+    logout: function logout() {
+      var promise;
+      if (this.get("isLoggedIn")) {
+        promise = this.get("session").destroyRecord();
+      } else {
+        promise = new Ember['default'].RSVP.Promise(function (resolve) {
+          return resolve();
+        });
+      }
+      return promise.then((function (_this) {
+        return function () {
+          _this.set("session", null);
+          return Cookies.remove("rememberToken");
+        };
+      })(this));
+    },
+    login: function login(store) {
+      return store.createRecord("session", this.get("loginSlug")).save().then(this.handleLoginSuccess.bind(this));
+    },
+    handleLoginSuccess: function handleLoginSuccess(session) {
+      var token;
+      if (token = session.get("rememberToken")) {
+        Cookies.set("rememberToken", token);
+      }
+      return this.set("session", session);
+    }
+  });
+
+  UserSession.instance = UserSession.create();
+
+  exports['default'] = UserSession.instance;
+
+  exports.UserSession = UserSession;
 
 });
 define('forw/templates/application', ['exports'], function (exports) {
@@ -2801,7 +2880,7 @@ define('forw/templates/dashboard', ['exports'], function (exports) {
           return morphs;
         },
         statements: [
-          ["content","currentUser.username",["loc",[null,[9,39],[9,63]]]]
+          ["content","currentUser.user.username",["loc",[null,[9,39],[9,68]]]]
         ],
         locals: [],
         templates: []
@@ -3662,11 +3741,11 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 337
+                  "column": 322
                 },
                 "end": {
                   "line": 1,
-                  "column": 679
+                  "column": 664
                 }
               },
               "moduleName": "forw/templates/dashboard/accounts/index.hbs"
@@ -3728,10 +3807,10 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
               return morphs;
             },
             statements: [
-              ["content","account.user.username",["loc",[null,[1,407],[1,432]]]],
-              ["content","account.timezone",["loc",[null,[1,480],[1,500]]]],
-              ["inline","moment-format",[["get","account.inserted_at",["loc",[null,[1,569],[1,588]]]]],[],["loc",[null,[1,553],[1,590]]]],
-              ["content","account.servicePlan",["loc",[null,[1,646],[1,669]]]]
+              ["content","account.user.username",["loc",[null,[1,392],[1,417]]]],
+              ["content","account.timezone",["loc",[null,[1,465],[1,485]]]],
+              ["inline","moment-format",[["get","account.inserted_at",["loc",[null,[1,554],[1,573]]]]],[],["loc",[null,[1,538],[1,575]]]],
+              ["content","account.servicePlan",["loc",[null,[1,631],[1,654]]]]
             ],
             locals: [],
             templates: []
@@ -3746,11 +3825,11 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
                   "source": null,
                   "start": {
                     "line": 1,
-                    "column": 718
+                    "column": 703
                   },
                   "end": {
                     "line": 1,
-                    "column": 782
+                    "column": 767
                   }
                 },
                 "moduleName": "forw/templates/dashboard/accounts/index.hbs"
@@ -3782,11 +3861,11 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
                   "source": null,
                   "start": {
                     "line": 1,
-                    "column": 794
+                    "column": 779
                   },
                   "end": {
                     "line": 1,
-                    "column": 855
+                    "column": 840
                   }
                 },
                 "moduleName": "forw/templates/dashboard/accounts/index.hbs"
@@ -3818,11 +3897,11 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
                   "source": null,
                   "start": {
                     "line": 1,
-                    "column": 867
+                    "column": 852
                   },
                   "end": {
                     "line": 1,
-                    "column": 933
+                    "column": 918
                   }
                 },
                 "moduleName": "forw/templates/dashboard/accounts/index.hbs"
@@ -3853,11 +3932,11 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 699
+                  "column": 684
                 },
                 "end": {
                   "line": 1,
-                  "column": 945
+                  "column": 930
                 }
               },
               "moduleName": "forw/templates/dashboard/accounts/index.hbs"
@@ -3885,9 +3964,9 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
               return morphs;
             },
             statements: [
-              ["block","link-to",["warehouse.index",["get","account.id",["loc",[null,[1,747],[1,757]]]]],[],0,null,["loc",[null,[1,718],[1,794]]]],
-              ["block","link-to",["warehouse.config",["get","account.id",["loc",[null,[1,824],[1,834]]]]],[],1,null,["loc",[null,[1,794],[1,867]]]],
-              ["block","link-to",["dashboard.account.index",["get","account.id",["loc",[null,[1,904],[1,914]]]]],[],2,null,["loc",[null,[1,867],[1,945]]]]
+              ["block","link-to",["warehouse.index",["get","account.id",["loc",[null,[1,732],[1,742]]]]],[],0,null,["loc",[null,[1,703],[1,779]]]],
+              ["block","link-to",["warehouse.config",["get","account.id",["loc",[null,[1,809],[1,819]]]]],[],1,null,["loc",[null,[1,779],[1,852]]]],
+              ["block","link-to",["dashboard.account.index",["get","account.id",["loc",[null,[1,889],[1,899]]]]],[],2,null,["loc",[null,[1,852],[1,930]]]]
             ],
             locals: [],
             templates: [child0, child1, child2]
@@ -3900,11 +3979,11 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
               "source": null,
               "start": {
                 "line": 1,
-                "column": 275
+                "column": 260
               },
               "end": {
                 "line": 1,
-                "column": 964
+                "column": 949
               }
             },
             "moduleName": "forw/templates/dashboard/accounts/index.hbs"
@@ -3929,8 +4008,8 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
             return morphs;
           },
           statements: [
-            ["block","md-card-content",[],[],0,null,["loc",[null,[1,337],[1,699]]]],
-            ["block","md-card-action",[],[],1,null,["loc",[null,[1,699],[1,964]]]]
+            ["block","md-card-content",[],[],0,null,["loc",[null,[1,322],[1,684]]]],
+            ["block","md-card-action",[],[],1,null,["loc",[null,[1,684],[1,949]]]]
           ],
           locals: [],
           templates: [child0, child1]
@@ -3947,7 +4026,7 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
             },
             "end": {
               "line": 1,
-              "column": 982
+              "column": 967
             }
           },
           "moduleName": "forw/templates/dashboard/accounts/index.hbs"
@@ -3970,7 +4049,7 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
           return morphs;
         },
         statements: [
-          ["block","md-card",[],["title",["subexpr","@mut",[["get","account.companyName",["loc",[null,[1,292],[1,311]]]]],[],[]],"titleClass","brown-text"],0,null,["loc",[null,[1,275],[1,976]]]]
+          ["block","md-card",[],["title",["subexpr","@mut",[["get","account.companyName",["loc",[null,[1,277],[1,296]]]]],[],[]],"titleClass","brown-text"],0,null,["loc",[null,[1,260],[1,961]]]]
         ],
         locals: ["account"],
         templates: [child0]
@@ -3986,11 +4065,11 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 1061
+                  "column": 1046
                 },
                 "end": {
                   "line": 1,
-                  "column": 1143
+                  "column": 1128
                 }
               },
               "moduleName": "forw/templates/dashboard/accounts/index.hbs"
@@ -4023,11 +4102,11 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
                   "source": null,
                   "start": {
                     "line": 1,
-                    "column": 1182
+                    "column": 1167
                   },
                   "end": {
                     "line": 1,
-                    "column": 1245
+                    "column": 1230
                   }
                 },
                 "moduleName": "forw/templates/dashboard/accounts/index.hbs"
@@ -4058,11 +4137,11 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 1163
+                  "column": 1148
                 },
                 "end": {
                   "line": 1,
-                  "column": 1257
+                  "column": 1242
                 }
               },
               "moduleName": "forw/templates/dashboard/accounts/index.hbs"
@@ -4084,7 +4163,7 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
               return morphs;
             },
             statements: [
-              ["block","link-to",["dashboard.accounts.new"],[],0,null,["loc",[null,[1,1182],[1,1257]]]]
+              ["block","link-to",["dashboard.accounts.new"],[],0,null,["loc",[null,[1,1167],[1,1242]]]]
             ],
             locals: [],
             templates: [child0]
@@ -4097,11 +4176,11 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
               "source": null,
               "start": {
                 "line": 1,
-                "column": 1017
+                "column": 1002
               },
               "end": {
                 "line": 1,
-                "column": 1276
+                "column": 1261
               }
             },
             "moduleName": "forw/templates/dashboard/accounts/index.hbs"
@@ -4126,8 +4205,8 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
             return morphs;
           },
           statements: [
-            ["block","md-card-content",[],[],0,null,["loc",[null,[1,1061],[1,1163]]]],
-            ["block","md-card-action",[],[],1,null,["loc",[null,[1,1163],[1,1276]]]]
+            ["block","md-card-content",[],[],0,null,["loc",[null,[1,1046],[1,1148]]]],
+            ["block","md-card-action",[],[],1,null,["loc",[null,[1,1148],[1,1261]]]]
           ],
           locals: [],
           templates: [child0, child1]
@@ -4140,11 +4219,11 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
             "source": null,
             "start": {
               "line": 1,
-              "column": 982
+              "column": 967
             },
             "end": {
               "line": 1,
-              "column": 1294
+              "column": 1279
             }
           },
           "moduleName": "forw/templates/dashboard/accounts/index.hbs"
@@ -4167,7 +4246,7 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
           return morphs;
         },
         statements: [
-          ["block","md-card",[],["title","You Have No Warehouses!"],0,null,["loc",[null,[1,1017],[1,1288]]]]
+          ["block","md-card",[],["title","You Have No Warehouses!"],0,null,["loc",[null,[1,1002],[1,1273]]]]
         ],
         locals: [],
         templates: [child0]
@@ -4184,7 +4263,7 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
           },
           "end": {
             "line": 1,
-            "column": 1315
+            "column": 1300
           }
         },
         "moduleName": "forw/templates/dashboard/accounts/index.hbs"
@@ -4215,7 +4294,7 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
       },
       statements: [
         ["block","link-to",["dashboard.accounts.new"],["classNames","waves-effect waves-light btn-large"],0,null,["loc",[null,[1,21],[1,190]]]],
-        ["block","each",[["get","currentUser.accounts",["loc",[null,[1,226],[1,246]]]]],[],1,2,["loc",[null,[1,207],[1,1303]]]]
+        ["block","each",[["get","model",["loc",[null,[1,226],[1,231]]]]],[],1,2,["loc",[null,[1,207],[1,1288]]]]
       ],
       locals: [],
       templates: [child0, child1, child2]
@@ -4580,6 +4659,53 @@ define('forw/templates/dashboard/accounts/new', ['exports'], function (exports) 
       ],
       locals: [],
       templates: [child0, child1]
+    };
+  }()));
+
+});
+define('forw/templates/dashboard/preferences', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 108
+          }
+        },
+        "moduleName": "forw/templates/dashboard/preferences.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createElement("div");
+        dom.setAttribute(el1,"class","col s12");
+        var el2 = dom.createComment("");
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var morphs = new Array(1);
+        morphs[0] = dom.createMorphAt(dom.childAt(fragment, [0]),0,0);
+        return morphs;
+      },
+      statements: [
+        ["inline","md-btn",[],["text","Sign out","action","logout","classNames","indigo darken-2 btn-large"],["loc",[null,[1,21],[1,102]]]]
+      ],
+      locals: [],
+      templates: []
     };
   }()));
 
@@ -5392,7 +5518,7 @@ define('forw/templates/session', ['exports'], function (exports) {
               },
               "end": {
                 "line": 1,
-                "column": 736
+                "column": 718
               }
             },
             "moduleName": "forw/templates/session.hbs"
@@ -5429,10 +5555,10 @@ define('forw/templates/session', ['exports'], function (exports) {
           },
           statements: [
             ["element","action",["submitLogin"],["on","submit"],["loc",[null,[1,297],[1,333]]]],
-            ["inline","md-input",[],["name","email","type","email","label","Email","value",["subexpr","@mut",[["get","currentUser.email",["loc",[null,[1,391],[1,408]]]]],[],[]],"errors",["subexpr","@mut",[["get","errors.email",["loc",[null,[1,416],[1,428]]]]],[],[]]],["loc",[null,[1,334],[1,430]]]],
-            ["inline","md-input",[],["name","password","type","password","label","Password","value",["subexpr","@mut",[["get","currentUser.password",["loc",[null,[1,496],[1,516]]]]],[],[]],"errors",["subexpr","@mut",[["get","errors.password",["loc",[null,[1,524],[1,539]]]]],[],[]]],["loc",[null,[1,430],[1,541]]]],
-            ["inline","md-switch",[],["checked",["subexpr","@mut",[["get","currentUser.rememberMe",["loc",[null,[1,561],[1,583]]]]],[],[]],"onLabel","Remember me"],["loc",[null,[1,541],[1,607]]]],
-            ["inline","md-btn-submit",[],["icon","mdi-content-send","iconPosition","right","text","Submit","buttonType","large"],["loc",[null,[1,628],[1,723]]]]
+            ["inline","md-input",[],["name","email","type","email","label","Email","value",["subexpr","@mut",[["get","model.email",["loc",[null,[1,391],[1,402]]]]],[],[]],"errors",["subexpr","@mut",[["get","errors.email",["loc",[null,[1,410],[1,422]]]]],[],[]]],["loc",[null,[1,334],[1,424]]]],
+            ["inline","md-input",[],["name","password","type","password","label","Password","value",["subexpr","@mut",[["get","model.password",["loc",[null,[1,490],[1,504]]]]],[],[]],"errors",["subexpr","@mut",[["get","errors.password",["loc",[null,[1,512],[1,527]]]]],[],[]]],["loc",[null,[1,424],[1,529]]]],
+            ["inline","md-switch",[],["checked",["subexpr","@mut",[["get","model.rememberMe",["loc",[null,[1,549],[1,565]]]]],[],[]],"onLabel","Remember me"],["loc",[null,[1,529],[1,589]]]],
+            ["inline","md-btn-submit",[],["icon","mdi-content-send","iconPosition","right","text","Submit","buttonType","large"],["loc",[null,[1,610],[1,705]]]]
           ],
           locals: [],
           templates: []
@@ -5447,11 +5573,11 @@ define('forw/templates/session', ['exports'], function (exports) {
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 1456
+                  "column": 1408
                 },
                 "end": {
                   "line": 1,
-                  "column": 1617
+                  "column": 1557
                 }
               },
               "moduleName": "forw/templates/session.hbs"
@@ -5473,7 +5599,7 @@ define('forw/templates/session', ['exports'], function (exports) {
               return morphs;
             },
             statements: [
-              ["inline","md-btn-submit",[],["icon","mdi-content-send","iconPosition","right","text","Submit","buttonType","large"],["loc",[null,[1,1522],[1,1617]]]]
+              ["inline","md-btn-submit",[],["icon","mdi-content-send","iconPosition","right","text","Submit","buttonType","large"],["loc",[null,[1,1462],[1,1557]]]]
             ],
             locals: [],
             templates: []
@@ -5487,11 +5613,11 @@ define('forw/templates/session', ['exports'], function (exports) {
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 1617
+                  "column": 1557
                 },
                 "end": {
                   "line": 1,
-                  "column": 1675
+                  "column": 1615
                 }
               },
               "moduleName": "forw/templates/session.hbs"
@@ -5513,7 +5639,7 @@ define('forw/templates/session', ['exports'], function (exports) {
               return morphs;
             },
             statements: [
-              ["inline","md-btn",[],["text","Form has errors!","isDisabled",true],["loc",[null,[1,1625],[1,1675]]]]
+              ["inline","md-btn",[],["text","Form has errors!","isDisabled",true],["loc",[null,[1,1565],[1,1615]]]]
             ],
             locals: [],
             templates: []
@@ -5526,11 +5652,11 @@ define('forw/templates/session', ['exports'], function (exports) {
               "source": null,
               "start": {
                 "line": 1,
-                "column": 755
+                "column": 737
               },
               "end": {
                 "line": 1,
-                "column": 1695
+                "column": 1635
               }
             },
             "moduleName": "forw/templates/session.hbs"
@@ -5572,13 +5698,13 @@ define('forw/templates/session', ['exports'], function (exports) {
             return morphs;
           },
           statements: [
-            ["element","action",["submitRegister"],["on","submit"],["loc",[null,[1,863],[1,902]]]],
-            ["inline","md-input",[],["name","username","type","text","label","User name","value",["subexpr","@mut",[["get","currentUser.username",["loc",[null,[1,966],[1,986]]]]],[],[]],"errors",["subexpr","@mut",[["get","errors.username",["loc",[null,[1,994],[1,1009]]]]],[],[]]],["loc",[null,[1,903],[1,1011]]]],
-            ["inline","md-input",[],["name","email","type","email","label","Email","value",["subexpr","@mut",[["get","currentUser.email",["loc",[null,[1,1068],[1,1085]]]]],[],[]],"errors",["subexpr","@mut",[["get","errors.email",["loc",[null,[1,1093],[1,1105]]]]],[],[]]],["loc",[null,[1,1011],[1,1107]]]],
-            ["inline","md-input",[],["name","password","type","password","label","Password","value",["subexpr","@mut",[["get","currentUser.password",["loc",[null,[1,1173],[1,1193]]]]],[],[]],"errors",["subexpr","@mut",[["get","errors.password",["loc",[null,[1,1201],[1,1216]]]]],[],[]]],["loc",[null,[1,1107],[1,1218]]]],
-            ["inline","md-input",[],["name","passwordConfirmation","type","password","label","Password confirmation","value",["subexpr","@mut",[["get","currentUser.passwordConfirmation",["loc",[null,[1,1309],[1,1341]]]]],[],[]],"errors",["subexpr","@mut",[["get","passwordMatchError",["loc",[null,[1,1349],[1,1367]]]]],[],[]]],["loc",[null,[1,1218],[1,1369]]]],
-            ["inline","md-switch",[],["checked",["subexpr","@mut",[["get","currentUser.rememberMe",["loc",[null,[1,1389],[1,1411]]]]],[],[]],"onLabel","Remember me"],["loc",[null,[1,1369],[1,1435]]]],
-            ["block","if",[["subexpr","eq",[["get","currentUser.password",["loc",[null,[1,1466],[1,1486]]]],["get","currentUser.passwordConfirmation",["loc",[null,[1,1487],[1,1519]]]]],[],["loc",[null,[1,1462],[1,1520]]]]],[],0,1,["loc",[null,[1,1456],[1,1682]]]]
+            ["element","action",["submitRegister"],["on","submit"],["loc",[null,[1,845],[1,884]]]],
+            ["inline","md-input",[],["name","username","type","text","label","User name","value",["subexpr","@mut",[["get","model.username",["loc",[null,[1,948],[1,962]]]]],[],[]],"errors",["subexpr","@mut",[["get","errors.username",["loc",[null,[1,970],[1,985]]]]],[],[]]],["loc",[null,[1,885],[1,987]]]],
+            ["inline","md-input",[],["name","email","type","email","label","Email","value",["subexpr","@mut",[["get","model.email",["loc",[null,[1,1044],[1,1055]]]]],[],[]],"errors",["subexpr","@mut",[["get","errors.email",["loc",[null,[1,1063],[1,1075]]]]],[],[]]],["loc",[null,[1,987],[1,1077]]]],
+            ["inline","md-input",[],["name","password","type","password","label","Password","value",["subexpr","@mut",[["get","model.password",["loc",[null,[1,1143],[1,1157]]]]],[],[]],"errors",["subexpr","@mut",[["get","errors.password",["loc",[null,[1,1165],[1,1180]]]]],[],[]]],["loc",[null,[1,1077],[1,1182]]]],
+            ["inline","md-input",[],["name","passwordConfirmation","type","password","label","Password confirmation","value",["subexpr","@mut",[["get","model.passwordConfirmation",["loc",[null,[1,1273],[1,1299]]]]],[],[]],"errors",["subexpr","@mut",[["get","passwordMatchError",["loc",[null,[1,1307],[1,1325]]]]],[],[]]],["loc",[null,[1,1182],[1,1327]]]],
+            ["inline","md-switch",[],["checked",["subexpr","@mut",[["get","model.rememberMe",["loc",[null,[1,1347],[1,1363]]]]],[],[]],"onLabel","Remember me"],["loc",[null,[1,1327],[1,1387]]]],
+            ["block","if",[["subexpr","eq",[["get","model.password",["loc",[null,[1,1418],[1,1432]]]],["get","model.passwordConfirmation",["loc",[null,[1,1433],[1,1459]]]]],[],["loc",[null,[1,1414],[1,1460]]]]],[],0,1,["loc",[null,[1,1408],[1,1622]]]]
           ],
           locals: [],
           templates: [child0, child1]
@@ -5595,7 +5721,7 @@ define('forw/templates/session', ['exports'], function (exports) {
             },
             "end": {
               "line": 1,
-              "column": 1714
+              "column": 1654
             }
           },
           "moduleName": "forw/templates/session.hbs"
@@ -5620,8 +5746,8 @@ define('forw/templates/session', ['exports'], function (exports) {
           return morphs;
         },
         statements: [
-          ["block","md-collapsible",[],["title","Login to your account","active",["subexpr","@mut",[["get","showLogin",["loc",[null,[1,245],[1,254]]]]],[],[]],"action","clicked","actionArg","login"],0,null,["loc",[null,[1,190],[1,755]]]],
-          ["block","md-collapsible",[],["title","Register account","active",["subexpr","@mut",[["get","showRegister",["loc",[null,[1,805],[1,817]]]]],[],[]],"action","clicked","actionArg","register"],1,null,["loc",[null,[1,755],[1,1714]]]]
+          ["block","md-collapsible",[],["title","Login to your account","active",["subexpr","@mut",[["get","showLogin",["loc",[null,[1,245],[1,254]]]]],[],[]],"action","clicked","actionArg","login"],0,null,["loc",[null,[1,190],[1,737]]]],
+          ["block","md-collapsible",[],["title","Register account","active",["subexpr","@mut",[["get","showRegister",["loc",[null,[1,787],[1,799]]]]],[],[]],"action","clicked","actionArg","register"],1,null,["loc",[null,[1,737],[1,1654]]]]
         ],
         locals: [],
         templates: [child0, child1]
@@ -5638,7 +5764,7 @@ define('forw/templates/session', ['exports'], function (exports) {
           },
           "end": {
             "line": 1,
-            "column": 1762
+            "column": 1702
           }
         },
         "moduleName": "forw/templates/session.hbs"
@@ -5676,7 +5802,7 @@ define('forw/templates/session', ['exports'], function (exports) {
         return morphs;
       },
       statements: [
-        ["block","md-card-collapsible",[],[],0,null,["loc",[null,[1,166],[1,1738]]]]
+        ["block","md-card-collapsible",[],[],0,null,["loc",[null,[1,166],[1,1678]]]]
       ],
       locals: [],
       templates: [child0]
@@ -6049,7 +6175,7 @@ catch(err) {
 if (runningTests) {
   require("forw/tests/test-helper");
 } else {
-  require("forw/app")["default"].create({"name":"forw","version":"0.0.0+69026acc"});
+  require("forw/app")["default"].create({"name":"forw","version":"0.0.0+33c13fb4"});
 }
 
 /* jshint ignore:end */
