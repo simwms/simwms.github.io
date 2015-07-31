@@ -27,10 +27,11 @@ SessionController = Ember.Controller.extend
   tab: "login"
   showLogin: Ember.computed.equal "tab", "login"
   showRegister: Ember.computed.equal "tab", "register"
-  errors: Ember.computed.alias "model"
-  passwordMatchError: Ember.computed "currentUser.password", "currentUser.passwordConfirmation", ->
-    p = @get 'currentUser.password'
-    pc = @get 'currentUser.passwordConfirmation'
+  errors: Ember.Object.create()
+  user: Ember.computed.alias("model")
+  passwordMatchError: Ember.computed "model.password", "model.passwordConfirmation", ->
+    p = @get 'model.password'
+    pc = @get 'model.passwordConfirmation'
     return ["Password doesn't match confirmation"] if pc isnt p
 
   hashifyErrors: (errors) ->
@@ -40,18 +41,18 @@ SessionController = Ember.Controller.extend
       @set "tab", tab
     submitLogin: ->
       @set "errors", Ember.Object.create()
-      @currentUser.login @store
-      .catch ({errors}) =>
-        @hashifyErrors errors
+      @get("user").login @store
       .then =>
         @transitionToRoute "dashboard"
+      .catch ({errors}) =>
+        @hashifyErrors errors
     submitRegister: ->
       @set "errors", Ember.Object.create()
-      @currentUser.register @store
-      .catch ({errors}) =>
-        @hashifyErrors errors
+      @get("user").register @store
       .then =>
         @transitionToRoute "dashboard"
+      .catch ({errors}) =>
+        @hashifyErrors errors
       
 
 `export default SessionController`

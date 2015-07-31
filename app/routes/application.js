@@ -6,6 +6,9 @@ export default Ember.Route.extend({
       refreshModel: true
     }
   },
+  model () {
+    return this.get("currentUser");
+  },
   actions: {
     closeModal () {
       this.set("modal", null);

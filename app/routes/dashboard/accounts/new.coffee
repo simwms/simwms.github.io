@@ -3,7 +3,7 @@
 DashboardAccountsNewRoute = Ember.Route.extend
   model: ->
     @store.createRecord "account",
-      user: @currentUser.get("content")
+      user: @currentUser.get("user")
 
   tearDown: Ember.on "deactivate", ->
     model = @controller.get "model"

@@ -1,0 +1,2 @@
+.col.s12
+  md-btn text='Sign out' action='logout' classNames='indigo darken-2 btn-large'

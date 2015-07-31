@@ -1,8 +1,10 @@
+`import session from '../singletons/user-session'`
 
 initialize = (application) ->
   store = application.container.lookup "service:store"
-  session = application.container.lookup "session:user"
+  deferred = application.container.lookup "defer-session:user"
   session.setup store
+  .then -> deferred.resolve session
 
 SetupSessionInitializer =
   name: "setup-session"

@@ -2,6 +2,6 @@
 
 SessionRoute = Ember.Route.extend
   model: -> 
-    Ember.Object.create()
+    @currentUser
 
 `export default SessionRoute`
