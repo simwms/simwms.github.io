@@ -3,6 +3,12 @@
 This README outlines the details of collaborating on this Ember application.
 A short introduction of this app could easily go here.
 
+```sh
+ember github-pages:commit --message "redeploying to gh pages for staging" \
+                          --branch="master" \
+                          --environment=staging
+```
+
 ## Prerequisites
 
 You will need the following things properly installed on your computer.
