@@ -14,7 +14,7 @@ module.exports = function(environment) {
       "font-src": "*",
       "style-src": "'self' 'unsafe-inline' *",
       "script-src": "'self'",
-      "frame-src": "'self'"
+      "frame-src": "'self' https://simwms.github.io"
     },
     EmberENV: {
       FEATURES: {

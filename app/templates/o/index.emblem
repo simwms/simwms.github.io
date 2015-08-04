@@ -38,7 +38,7 @@
         img.benefits-pic src="images/iphone.png"
 
   .call-to-action
-    link-to "sample" classNames='deep-orange darken-2 white-text btn-large waves-effect waves-light'
+    link-to "o.sample" classNames='deep-orange darken-2 white-text btn-large waves-effect waves-light'
       span try it online
       i.mdi-content-send.right
 
@@ -49,21 +49,21 @@
           md-card-content
             span $14/day
           md-card-action
-            link-to "sample"
+            link-to "o.sample"
               span get started
       .col.s12.m12.l4
         md-card title="basic plan" titleClass="indigo-text text-darken-2" image="images/waifu.jpg"
           md-card-content
             span $14/day
           md-card-action
-            link-to "sample"
+            link-to "o.sample"
               span get started
       .col.s12.m12.l4
         md-card title="basic plan" titleClass="indigo-text text-darken-2" image="images/waifu.jpg"
           md-card-content
             span $14/day
           md-card-action
-            link-to "sample"
+            link-to "o.sample"
               span get started
 
   .contacts-map

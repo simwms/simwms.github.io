@@ -26,12 +26,19 @@
         li
           span.bold.colon Secret Access Key
           span= model.secretAccessKey
-    
-    md-collapsible icon="mdi-image-filter-drama" title="Database Details"
+
+    md-collapsible icon="mdi-image-filter-drama" title="Application Hosts"
       ul
         li
-          span.bold.colon Namespace
-          span= model.namespace
+          span.bold.colon App Host
+          span= model.uiuxHost
         li
-          span.bold.colon Host
-          span= model.host
+          span.bold.colon Config App Host
+          span= model.configHost
+    
+    md-collapsible icon="mdi-image-filter-drama" title="Database Details"
+      form submit="submit"
+        md-input value=model.namespace label="Backend Namespace" type="text"
+        md-input value=model.host label="Backend Host" type="text"
+        .actions
+          md-btn-submit icon='mdi-content-send' iconPosition='right' text='Change'

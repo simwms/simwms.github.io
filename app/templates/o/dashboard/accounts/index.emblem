@@ -1,5 +1,5 @@
 .col.s12
-  link-to "dashboard.accounts.new" classNames="waves-effect waves-light btn-large"
+  link-to "o.dashboard.accounts.new" classNames="waves-effect waves-light btn-large"
     i.material-icons.left add
     span New Warehouse Account
   .row
@@ -17,11 +17,11 @@
               dt.bold.colon Service Plan
               dd= account.servicePlan
           md-card-action
-            link-to "warehouse.index" account.id
+            link-to "x.warehouse.index" account.id
               span Launch App
-            link-to "warehouse.config" account.id
+            link-to "x.warehouse.config" account.id
               span Config
-            link-to "dashboard.account.index" account.id
+            link-to "o.dashboard.account.index" account.id
               span Info
     else
       .col.s12.m6.l4
@@ -29,5 +29,5 @@
           md-card-content
             span You don't have any warehouses registered with us.
           md-card-action
-            link-to "dashboard.accounts.new"
+            link-to "o.dashboard.accounts.new"
               span New Warehouse

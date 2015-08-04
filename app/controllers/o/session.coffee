@@ -43,14 +43,14 @@ SessionController = Ember.Controller.extend
       @set "errors", Ember.Object.create()
       @get("user").login @store
       .then =>
-        @transitionToRoute "dashboard"
+        @transitionToRoute "o.dashboard"
       .catch ({errors}) =>
         @hashifyErrors errors
     submitRegister: ->
       @set "errors", Ember.Object.create()
       @get("user").register @store
       .then =>
-        @transitionToRoute "dashboard"
+        @transitionToRoute "o.dashboard"
       .catch ({errors}) =>
         @hashifyErrors errors
       

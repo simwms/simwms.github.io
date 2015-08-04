@@ -4,7 +4,6 @@
 
 volatile = ->
   Ember.computed(arguments...).volatile()
-
 ApplicationAdapter = ActiveModelAdapter.extend
   namespace: ENV.namespace
   host: ENV.host

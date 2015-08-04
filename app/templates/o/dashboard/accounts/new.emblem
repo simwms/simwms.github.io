@@ -1,5 +1,5 @@
 .col.s12
-  link-to "dashboard.accounts.index" classNames="waves-effect waves-light btn-large"
+  link-to "o.dashboard.accounts.index" classNames="waves-effect waves-light btn-large"
     i.material-icons.left skip_previous
     span Back
 

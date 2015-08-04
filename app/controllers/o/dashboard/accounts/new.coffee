@@ -9,6 +9,6 @@ DashboardAccountsNewController = Ember.Controller.extend
       .save()
       .then (account) =>
         @set "isBusy", false
-        @transitionToRoute "dashboard.account.index", account.get("id")
+        @transitionToRoute "o.dashboard.account.index", account.get("id")
       .catch (errors) =>
 `export default DashboardAccountsNewController`

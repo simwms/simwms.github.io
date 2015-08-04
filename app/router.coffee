@@ -5,20 +5,23 @@ Router = Ember.Router.extend
   location: config.locationType
 
 Router.map ->
-  @route "about"
-  @resource "guides", path: "/guides", ->
-    @resource "guides.guide", path: "/:id", ->
-  @route "sample"
-  @route "session"
-  @resource "warehouse", path: "/warehouse/:id", ->
-    @route "config"
-  @resource "dashboard", path: "/dashboard", ->
-    @resource "dashboard.preferences", path: "/preferences", ->
-    @resource "dashboard.payment", path: "payment", ->
-    @resource "dashboard.account", path: "/account/:id", ->
+  @resource "x", path: "/x", ->
+    @resource "x.warehouse", path: "/warehouse/:id", ->
       @route "config"
-      @route "edit"
-    @resource "dashboard.accounts", path: "/accounts", ->
-      @route "new"
+  
+  @resource "o", path: "/o", ->
+    @route "about"
+    @resource "o.guides", path: "/guides", ->
+      @resource "o.guides.guide", path: "/:id", ->
+    @route "sample"
+    @route "session"
+    @resource "o.dashboard", path: "/dashboard", ->
+      @resource "o.dashboard.preferences", path: "/preferences", ->
+      @resource "o.dashboard.payment", path: "payment", ->
+      @resource "o.dashboard.account", path: "/account/:id", ->
+        @route "config"
+        @route "edit"
+      @resource "o.dashboard.accounts", path: "/accounts", ->
+        @route "new"
 
 `export default Router`
