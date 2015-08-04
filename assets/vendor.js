@@ -98849,13 +98849,9 @@ define('ember-new-computed/index', ['exports', 'ember', 'ember-new-computed/util
 
   'use strict';
 
-
-
-  exports['default'] = newComputed;
-
   var computed = Ember['default'].computed;
 
-  function newComputed() {
+  exports['default'] = function () {
     var polyfillArguments = [];
     var config = arguments[arguments.length - 1];
 
@@ -98885,24 +98881,17 @@ define('ember-new-computed/index', ['exports', 'ember', 'ember-new-computed/util
     polyfillArguments.push(func);
 
     return computed.apply(undefined, polyfillArguments);
-  }
-
-  var getKeys = Object.keys || Ember['default'].keys;
-  var computedKeys = getKeys(computed);
-
-  for (var i = 0, l = computedKeys.length; i < l; i++) {
-    newComputed[computedKeys[i]] = computed[computedKeys[i]];
-  }
+  };
 
 });
-define('ember-new-computed/utils/can-use-new-syntax', ['exports', 'ember'], function (exports, Ember) {
+define('ember-new-computed/utils/can-use-new-syntax', ['exports'], function (exports) {
 
   'use strict';
 
   var supportsSetterGetter;
 
   try {
-    Ember['default'].computed({
+    Ember.computed({
       set: function set() {},
       get: function get() {}
     });
@@ -98912,6 +98901,318 @@ define('ember-new-computed/utils/can-use-new-syntax', ['exports', 'ember'], func
   }
 
   exports['default'] = supportsSetterGetter;
+
+});
+define('ember-notify', ['ember-notify/index', 'ember', 'exports'], function(__index__, __Ember__, __exports__) {
+  'use strict';
+  var keys = Object.keys || __Ember__['default'].keys;
+  var forEach = Array.prototype.forEach && function(array, cb) {
+    array.forEach(cb);
+  } || __Ember__['default'].EnumerableUtils.forEach;
+
+  forEach(keys(__index__), (function(key) {
+    __exports__[key] = __index__[key];
+  }));
+});
+
+define('ember-notify/components/ember-notify', ['exports', 'ember', 'ember-notify', 'ember-notify/message'], function (exports, Ember, Notify, Message) {
+
+  'use strict';
+
+  exports['default'] = Ember['default'].Component.extend({
+    source: null,
+    messages: null,
+    closeAfter: 2500,
+
+    classNames: ['ember-notify-cn'],
+    messageStyle: 'foundation',
+
+    init: function init() {
+      this._super();
+      this.set('messages', Ember['default'].A());
+
+      if (Ember['default'].isNone(this.get('source'))) this.set('source', Notify['default']);
+
+      var style = this.get('messageStyle'),
+          klass;
+      if (style) {
+        if ('foundation' === style) klass = FoundationView;else if ('bootstrap' === style) klass = BootstrapView;else if ('refills' === style) klass = RefillsView;else throw new Error('Unknown messageStyle ' + style + ': options are \'foundation\' and \'bootstrap\'');
+      }
+      this.set('messageClass', klass || this.constructor.defaultViewClass);
+    },
+    didInsertElement: function didInsertElement() {
+      this.set('source.target', this);
+    },
+    willDestroyElement: function willDestroyElement() {
+      this.set('source.target', null);
+    },
+    show: function show(message) {
+      if (this.get('isDestroyed')) return;
+      if (!(message instanceof Message['default'])) {
+        message = Message['default'].create(message);
+      }
+      this.get('messages').pushObject(message);
+      return message;
+    }
+  });
+
+  var MessageView = Ember['default'].View.extend({
+    message: null,
+    closeAfter: null,
+
+    classNames: ['ember-notify'],
+    classNameBindings: ['typeCss', 'message.visible:ember-notify-show:ember-notify-hidden'],
+    attributeBindings: ['data-alert'],
+    'data-alert': '',
+
+    run: null,
+
+    init: function init() {
+      this._super();
+      this.run = Runner.create({
+        // disable all the scheduling in tests
+        disabled: Ember['default'].testing && !Notify['default'].testing
+      });
+    },
+    didInsertElement: function didInsertElement() {
+      var element = this.get('message.element');
+      if (element) {
+        this.$('.message').append(element);
+      }
+      if (Ember['default'].isNone(this.get('message.visible'))) {
+        // the element is added to the DOM in its hidden state, so that
+        // adding the 'ember-notify-show' class triggers the CSS transition
+        this.run.next(this, function () {
+          if (this.get('isDestroyed')) return;
+          this.set('message.visible', true);
+        });
+      }
+      var closeAfter = this.get('message.closeAfter');
+      if (closeAfter === undefined) closeAfter = this.get('closeAfter');
+      if (closeAfter) {
+        this.run.later(this, function () {
+          if (this.get('isDestroyed')) return;
+          this.send('close');
+        }, closeAfter);
+      }
+    },
+    typeCss: Ember['default'].computed('message.type', function () {
+      var cssClass = this.get('message.type');
+      if (cssClass === 'error') cssClass = 'alert error';
+      return cssClass;
+    }),
+    visibleObserver: Ember['default'].observer('message.visible', function () {
+      if (!this.get('message.visible')) {
+        this.send('close');
+      }
+    }),
+
+    actions: {
+      close: function close() {
+        var that = this;
+        var removeAfter = this.get('message.removeAfter') || this.constructor.removeAfter;
+        if (this.get('message.visible')) {
+          this.set('message.visible', false);
+        }
+        if (removeAfter) {
+          this.run.later(this, remove, removeAfter);
+        } else {
+          remove();
+        }
+        function remove() {
+          if (this.get('isDestroyed')) return;
+          var parentView = that.get('parentView');
+          if (parentView) {
+            parentView.get('messages').removeObject(that.get('message'));
+            that.set('message.visible', null);
+          }
+        }
+      }
+    }
+  }).reopenClass({
+    removeAfter: 250 // allow time for the close animation to finish
+  });
+
+  var FoundationView = MessageView.extend({
+    classNames: ['alert-box'],
+    classNameBindings: ['radius::']
+  });
+
+  var BootstrapView = MessageView.extend({
+    classNames: ['alert'],
+    typeCss: Ember['default'].computed('type', function () {
+      var type = this.get('message.type');
+      if (type === 'alert' || type === 'error') type = 'danger';
+      return 'alert-' + type;
+    })
+  });
+
+  var RefillsView = MessageView.extend({
+    typeCss: Ember['default'].computed('type', function () {
+      var type = this.get('message.type');
+      var typeMapping = {
+        'success': 'success',
+        'alert': 'error',
+        'error': 'error',
+        'info': 'notice',
+        'warning': 'alert'
+      };
+
+      return 'flash-' + typeMapping[type];
+    })
+  });
+
+  // getting the run loop to do what we want is difficult, hence the Runner...
+  var Runner = Ember['default'].Object.extend({
+    init: function init() {
+      if (!this.disabled) {
+        // this is horrible but this avoids delays from the run loop
+        this.next = function (ctx, fn) {
+          var args = arguments;
+          setTimeout(function () {
+            Ember['default'].run(function () {
+              fn.apply(ctx, args);
+            });
+          }, 0);
+        };
+        this.later = function () {
+          Ember['default'].run.later.apply(Ember['default'].run, arguments);
+        };
+      } else {
+        this.next = this.later = function zalkoBegone(ctx, fn) {
+          Ember['default'].run.next(ctx, fn);
+        };
+      }
+    }
+  });
+
+  exports.MessageView = MessageView;
+  exports.FoundationView = FoundationView;
+  exports.BootstrapView = BootstrapView;
+  exports.RefillsView = RefillsView;
+
+});
+define('ember-notify/index', ['exports', 'ember', 'ember-new-computed'], function (exports, Ember, computed) {
+
+  'use strict';
+
+  function aliasToShow(type) {
+    return function (message, options) {
+      return this.show(type, message, options);
+    };
+  }
+
+  var Notify = Ember['default'].Object.extend({
+
+    info: aliasToShow('info'),
+    success: aliasToShow('success'),
+    warning: aliasToShow('warning'),
+    alert: aliasToShow('alert'),
+    error: aliasToShow('error'),
+
+    init: function init() {
+      this.pending = [];
+    },
+
+    show: function show(type, message, options) {
+      var _this = this;
+
+      if (typeof message === 'object') {
+        options = message;
+        message = null;
+      }
+      message = Ember['default'].merge({
+        message: message,
+        type: type
+      }, options);
+      var target = this.get('target');
+      var promise;
+      if (target) {
+        var messageObj = target.show(message);
+        promise = Ember['default'].RSVP.resolve(messageObj);
+      } else {
+        promise = new Ember['default'].RSVP.Promise(function (resolve) {
+          return _this.pending.push({
+            message: message,
+            resolve: resolve
+          });
+        });
+      }
+      return MessagePromise.create({
+        message: message,
+        promise: promise
+      });
+    },
+
+    create: function create(component) {
+      return Notify.create({
+        target: component
+      });
+    },
+
+    showPending: Ember['default'].observer('target', function () {
+      var target = this.get('target');
+      if (target) {
+        this.pending.map(function (pending) {
+          var messageObj = target.show(pending.message);
+          pending.resolve(messageObj);
+        });
+        this.pending = [];
+      }
+    })
+
+  }).reopenClass({
+    // set to true to disable testing optimizations that are enabled when
+    // Ember.testing is true
+    testing: false
+  });
+
+  exports['default'] = Notify.extend({
+    property: function property() {
+      return Ember['default'].computed(function () {
+        return Notify.create();
+      });
+    },
+    create: function create() {
+      return Notify.create();
+    },
+    target: computed['default']({
+      get: function get() {
+        return this._target;
+      },
+      set: function set(key, val) {
+        Ember['default'].assert("Only one {{ember-notify}} should be used without a source property. " + "If you want more than one then use {{ember-notify source=someProperty}}", !this._primary || this._primary.get('isDestroyed'));
+        this._target = val;
+        return this._target;
+      }
+    })
+
+  }).create();
+
+  var MessagePromise = Ember['default'].ObjectProxy.extend(Ember['default'].PromiseProxyMixin, {
+    set: function set(key, val) {
+      // if the message hasn't been displayed then set the value on the message hash
+      if (!this.get('content')) {
+        this.message[key] = val;
+        return this;
+      } else {
+        return this._super(key, val);
+      }
+    }
+  });
+
+});
+define('ember-notify/message', ['exports', 'ember'], function (exports, Ember) {
+
+  'use strict';
+
+  exports['default'] = Ember['default'].Object.extend({
+    message: null,
+    raw: '',
+    type: 'info',
+    closeAfter: undefined,
+    visible: undefined
+  });
 
 });
 define('ember-radio-button', ['ember-radio-button/index', 'ember', 'exports'], function(__index__, __Ember__, __exports__) {

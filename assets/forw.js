@@ -60,6 +60,13 @@ define('forw/components/ember-modal-dialog-positioned-container', ['exports', 'e
 	exports['default'] = Component['default'];
 
 });
+define('forw/components/ember-notify', ['exports', 'ember-notify/components/ember-notify'], function (exports, Notify) {
+
+	'use strict';
+
+	exports['default'] = Notify['default'];
+
+});
 define('forw/components/ember-wormhole', ['exports', 'ember-wormhole/components/ember-wormhole'], function (exports, ember_wormhole) {
 
 	'use strict';
@@ -740,7 +747,28 @@ define('forw/controllers/array', ['exports', 'ember'], function (exports, Ember)
 	exports['default'] = Ember['default'].Controller;
 
 });
-define('forw/controllers/dashboard/accounts/new', ['exports', 'ember'], function (exports, Ember) {
+define('forw/controllers/o/dashboard/account/index', ['exports', 'ember'], function (exports, Ember) {
+
+  'use strict';
+
+  var DashboardAccountIndexController;
+
+  DashboardAccountIndexController = Ember['default'].Controller.extend({
+    actions: {
+      submit: function submit() {
+        return this.get("model").save().then((function (_this) {
+          return function () {
+            return _this.notify.success("It Worked!");
+          };
+        })(this));
+      }
+    }
+  });
+
+  exports['default'] = DashboardAccountIndexController;
+
+});
+define('forw/controllers/o/dashboard/accounts/new', ['exports', 'ember'], function (exports, Ember) {
 
   'use strict';
 
@@ -754,7 +782,7 @@ define('forw/controllers/dashboard/accounts/new', ['exports', 'ember'], function
         return this.get("model").save().then((function (_this) {
           return function (account) {
             _this.set("isBusy", false);
-            return _this.transitionToRoute("dashboard.account.index", account.get("id"));
+            return _this.transitionToRoute("o.dashboard.account.index", account.get("id"));
           };
         })(this))["catch"]((function (_this) {
           return function (errors) {};
@@ -766,14 +794,7 @@ define('forw/controllers/dashboard/accounts/new', ['exports', 'ember'], function
   exports['default'] = DashboardAccountsNewController;
 
 });
-define('forw/controllers/object', ['exports', 'ember'], function (exports, Ember) {
-
-	'use strict';
-
-	exports['default'] = Ember['default'].Controller;
-
-});
-define('forw/controllers/session', ['exports', 'ember'], function (exports, Ember) {
+define('forw/controllers/o/session', ['exports', 'ember'], function (exports, Ember) {
 
   'use strict';
 
@@ -834,7 +855,7 @@ define('forw/controllers/session', ['exports', 'ember'], function (exports, Embe
         this.set("errors", Ember['default'].Object.create());
         return this.get("user").login(this.store).then((function (_this) {
           return function () {
-            return _this.transitionToRoute("dashboard");
+            return _this.transitionToRoute("o.dashboard");
           };
         })(this))["catch"]((function (_this) {
           return function (arg) {
@@ -848,7 +869,7 @@ define('forw/controllers/session', ['exports', 'ember'], function (exports, Embe
         this.set("errors", Ember['default'].Object.create());
         return this.get("user").register(this.store).then((function (_this) {
           return function () {
-            return _this.transitionToRoute("dashboard");
+            return _this.transitionToRoute("o.dashboard");
           };
         })(this))["catch"]((function (_this) {
           return function (arg) {
@@ -862,6 +883,36 @@ define('forw/controllers/session', ['exports', 'ember'], function (exports, Embe
   });
 
   exports['default'] = SessionController;
+
+});
+define('forw/controllers/object', ['exports', 'ember'], function (exports, Ember) {
+
+	'use strict';
+
+	exports['default'] = Ember['default'].Controller;
+
+});
+define('forw/controllers/x/warehouse/config', ['exports', 'ember'], function (exports, Ember) {
+
+  'use strict';
+
+  var WarehouseConfigController;
+
+  WarehouseConfigController = Ember['default'].Controller.extend({
+    configHost: Ember['default'].computed("model.id", "model.configHost", "currentUser.rememberToken", function () {
+      var id, paramString, token, url;
+      url = this.get("model.configHost");
+      token = this.get("currentUser.rememberToken");
+      id = this.get("model.id");
+      paramString = Ember['default'].$.param({
+        token: token,
+        account: id
+      });
+      return url + "?" + paramString;
+    })
+  });
+
+  exports['default'] = WarehouseConfigController;
 
 });
 define('forw/helpers/ago', ['exports', 'ember-moment/helpers/deprecated/ago', 'ember-moment/utils/make-bound-helper'], function (exports, deprecatedAgo, makeBoundHelper) {
@@ -926,6 +977,22 @@ define('forw/initializers/add-modals-container', ['exports', 'ember-modal-dialog
   exports['default'] = {
     name: 'add-modals-container',
     initialize: initialize['default']
+  };
+
+});
+define('forw/initializers/ember-notify', ['exports', 'ember-notify'], function (exports, Notify) {
+
+  'use strict';
+
+  exports['default'] = {
+    name: 'ember-notify',
+    initialize: function initialize(container, app) {
+      container.optionsForType('notify', { instantiate: false, singleton: true });
+      app.register('notify:main', Notify['default']);
+      app.inject('route', 'notify', 'notify:main');
+      app.inject('controller', 'notify', 'notify:main');
+      app.inject('component', 'notify', 'notify:main');
+    }
   };
 
 });
@@ -1437,6 +1504,8 @@ define('forw/models/account', ['exports', 'ember', 'ember-data'], function (expo
     timezone: DS['default'].attr("string"),
     namespace: DS['default'].attr("string"),
     host: DS['default'].attr("string"),
+    uiuxHost: DS['default'].attr("string"),
+    configHost: DS['default'].attr("string"),
     servicePlan: DS['default'].attr("string", {
       defaultValue: "free-trial"
     }),
@@ -1501,40 +1570,48 @@ define('forw/router', ['exports', 'ember', 'forw/config/environment'], function 
   });
 
   Router.map(function () {
-    this.route("about");
-    this.resource("guides", {
-      path: "/guides"
+    this.resource("x", {
+      path: "/x"
     }, function () {
-      return this.resource("guides.guide", {
-        path: "/:id"
-      }, function () {});
-    });
-    this.route("sample");
-    this.route("session");
-    this.resource("warehouse", {
-      path: "/warehouse/:id"
-    }, function () {
-      return this.route("config");
-    });
-    return this.resource("dashboard", {
-      path: "/dashboard"
-    }, function () {
-      this.resource("dashboard.preferences", {
-        path: "/preferences"
-      }, function () {});
-      this.resource("dashboard.payment", {
-        path: "payment"
-      }, function () {});
-      this.resource("dashboard.account", {
-        path: "/account/:id"
+      return this.resource("x.warehouse", {
+        path: "/warehouse/:id"
       }, function () {
-        this.route("config");
-        return this.route("edit");
+        return this.route("config");
       });
-      return this.resource("dashboard.accounts", {
-        path: "/accounts"
+    });
+    return this.resource("o", {
+      path: "/o"
+    }, function () {
+      this.route("about");
+      this.resource("o.guides", {
+        path: "/guides"
       }, function () {
-        return this.route("new");
+        return this.resource("o.guides.guide", {
+          path: "/:id"
+        }, function () {});
+      });
+      this.route("sample");
+      this.route("session");
+      return this.resource("o.dashboard", {
+        path: "/dashboard"
+      }, function () {
+        this.resource("o.dashboard.preferences", {
+          path: "/preferences"
+        }, function () {});
+        this.resource("o.dashboard.payment", {
+          path: "payment"
+        }, function () {});
+        this.resource("o.dashboard.account", {
+          path: "/account/:id"
+        }, function () {
+          this.route("config");
+          return this.route("edit");
+        });
+        return this.resource("o.dashboard.accounts", {
+          path: "/accounts"
+        }, function () {
+          return this.route("new");
+        });
       });
     });
   });
@@ -1563,7 +1640,22 @@ define('forw/routes/application', ['exports', 'ember'], function (exports, Ember
   });
 
 });
-define('forw/routes/dashboard', ['exports', 'ember'], function (exports, Ember) {
+define('forw/routes/index', ['exports', 'ember'], function (exports, Ember) {
+
+  'use strict';
+
+  var IndexRoute;
+
+  IndexRoute = Ember['default'].Route.extend({
+    afterModel: function afterModel() {
+      return this.transitionTo("o.index");
+    }
+  });
+
+  exports['default'] = IndexRoute;
+
+});
+define('forw/routes/o/dashboard', ['exports', 'ember'], function (exports, Ember) {
 
   'use strict';
 
@@ -1594,7 +1686,7 @@ define('forw/routes/dashboard', ['exports', 'ember'], function (exports, Ember) 
   exports['default'] = DashboardRoute;
 
 });
-define('forw/routes/dashboard/account', ['exports', 'ember'], function (exports, Ember) {
+define('forw/routes/o/dashboard/account', ['exports', 'ember'], function (exports, Ember) {
 
   'use strict';
 
@@ -1611,7 +1703,7 @@ define('forw/routes/dashboard/account', ['exports', 'ember'], function (exports,
   exports['default'] = DashboardAccountRoute;
 
 });
-define('forw/routes/dashboard/accounts', ['exports', 'ember'], function (exports, Ember) {
+define('forw/routes/o/dashboard/accounts', ['exports', 'ember'], function (exports, Ember) {
 
   'use strict';
 
@@ -1626,7 +1718,7 @@ define('forw/routes/dashboard/accounts', ['exports', 'ember'], function (exports
   exports['default'] = DashboardAccountsRoute;
 
 });
-define('forw/routes/dashboard/accounts/new', ['exports', 'ember'], function (exports, Ember) {
+define('forw/routes/o/dashboard/accounts/new', ['exports', 'ember'], function (exports, Ember) {
 
   'use strict';
 
@@ -1650,7 +1742,7 @@ define('forw/routes/dashboard/accounts/new', ['exports', 'ember'], function (exp
   exports['default'] = DashboardAccountsNewRoute;
 
 });
-define('forw/routes/session', ['exports', 'ember'], function (exports, Ember) {
+define('forw/routes/o/session', ['exports', 'ember'], function (exports, Ember) {
 
   'use strict';
 
@@ -1663,6 +1755,53 @@ define('forw/routes/session', ['exports', 'ember'], function (exports, Ember) {
   });
 
   exports['default'] = SessionRoute;
+
+});
+define('forw/routes/x/warehouse', ['exports', 'ember'], function (exports, Ember) {
+
+  'use strict';
+
+  var WarehouseRoute;
+
+  WarehouseRoute = Ember['default'].Route.extend({
+    model: function model(arg) {
+      var id;
+      id = arg.id;
+      return this.store.findRecord("account", id);
+    }
+  });
+
+  exports['default'] = WarehouseRoute;
+
+});
+define('forw/routes/x/warehouse/config', ['exports', 'ember'], function (exports, Ember) {
+
+  'use strict';
+
+  var WarehouseConfigRoute;
+
+  WarehouseConfigRoute = Ember['default'].Route.extend({
+    model: function model() {
+      return this.modelFor("x.warehouse");
+    }
+  });
+
+  exports['default'] = WarehouseConfigRoute;
+
+});
+define('forw/routes/x/warehouse/index', ['exports', 'ember'], function (exports, Ember) {
+
+  'use strict';
+
+  var WarehouseIndexRoute;
+
+  WarehouseIndexRoute = Ember['default'].Route.extend({
+    model: function model() {
+      return this.modelFor("x.warehouse");
+    }
+  });
+
+  exports['default'] = WarehouseIndexRoute;
 
 });
 define('forw/serializers/session', ['exports', 'ember-data', 'active-model-adapter'], function (exports, DS, active_model_adapter) {
@@ -1791,587 +1930,6 @@ define('forw/templates/application', ['exports'], function (exports) {
   'use strict';
 
   exports['default'] = Ember.HTMLBars.template((function() {
-    var child0 = (function() {
-      var child0 = (function() {
-        return {
-          meta: {
-            "revision": "Ember@1.13.5",
-            "loc": {
-              "source": null,
-              "start": {
-                "line": 4,
-                "column": 6
-              },
-              "end": {
-                "line": 6,
-                "column": 6
-              }
-            },
-            "moduleName": "forw/templates/application.hbs"
-          },
-          arity: 0,
-          cachedFragment: null,
-          hasRendered: false,
-          buildFragment: function buildFragment(dom) {
-            var el0 = dom.createDocumentFragment();
-            var el1 = dom.createTextNode("        ");
-            dom.appendChild(el0, el1);
-            var el1 = dom.createElement("a");
-            var el2 = dom.createTextNode("home");
-            dom.appendChild(el1, el2);
-            dom.appendChild(el0, el1);
-            var el1 = dom.createTextNode("\n");
-            dom.appendChild(el0, el1);
-            return el0;
-          },
-          buildRenderNodes: function buildRenderNodes() { return []; },
-          statements: [
-
-          ],
-          locals: [],
-          templates: []
-        };
-      }());
-      var child1 = (function() {
-        return {
-          meta: {
-            "revision": "Ember@1.13.5",
-            "loc": {
-              "source": null,
-              "start": {
-                "line": 7,
-                "column": 6
-              },
-              "end": {
-                "line": 9,
-                "column": 6
-              }
-            },
-            "moduleName": "forw/templates/application.hbs"
-          },
-          arity: 0,
-          cachedFragment: null,
-          hasRendered: false,
-          buildFragment: function buildFragment(dom) {
-            var el0 = dom.createDocumentFragment();
-            var el1 = dom.createTextNode("        ");
-            dom.appendChild(el0, el1);
-            var el1 = dom.createElement("a");
-            var el2 = dom.createTextNode("about");
-            dom.appendChild(el1, el2);
-            dom.appendChild(el0, el1);
-            var el1 = dom.createTextNode("\n");
-            dom.appendChild(el0, el1);
-            return el0;
-          },
-          buildRenderNodes: function buildRenderNodes() { return []; },
-          statements: [
-
-          ],
-          locals: [],
-          templates: []
-        };
-      }());
-      var child2 = (function() {
-        return {
-          meta: {
-            "revision": "Ember@1.13.5",
-            "loc": {
-              "source": null,
-              "start": {
-                "line": 10,
-                "column": 6
-              },
-              "end": {
-                "line": 12,
-                "column": 6
-              }
-            },
-            "moduleName": "forw/templates/application.hbs"
-          },
-          arity: 0,
-          cachedFragment: null,
-          hasRendered: false,
-          buildFragment: function buildFragment(dom) {
-            var el0 = dom.createDocumentFragment();
-            var el1 = dom.createTextNode("        ");
-            dom.appendChild(el0, el1);
-            var el1 = dom.createElement("a");
-            var el2 = dom.createTextNode("guides");
-            dom.appendChild(el1, el2);
-            dom.appendChild(el0, el1);
-            var el1 = dom.createTextNode("\n");
-            dom.appendChild(el0, el1);
-            return el0;
-          },
-          buildRenderNodes: function buildRenderNodes() { return []; },
-          statements: [
-
-          ],
-          locals: [],
-          templates: []
-        };
-      }());
-      var child3 = (function() {
-        return {
-          meta: {
-            "revision": "Ember@1.13.5",
-            "loc": {
-              "source": null,
-              "start": {
-                "line": 13,
-                "column": 6
-              },
-              "end": {
-                "line": 15,
-                "column": 6
-              }
-            },
-            "moduleName": "forw/templates/application.hbs"
-          },
-          arity: 0,
-          cachedFragment: null,
-          hasRendered: false,
-          buildFragment: function buildFragment(dom) {
-            var el0 = dom.createDocumentFragment();
-            var el1 = dom.createTextNode("        ");
-            dom.appendChild(el0, el1);
-            var el1 = dom.createElement("a");
-            var el2 = dom.createTextNode("sample");
-            dom.appendChild(el1, el2);
-            dom.appendChild(el0, el1);
-            var el1 = dom.createTextNode("\n");
-            dom.appendChild(el0, el1);
-            return el0;
-          },
-          buildRenderNodes: function buildRenderNodes() { return []; },
-          statements: [
-
-          ],
-          locals: [],
-          templates: []
-        };
-      }());
-      var child4 = (function() {
-        var child0 = (function() {
-          return {
-            meta: {
-              "revision": "Ember@1.13.5",
-              "loc": {
-                "source": null,
-                "start": {
-                  "line": 17,
-                  "column": 8
-                },
-                "end": {
-                  "line": 19,
-                  "column": 8
-                }
-              },
-              "moduleName": "forw/templates/application.hbs"
-            },
-            arity: 0,
-            cachedFragment: null,
-            hasRendered: false,
-            buildFragment: function buildFragment(dom) {
-              var el0 = dom.createDocumentFragment();
-              var el1 = dom.createTextNode("          ");
-              dom.appendChild(el0, el1);
-              var el1 = dom.createElement("a");
-              var el2 = dom.createTextNode("my account");
-              dom.appendChild(el1, el2);
-              dom.appendChild(el0, el1);
-              var el1 = dom.createTextNode("\n");
-              dom.appendChild(el0, el1);
-              return el0;
-            },
-            buildRenderNodes: function buildRenderNodes() { return []; },
-            statements: [
-
-            ],
-            locals: [],
-            templates: []
-          };
-        }());
-        return {
-          meta: {
-            "revision": "Ember@1.13.5",
-            "loc": {
-              "source": null,
-              "start": {
-                "line": 16,
-                "column": 6
-              },
-              "end": {
-                "line": 20,
-                "column": 6
-              }
-            },
-            "moduleName": "forw/templates/application.hbs"
-          },
-          arity: 0,
-          cachedFragment: null,
-          hasRendered: false,
-          buildFragment: function buildFragment(dom) {
-            var el0 = dom.createDocumentFragment();
-            var el1 = dom.createComment("");
-            dom.appendChild(el0, el1);
-            return el0;
-          },
-          buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-            var morphs = new Array(1);
-            morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
-            dom.insertBoundary(fragment, 0);
-            dom.insertBoundary(fragment, null);
-            return morphs;
-          },
-          statements: [
-            ["block","link-to",["dashboard"],["tagName","li"],0,null,["loc",[null,[17,8],[19,20]]]]
-          ],
-          locals: [],
-          templates: [child0]
-        };
-      }());
-      var child5 = (function() {
-        var child0 = (function() {
-          return {
-            meta: {
-              "revision": "Ember@1.13.5",
-              "loc": {
-                "source": null,
-                "start": {
-                  "line": 21,
-                  "column": 8
-                },
-                "end": {
-                  "line": 23,
-                  "column": 8
-                }
-              },
-              "moduleName": "forw/templates/application.hbs"
-            },
-            arity: 0,
-            cachedFragment: null,
-            hasRendered: false,
-            buildFragment: function buildFragment(dom) {
-              var el0 = dom.createDocumentFragment();
-              var el1 = dom.createTextNode("          ");
-              dom.appendChild(el0, el1);
-              var el1 = dom.createElement("a");
-              var el2 = dom.createTextNode("login");
-              dom.appendChild(el1, el2);
-              dom.appendChild(el0, el1);
-              var el1 = dom.createTextNode("\n");
-              dom.appendChild(el0, el1);
-              return el0;
-            },
-            buildRenderNodes: function buildRenderNodes() { return []; },
-            statements: [
-
-            ],
-            locals: [],
-            templates: []
-          };
-        }());
-        return {
-          meta: {
-            "revision": "Ember@1.13.5",
-            "loc": {
-              "source": null,
-              "start": {
-                "line": 20,
-                "column": 6
-              },
-              "end": {
-                "line": 24,
-                "column": 6
-              }
-            },
-            "moduleName": "forw/templates/application.hbs"
-          },
-          arity: 0,
-          cachedFragment: null,
-          hasRendered: false,
-          buildFragment: function buildFragment(dom) {
-            var el0 = dom.createDocumentFragment();
-            var el1 = dom.createComment("");
-            dom.appendChild(el0, el1);
-            return el0;
-          },
-          buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-            var morphs = new Array(1);
-            morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
-            dom.insertBoundary(fragment, 0);
-            dom.insertBoundary(fragment, null);
-            return morphs;
-          },
-          statements: [
-            ["block","link-to",["session"],["tagName","li"],0,null,["loc",[null,[21,8],[23,20]]]]
-          ],
-          locals: [],
-          templates: [child0]
-        };
-      }());
-      return {
-        meta: {
-          "revision": "Ember@1.13.5",
-          "loc": {
-            "source": null,
-            "start": {
-              "line": 3,
-              "column": 4
-            },
-            "end": {
-              "line": 25,
-              "column": 4
-            }
-          },
-          "moduleName": "forw/templates/application.hbs"
-        },
-        arity: 0,
-        cachedFragment: null,
-        hasRendered: false,
-        buildFragment: function buildFragment(dom) {
-          var el0 = dom.createDocumentFragment();
-          var el1 = dom.createComment("");
-          dom.appendChild(el0, el1);
-          var el1 = dom.createComment("");
-          dom.appendChild(el0, el1);
-          var el1 = dom.createComment("");
-          dom.appendChild(el0, el1);
-          var el1 = dom.createComment("");
-          dom.appendChild(el0, el1);
-          var el1 = dom.createComment("");
-          dom.appendChild(el0, el1);
-          return el0;
-        },
-        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-          var morphs = new Array(5);
-          morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
-          morphs[1] = dom.createMorphAt(fragment,1,1,contextualElement);
-          morphs[2] = dom.createMorphAt(fragment,2,2,contextualElement);
-          morphs[3] = dom.createMorphAt(fragment,3,3,contextualElement);
-          morphs[4] = dom.createMorphAt(fragment,4,4,contextualElement);
-          dom.insertBoundary(fragment, 0);
-          dom.insertBoundary(fragment, null);
-          return morphs;
-        },
-        statements: [
-          ["block","link-to",["index"],["tagName","li"],0,null,["loc",[null,[4,6],[6,18]]]],
-          ["block","link-to",["about"],["tagName","li"],1,null,["loc",[null,[7,6],[9,18]]]],
-          ["block","link-to",["guides"],["tagName","li"],2,null,["loc",[null,[10,6],[12,18]]]],
-          ["block","link-to",["sample"],["tagName","li"],3,null,["loc",[null,[13,6],[15,18]]]],
-          ["block","if",[["get","currentUser.isLoggedIn",["loc",[null,[16,12],[16,34]]]]],[],4,5,["loc",[null,[16,6],[24,13]]]]
-        ],
-        locals: [],
-        templates: [child0, child1, child2, child3, child4, child5]
-      };
-    }());
-    var child1 = (function() {
-      return {
-        meta: {
-          "revision": "Ember@1.13.5",
-          "loc": {
-            "source": null,
-            "start": {
-              "line": 50,
-              "column": 2
-            },
-            "end": {
-              "line": 52,
-              "column": 2
-            }
-          },
-          "moduleName": "forw/templates/application.hbs"
-        },
-        arity: 0,
-        cachedFragment: null,
-        hasRendered: false,
-        buildFragment: function buildFragment(dom) {
-          var el0 = dom.createDocumentFragment();
-          var el1 = dom.createTextNode("    ");
-          dom.appendChild(el0, el1);
-          var el1 = dom.createElement("a");
-          dom.setAttribute(el1,"class","grey-text text-lighten-1 right");
-          dom.setAttribute(el1,"href","#!");
-          var el2 = dom.createTextNode("More Links");
-          dom.appendChild(el1, el2);
-          dom.appendChild(el0, el1);
-          var el1 = dom.createTextNode("\n");
-          dom.appendChild(el0, el1);
-          return el0;
-        },
-        buildRenderNodes: function buildRenderNodes() { return []; },
-        statements: [
-
-        ],
-        locals: [],
-        templates: []
-      };
-    }());
-    var child2 = (function() {
-      return {
-        meta: {
-          "revision": "Ember@1.13.5",
-          "loc": {
-            "source": null,
-            "start": {
-              "line": 55,
-              "column": 0
-            },
-            "end": {
-              "line": 57,
-              "column": 0
-            }
-          },
-          "moduleName": "forw/templates/application.hbs"
-        },
-        arity: 0,
-        cachedFragment: null,
-        hasRendered: false,
-        buildFragment: function buildFragment(dom) {
-          var el0 = dom.createDocumentFragment();
-          var el1 = dom.createTextNode("  ");
-          dom.appendChild(el0, el1);
-          var el1 = dom.createComment("");
-          dom.appendChild(el0, el1);
-          var el1 = dom.createTextNode("\n");
-          dom.appendChild(el0, el1);
-          return el0;
-        },
-        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-          var morphs = new Array(1);
-          morphs[0] = dom.createMorphAt(fragment,1,1,contextualElement);
-          return morphs;
-        },
-        statements: [
-          ["inline","render",["login"],[],["loc",[null,[56,2],[56,20]]]]
-        ],
-        locals: [],
-        templates: []
-      };
-    }());
-    var child3 = (function() {
-      var child0 = (function() {
-        return {
-          meta: {
-            "revision": "Ember@1.13.5",
-            "loc": {
-              "source": null,
-              "start": {
-                "line": 57,
-                "column": 0
-              },
-              "end": {
-                "line": 59,
-                "column": 0
-              }
-            },
-            "moduleName": "forw/templates/application.hbs"
-          },
-          arity: 0,
-          cachedFragment: null,
-          hasRendered: false,
-          buildFragment: function buildFragment(dom) {
-            var el0 = dom.createDocumentFragment();
-            var el1 = dom.createTextNode("  ");
-            dom.appendChild(el0, el1);
-            var el1 = dom.createComment("");
-            dom.appendChild(el0, el1);
-            var el1 = dom.createTextNode("\n");
-            dom.appendChild(el0, el1);
-            return el0;
-          },
-          buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-            var morphs = new Array(1);
-            morphs[0] = dom.createMorphAt(fragment,1,1,contextualElement);
-            return morphs;
-          },
-          statements: [
-            ["inline","render",["register"],[],["loc",[null,[58,2],[58,23]]]]
-          ],
-          locals: [],
-          templates: []
-        };
-      }());
-      var child1 = (function() {
-        return {
-          meta: {
-            "revision": "Ember@1.13.5",
-            "loc": {
-              "source": null,
-              "start": {
-                "line": 59,
-                "column": 0
-              },
-              "end": {
-                "line": 61,
-                "column": 0
-              }
-            },
-            "moduleName": "forw/templates/application.hbs"
-          },
-          arity: 0,
-          cachedFragment: null,
-          hasRendered: false,
-          buildFragment: function buildFragment(dom) {
-            var el0 = dom.createDocumentFragment();
-            var el1 = dom.createTextNode("  ");
-            dom.appendChild(el0, el1);
-            var el1 = dom.createElement("span");
-            dom.setAttribute(el1,"class","hidden");
-            dom.appendChild(el0, el1);
-            var el1 = dom.createTextNode("\n");
-            dom.appendChild(el0, el1);
-            return el0;
-          },
-          buildRenderNodes: function buildRenderNodes() { return []; },
-          statements: [
-
-          ],
-          locals: [],
-          templates: []
-        };
-      }());
-      return {
-        meta: {
-          "revision": "Ember@1.13.5",
-          "loc": {
-            "source": null,
-            "start": {
-              "line": 57,
-              "column": 0
-            },
-            "end": {
-              "line": 61,
-              "column": 0
-            }
-          },
-          "moduleName": "forw/templates/application.hbs"
-        },
-        arity: 0,
-        cachedFragment: null,
-        hasRendered: false,
-        buildFragment: function buildFragment(dom) {
-          var el0 = dom.createDocumentFragment();
-          var el1 = dom.createComment("");
-          dom.appendChild(el0, el1);
-          return el0;
-        },
-        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-          var morphs = new Array(1);
-          morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
-          dom.insertBoundary(fragment, 0);
-          dom.insertBoundary(fragment, null);
-          return morphs;
-        },
-        statements: [
-          ["block","if",[["subexpr","eq",[["get","modal",["loc",[null,[57,14],[57,19]]]],"register"],[],["loc",[null,[57,10],[57,31]]]]],[],0,1,["loc",[null,[57,0],[61,0]]]]
-        ],
-        locals: [],
-        templates: [child0, child1]
-      };
-    }());
     return {
       meta: {
         "revision": "Ember@1.13.5",
@@ -2382,8 +1940,8 @@ define('forw/templates/application', ['exports'], function (exports) {
             "column": 0
           },
           "end": {
-            "line": 61,
-            "column": 7
+            "line": 1,
+            "column": 10
           }
         },
         "moduleName": "forw/templates/application.hbs"
@@ -2393,166 +1951,22 @@ define('forw/templates/application', ['exports'], function (exports) {
       hasRendered: false,
       buildFragment: function buildFragment(dom) {
         var el0 = dom.createDocumentFragment();
-        var el1 = dom.createElement("main");
-        var el2 = dom.createTextNode("\n  ");
-        dom.appendChild(el1, el2);
-        var el2 = dom.createElement("section");
-        dom.setAttribute(el2,"id","navigation");
-        var el3 = dom.createTextNode("\n");
-        dom.appendChild(el2, el3);
-        var el3 = dom.createComment("");
-        dom.appendChild(el2, el3);
-        var el3 = dom.createTextNode("  ");
-        dom.appendChild(el2, el3);
-        dom.appendChild(el1, el2);
-        var el2 = dom.createTextNode("\n  ");
-        dom.appendChild(el1, el2);
-        var el2 = dom.createElement("section");
-        dom.setAttribute(el2,"id","content");
-        var el3 = dom.createTextNode("\n    ");
-        dom.appendChild(el2, el3);
-        var el3 = dom.createComment("");
-        dom.appendChild(el2, el3);
-        var el3 = dom.createTextNode("\n  ");
-        dom.appendChild(el2, el3);
-        dom.appendChild(el1, el2);
-        var el2 = dom.createTextNode("\n  ");
-        dom.appendChild(el1, el2);
-        var el2 = dom.createComment("");
-        dom.appendChild(el1, el2);
-        var el2 = dom.createTextNode("\n");
-        dom.appendChild(el1, el2);
-        dom.appendChild(el0, el1);
-        var el1 = dom.createTextNode("\n");
-        dom.appendChild(el0, el1);
-        var el1 = dom.createElement("footer");
-        dom.setAttribute(el1,"class","page-footer blue-grey darken-4");
-        var el2 = dom.createTextNode("\n  ");
-        dom.appendChild(el1, el2);
-        var el2 = dom.createElement("div");
-        dom.setAttribute(el2,"class","container");
-        var el3 = dom.createTextNode("\n    ");
-        dom.appendChild(el2, el3);
-        var el3 = dom.createElement("div");
-        dom.setAttribute(el3,"class","row");
-        var el4 = dom.createTextNode("\n      ");
-        dom.appendChild(el3, el4);
-        var el4 = dom.createElement("div");
-        dom.setAttribute(el4,"class","col l6 s12");
-        var el5 = dom.createTextNode("\n        ");
-        dom.appendChild(el4, el5);
-        var el5 = dom.createElement("h5");
-        dom.setAttribute(el5,"class","white-text");
-        var el6 = dom.createTextNode("Footer Content");
-        dom.appendChild(el5, el6);
-        dom.appendChild(el4, el5);
-        var el5 = dom.createTextNode("\n        ");
-        dom.appendChild(el4, el5);
-        var el5 = dom.createElement("p");
-        dom.setAttribute(el5,"class","grey-text text-lighten-4");
-        var el6 = dom.createTextNode("You can use rows and columns here to organize your footer content.");
-        dom.appendChild(el5, el6);
-        dom.appendChild(el4, el5);
-        var el5 = dom.createTextNode("\n      ");
-        dom.appendChild(el4, el5);
-        dom.appendChild(el3, el4);
-        var el4 = dom.createTextNode("\n      ");
-        dom.appendChild(el3, el4);
-        var el4 = dom.createElement("div");
-        dom.setAttribute(el4,"class","col l4 offset-l2 s12");
-        var el5 = dom.createTextNode("\n        ");
-        dom.appendChild(el4, el5);
-        var el5 = dom.createElement("h5");
-        dom.setAttribute(el5,"class","white-text");
-        var el6 = dom.createTextNode("Links");
-        dom.appendChild(el5, el6);
-        dom.appendChild(el4, el5);
-        var el5 = dom.createTextNode("\n        ");
-        dom.appendChild(el4, el5);
-        var el5 = dom.createElement("ul");
-        var el6 = dom.createTextNode("\n          ");
-        dom.appendChild(el5, el6);
-        var el6 = dom.createElement("li");
-        var el7 = dom.createElement("a");
-        dom.setAttribute(el7,"class","grey-text text-lighten-3");
-        dom.setAttribute(el7,"href","#!");
-        var el8 = dom.createTextNode("Link 1");
-        dom.appendChild(el7, el8);
-        dom.appendChild(el6, el7);
-        dom.appendChild(el5, el6);
-        var el6 = dom.createTextNode("\n          ");
-        dom.appendChild(el5, el6);
-        var el6 = dom.createElement("li");
-        var el7 = dom.createElement("a");
-        dom.setAttribute(el7,"class","grey-text text-lighten-3");
-        dom.setAttribute(el7,"href","#!");
-        var el8 = dom.createTextNode("Link 2");
-        dom.appendChild(el7, el8);
-        dom.appendChild(el6, el7);
-        dom.appendChild(el5, el6);
-        var el6 = dom.createTextNode("\n          ");
-        dom.appendChild(el5, el6);
-        var el6 = dom.createElement("li");
-        var el7 = dom.createElement("a");
-        dom.setAttribute(el7,"class","grey-text text-lighten-3");
-        dom.setAttribute(el7,"href","#!");
-        var el8 = dom.createTextNode("Link 3");
-        dom.appendChild(el7, el8);
-        dom.appendChild(el6, el7);
-        dom.appendChild(el5, el6);
-        var el6 = dom.createTextNode("\n          ");
-        dom.appendChild(el5, el6);
-        var el6 = dom.createElement("li");
-        var el7 = dom.createElement("a");
-        dom.setAttribute(el7,"class","grey-text text-lighten-3");
-        dom.setAttribute(el7,"href","#!");
-        var el8 = dom.createTextNode("Link 4");
-        dom.appendChild(el7, el8);
-        dom.appendChild(el6, el7);
-        dom.appendChild(el5, el6);
-        var el6 = dom.createTextNode("\n        ");
-        dom.appendChild(el5, el6);
-        dom.appendChild(el4, el5);
-        var el5 = dom.createTextNode("\n      ");
-        dom.appendChild(el4, el5);
-        dom.appendChild(el3, el4);
-        var el4 = dom.createTextNode("\n    ");
-        dom.appendChild(el3, el4);
-        dom.appendChild(el2, el3);
-        var el3 = dom.createTextNode("\n  ");
-        dom.appendChild(el2, el3);
-        dom.appendChild(el1, el2);
-        var el2 = dom.createTextNode("\n");
-        dom.appendChild(el1, el2);
-        var el2 = dom.createComment("");
-        dom.appendChild(el1, el2);
-        dom.appendChild(el0, el1);
-        var el1 = dom.createTextNode("\n\n");
-        dom.appendChild(el0, el1);
         var el1 = dom.createComment("");
         dom.appendChild(el0, el1);
         return el0;
       },
       buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-        var element0 = dom.childAt(fragment, [0]);
-        var morphs = new Array(5);
-        morphs[0] = dom.createMorphAt(dom.childAt(element0, [1]),1,1);
-        morphs[1] = dom.createMorphAt(dom.childAt(element0, [3]),1,1);
-        morphs[2] = dom.createMorphAt(element0,5,5);
-        morphs[3] = dom.createMorphAt(dom.childAt(fragment, [2]),3,3);
-        morphs[4] = dom.createMorphAt(fragment,4,4,contextualElement);
+        var morphs = new Array(1);
+        morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+        dom.insertBoundary(fragment, 0);
         dom.insertBoundary(fragment, null);
         return morphs;
       },
       statements: [
-        ["block","md-navbar",[],["name","Example","class","custom-nav"],0,null,["loc",[null,[3,4],[25,18]]]],
-        ["content","outlet",["loc",[null,[28,4],[28,14]]]],
-        ["content","md-modal-container",["loc",[null,[30,2],[30,24]]]],
-        ["block","md-copyright",[],["text","Copyright Text","startYear",2014],1,null,["loc",[null,[50,2],[52,19]]]],
-        ["block","if",[["subexpr","eq",[["get","modal",["loc",[null,[55,10],[55,15]]]],"login"],[],["loc",[null,[55,6],[55,24]]]]],[],2,3,["loc",[null,[55,0],[61,7]]]]
+        ["content","outlet",["loc",[null,[1,0],[1,10]]]]
       ],
       locals: [],
-      templates: [child0, child1, child2, child3]
+      templates: []
     };
   }()));
 
@@ -2771,6 +2185,152 @@ define('forw/templates/components/em-timezone-input', ['exports'], function (exp
   }()));
 
 });
+define('forw/templates/components/ember-notify', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    var child0 = (function() {
+      var child0 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 2,
+                "column": 2
+              },
+              "end": {
+                "line": 5,
+                "column": 2
+              }
+            },
+            "moduleName": "forw/templates/components/ember-notify.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createTextNode("    ");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("a");
+            dom.setAttribute(el1,"class","close");
+            var el2 = dom.createTextNode("×");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            var el1 = dom.createTextNode("\n    ");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("span");
+            dom.setAttribute(el1,"class","message");
+            var el2 = dom.createComment("");
+            dom.appendChild(el1, el2);
+            var el2 = dom.createComment("");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            var el1 = dom.createTextNode("\n");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+            var element0 = dom.childAt(fragment, [1]);
+            var element1 = dom.childAt(fragment, [3]);
+            var morphs = new Array(3);
+            morphs[0] = dom.createElementMorph(element0);
+            morphs[1] = dom.createMorphAt(element1,0,0);
+            morphs[2] = dom.createUnsafeMorphAt(element1,1,1);
+            return morphs;
+          },
+          statements: [
+            ["element","action",["close"],["target","view"],["loc",[null,[3,7],[3,39]]]],
+            ["content","message.message",["loc",[null,[4,26],[4,45]]]],
+            ["content","message.raw",["loc",[null,[4,45],[4,62]]]]
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 6,
+              "column": 0
+            }
+          },
+          "moduleName": "forw/templates/components/ember-notify.hbs"
+        },
+        arity: 1,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+          dom.insertBoundary(fragment, 0);
+          dom.insertBoundary(fragment, null);
+          return morphs;
+        },
+        statements: [
+          ["block","view",[["get","view.messageClass",["loc",[null,[2,10],[2,27]]]]],["message",["subexpr","@mut",[["get","message",["loc",[null,[2,36],[2,43]]]]],[],[]],"closeAfter",["subexpr","@mut",[["get","closeAfter",["loc",[null,[2,55],[2,65]]]]],[],[]],"class","clearfix"],0,null,["loc",[null,[2,2],[5,11]]]]
+        ],
+        locals: ["message"],
+        templates: [child0]
+      };
+    }());
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 7,
+            "column": 0
+          }
+        },
+        "moduleName": "forw/templates/components/ember-notify.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var morphs = new Array(1);
+        morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+        dom.insertBoundary(fragment, 0);
+        dom.insertBoundary(fragment, null);
+        return morphs;
+      },
+      statements: [
+        ["block","each",[["get","messages",["loc",[null,[1,8],[1,16]]]]],[],0,null,["loc",[null,[1,0],[6,9]]]]
+      ],
+      locals: [],
+      templates: [child0]
+    };
+  }()));
+
+});
 define('forw/templates/components/labeled-radio-button', ['exports'], function (exports) {
 
   'use strict';
@@ -2831,7 +2391,784 @@ define('forw/templates/components/modal-dialog', ['exports', 'ember-modal-dialog
 	exports['default'] = template['default'];
 
 });
-define('forw/templates/dashboard', ['exports'], function (exports) {
+define('forw/templates/o', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    var child0 = (function() {
+      var child0 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 4,
+                "column": 6
+              },
+              "end": {
+                "line": 6,
+                "column": 6
+              }
+            },
+            "moduleName": "forw/templates/o.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createTextNode("        ");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("a");
+            var el2 = dom.createTextNode("home");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            var el1 = dom.createTextNode("\n");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() { return []; },
+          statements: [
+
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      var child1 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 7,
+                "column": 6
+              },
+              "end": {
+                "line": 9,
+                "column": 6
+              }
+            },
+            "moduleName": "forw/templates/o.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createTextNode("        ");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("a");
+            var el2 = dom.createTextNode("about");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            var el1 = dom.createTextNode("\n");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() { return []; },
+          statements: [
+
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      var child2 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 10,
+                "column": 6
+              },
+              "end": {
+                "line": 12,
+                "column": 6
+              }
+            },
+            "moduleName": "forw/templates/o.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createTextNode("        ");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("a");
+            var el2 = dom.createTextNode("guides");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            var el1 = dom.createTextNode("\n");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() { return []; },
+          statements: [
+
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      var child3 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 13,
+                "column": 6
+              },
+              "end": {
+                "line": 15,
+                "column": 6
+              }
+            },
+            "moduleName": "forw/templates/o.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createTextNode("        ");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("a");
+            var el2 = dom.createTextNode("sample");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            var el1 = dom.createTextNode("\n");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() { return []; },
+          statements: [
+
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      var child4 = (function() {
+        var child0 = (function() {
+          return {
+            meta: {
+              "revision": "Ember@1.13.5",
+              "loc": {
+                "source": null,
+                "start": {
+                  "line": 17,
+                  "column": 8
+                },
+                "end": {
+                  "line": 19,
+                  "column": 8
+                }
+              },
+              "moduleName": "forw/templates/o.hbs"
+            },
+            arity: 0,
+            cachedFragment: null,
+            hasRendered: false,
+            buildFragment: function buildFragment(dom) {
+              var el0 = dom.createDocumentFragment();
+              var el1 = dom.createTextNode("          ");
+              dom.appendChild(el0, el1);
+              var el1 = dom.createElement("a");
+              var el2 = dom.createTextNode("my account");
+              dom.appendChild(el1, el2);
+              dom.appendChild(el0, el1);
+              var el1 = dom.createTextNode("\n");
+              dom.appendChild(el0, el1);
+              return el0;
+            },
+            buildRenderNodes: function buildRenderNodes() { return []; },
+            statements: [
+
+            ],
+            locals: [],
+            templates: []
+          };
+        }());
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 16,
+                "column": 6
+              },
+              "end": {
+                "line": 20,
+                "column": 6
+              }
+            },
+            "moduleName": "forw/templates/o.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createComment("");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+            var morphs = new Array(1);
+            morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+            dom.insertBoundary(fragment, 0);
+            dom.insertBoundary(fragment, null);
+            return morphs;
+          },
+          statements: [
+            ["block","link-to",["o.dashboard"],["tagName","li"],0,null,["loc",[null,[17,8],[19,20]]]]
+          ],
+          locals: [],
+          templates: [child0]
+        };
+      }());
+      var child5 = (function() {
+        var child0 = (function() {
+          return {
+            meta: {
+              "revision": "Ember@1.13.5",
+              "loc": {
+                "source": null,
+                "start": {
+                  "line": 21,
+                  "column": 8
+                },
+                "end": {
+                  "line": 23,
+                  "column": 8
+                }
+              },
+              "moduleName": "forw/templates/o.hbs"
+            },
+            arity: 0,
+            cachedFragment: null,
+            hasRendered: false,
+            buildFragment: function buildFragment(dom) {
+              var el0 = dom.createDocumentFragment();
+              var el1 = dom.createTextNode("          ");
+              dom.appendChild(el0, el1);
+              var el1 = dom.createElement("a");
+              var el2 = dom.createTextNode("login");
+              dom.appendChild(el1, el2);
+              dom.appendChild(el0, el1);
+              var el1 = dom.createTextNode("\n");
+              dom.appendChild(el0, el1);
+              return el0;
+            },
+            buildRenderNodes: function buildRenderNodes() { return []; },
+            statements: [
+
+            ],
+            locals: [],
+            templates: []
+          };
+        }());
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 20,
+                "column": 6
+              },
+              "end": {
+                "line": 24,
+                "column": 6
+              }
+            },
+            "moduleName": "forw/templates/o.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createComment("");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+            var morphs = new Array(1);
+            morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+            dom.insertBoundary(fragment, 0);
+            dom.insertBoundary(fragment, null);
+            return morphs;
+          },
+          statements: [
+            ["block","link-to",["o.session"],["tagName","li"],0,null,["loc",[null,[21,8],[23,20]]]]
+          ],
+          locals: [],
+          templates: [child0]
+        };
+      }());
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 3,
+              "column": 4
+            },
+            "end": {
+              "line": 25,
+              "column": 4
+            }
+          },
+          "moduleName": "forw/templates/o.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(5);
+          morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+          morphs[1] = dom.createMorphAt(fragment,1,1,contextualElement);
+          morphs[2] = dom.createMorphAt(fragment,2,2,contextualElement);
+          morphs[3] = dom.createMorphAt(fragment,3,3,contextualElement);
+          morphs[4] = dom.createMorphAt(fragment,4,4,contextualElement);
+          dom.insertBoundary(fragment, 0);
+          dom.insertBoundary(fragment, null);
+          return morphs;
+        },
+        statements: [
+          ["block","link-to",["o.index"],["tagName","li"],0,null,["loc",[null,[4,6],[6,18]]]],
+          ["block","link-to",["o.about"],["tagName","li"],1,null,["loc",[null,[7,6],[9,18]]]],
+          ["block","link-to",["o.guides"],["tagName","li"],2,null,["loc",[null,[10,6],[12,18]]]],
+          ["block","link-to",["o.sample"],["tagName","li"],3,null,["loc",[null,[13,6],[15,18]]]],
+          ["block","if",[["get","currentUser.isLoggedIn",["loc",[null,[16,12],[16,34]]]]],[],4,5,["loc",[null,[16,6],[24,13]]]]
+        ],
+        locals: [],
+        templates: [child0, child1, child2, child3, child4, child5]
+      };
+    }());
+    var child1 = (function() {
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 51,
+              "column": 2
+            },
+            "end": {
+              "line": 53,
+              "column": 2
+            }
+          },
+          "moduleName": "forw/templates/o.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("    ");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createElement("a");
+          dom.setAttribute(el1,"class","grey-text text-lighten-1 right");
+          dom.setAttribute(el1,"href","#!");
+          var el2 = dom.createTextNode("More Links");
+          dom.appendChild(el1, el2);
+          dom.appendChild(el0, el1);
+          var el1 = dom.createTextNode("\n");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes() { return []; },
+        statements: [
+
+        ],
+        locals: [],
+        templates: []
+      };
+    }());
+    var child2 = (function() {
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 56,
+              "column": 0
+            },
+            "end": {
+              "line": 58,
+              "column": 0
+            }
+          },
+          "moduleName": "forw/templates/o.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("  ");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createTextNode("\n");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment,1,1,contextualElement);
+          return morphs;
+        },
+        statements: [
+          ["inline","render",["login"],[],["loc",[null,[57,2],[57,20]]]]
+        ],
+        locals: [],
+        templates: []
+      };
+    }());
+    var child3 = (function() {
+      var child0 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 58,
+                "column": 0
+              },
+              "end": {
+                "line": 60,
+                "column": 0
+              }
+            },
+            "moduleName": "forw/templates/o.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createTextNode("  ");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createComment("");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createTextNode("\n");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+            var morphs = new Array(1);
+            morphs[0] = dom.createMorphAt(fragment,1,1,contextualElement);
+            return morphs;
+          },
+          statements: [
+            ["inline","render",["register"],[],["loc",[null,[59,2],[59,23]]]]
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      var child1 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 60,
+                "column": 0
+              },
+              "end": {
+                "line": 62,
+                "column": 0
+              }
+            },
+            "moduleName": "forw/templates/o.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createTextNode("  ");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("span");
+            dom.setAttribute(el1,"class","hidden");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createTextNode("\n");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() { return []; },
+          statements: [
+
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 58,
+              "column": 0
+            },
+            "end": {
+              "line": 62,
+              "column": 0
+            }
+          },
+          "moduleName": "forw/templates/o.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+          dom.insertBoundary(fragment, 0);
+          dom.insertBoundary(fragment, null);
+          return morphs;
+        },
+        statements: [
+          ["block","if",[["subexpr","eq",[["get","modal",["loc",[null,[58,14],[58,19]]]],"register"],[],["loc",[null,[58,10],[58,31]]]]],[],0,1,["loc",[null,[58,0],[62,0]]]]
+        ],
+        locals: [],
+        templates: [child0, child1]
+      };
+    }());
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 62,
+            "column": 7
+          }
+        },
+        "moduleName": "forw/templates/o.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createElement("main");
+        var el2 = dom.createTextNode("\n  ");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createElement("section");
+        dom.setAttribute(el2,"id","navigation");
+        var el3 = dom.createTextNode("\n");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createComment("");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createTextNode("  ");
+        dom.appendChild(el2, el3);
+        dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n  ");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createElement("section");
+        dom.setAttribute(el2,"id","content");
+        var el3 = dom.createTextNode("\n    ");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createComment("");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createTextNode("\n  ");
+        dom.appendChild(el2, el3);
+        dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n  ");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createComment("");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n  ");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createComment("");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n");
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createElement("footer");
+        dom.setAttribute(el1,"class","page-footer blue-grey darken-4");
+        var el2 = dom.createTextNode("\n  ");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createElement("div");
+        dom.setAttribute(el2,"class","container");
+        var el3 = dom.createTextNode("\n    ");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createElement("div");
+        dom.setAttribute(el3,"class","row");
+        var el4 = dom.createTextNode("\n      ");
+        dom.appendChild(el3, el4);
+        var el4 = dom.createElement("div");
+        dom.setAttribute(el4,"class","col l6 s12");
+        var el5 = dom.createTextNode("\n        ");
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("h5");
+        dom.setAttribute(el5,"class","white-text");
+        var el6 = dom.createTextNode("Footer Content");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createTextNode("\n        ");
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("p");
+        dom.setAttribute(el5,"class","grey-text text-lighten-4");
+        var el6 = dom.createTextNode("You can use rows and columns here to organize your footer content.");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createTextNode("\n      ");
+        dom.appendChild(el4, el5);
+        dom.appendChild(el3, el4);
+        var el4 = dom.createTextNode("\n      ");
+        dom.appendChild(el3, el4);
+        var el4 = dom.createElement("div");
+        dom.setAttribute(el4,"class","col l4 offset-l2 s12");
+        var el5 = dom.createTextNode("\n        ");
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("h5");
+        dom.setAttribute(el5,"class","white-text");
+        var el6 = dom.createTextNode("Links");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createTextNode("\n        ");
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("ul");
+        var el6 = dom.createTextNode("\n          ");
+        dom.appendChild(el5, el6);
+        var el6 = dom.createElement("li");
+        var el7 = dom.createElement("a");
+        dom.setAttribute(el7,"class","grey-text text-lighten-3");
+        dom.setAttribute(el7,"href","#!");
+        var el8 = dom.createTextNode("Link 1");
+        dom.appendChild(el7, el8);
+        dom.appendChild(el6, el7);
+        dom.appendChild(el5, el6);
+        var el6 = dom.createTextNode("\n          ");
+        dom.appendChild(el5, el6);
+        var el6 = dom.createElement("li");
+        var el7 = dom.createElement("a");
+        dom.setAttribute(el7,"class","grey-text text-lighten-3");
+        dom.setAttribute(el7,"href","#!");
+        var el8 = dom.createTextNode("Link 2");
+        dom.appendChild(el7, el8);
+        dom.appendChild(el6, el7);
+        dom.appendChild(el5, el6);
+        var el6 = dom.createTextNode("\n          ");
+        dom.appendChild(el5, el6);
+        var el6 = dom.createElement("li");
+        var el7 = dom.createElement("a");
+        dom.setAttribute(el7,"class","grey-text text-lighten-3");
+        dom.setAttribute(el7,"href","#!");
+        var el8 = dom.createTextNode("Link 3");
+        dom.appendChild(el7, el8);
+        dom.appendChild(el6, el7);
+        dom.appendChild(el5, el6);
+        var el6 = dom.createTextNode("\n          ");
+        dom.appendChild(el5, el6);
+        var el6 = dom.createElement("li");
+        var el7 = dom.createElement("a");
+        dom.setAttribute(el7,"class","grey-text text-lighten-3");
+        dom.setAttribute(el7,"href","#!");
+        var el8 = dom.createTextNode("Link 4");
+        dom.appendChild(el7, el8);
+        dom.appendChild(el6, el7);
+        dom.appendChild(el5, el6);
+        var el6 = dom.createTextNode("\n        ");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createTextNode("\n      ");
+        dom.appendChild(el4, el5);
+        dom.appendChild(el3, el4);
+        var el4 = dom.createTextNode("\n    ");
+        dom.appendChild(el3, el4);
+        dom.appendChild(el2, el3);
+        var el3 = dom.createTextNode("\n  ");
+        dom.appendChild(el2, el3);
+        dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createComment("");
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n\n");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var element0 = dom.childAt(fragment, [0]);
+        var morphs = new Array(6);
+        morphs[0] = dom.createMorphAt(dom.childAt(element0, [1]),1,1);
+        morphs[1] = dom.createMorphAt(dom.childAt(element0, [3]),1,1);
+        morphs[2] = dom.createMorphAt(element0,5,5);
+        morphs[3] = dom.createMorphAt(element0,7,7);
+        morphs[4] = dom.createMorphAt(dom.childAt(fragment, [2]),3,3);
+        morphs[5] = dom.createMorphAt(fragment,4,4,contextualElement);
+        dom.insertBoundary(fragment, null);
+        return morphs;
+      },
+      statements: [
+        ["block","md-navbar",[],["name","Example","class","custom-nav"],0,null,["loc",[null,[3,4],[25,18]]]],
+        ["content","outlet",["loc",[null,[28,4],[28,14]]]],
+        ["inline","ember-notify",[],["closeAfter",4000,"messageStyle","bootstrap"],["loc",[null,[30,2],[30,59]]]],
+        ["content","md-modal-container",["loc",[null,[31,2],[31,24]]]],
+        ["block","md-copyright",[],["text","Copyright Text","startYear",2014],1,null,["loc",[null,[51,2],[53,19]]]],
+        ["block","if",[["subexpr","eq",[["get","modal",["loc",[null,[56,10],[56,15]]]],"login"],[],["loc",[null,[56,6],[56,24]]]]],[],2,3,["loc",[null,[56,0],[62,7]]]]
+      ],
+      locals: [],
+      templates: [child0, child1, child2, child3]
+    };
+  }()));
+
+});
+define('forw/templates/o/dashboard', ['exports'], function (exports) {
 
   'use strict';
 
@@ -2851,7 +3188,7 @@ define('forw/templates/dashboard', ['exports'], function (exports) {
               "column": 12
             }
           },
-          "moduleName": "forw/templates/dashboard.hbs"
+          "moduleName": "forw/templates/o/dashboard.hbs"
         },
         arity: 0,
         cachedFragment: null,
@@ -2901,7 +3238,7 @@ define('forw/templates/dashboard', ['exports'], function (exports) {
               "column": 10
             }
           },
-          "moduleName": "forw/templates/dashboard.hbs"
+          "moduleName": "forw/templates/o/dashboard.hbs"
         },
         arity: 0,
         cachedFragment: null,
@@ -2942,7 +3279,7 @@ define('forw/templates/dashboard', ['exports'], function (exports) {
               "column": 10
             }
           },
-          "moduleName": "forw/templates/dashboard.hbs"
+          "moduleName": "forw/templates/o/dashboard.hbs"
         },
         arity: 0,
         cachedFragment: null,
@@ -2983,7 +3320,7 @@ define('forw/templates/dashboard', ['exports'], function (exports) {
               "column": 10
             }
           },
-          "moduleName": "forw/templates/dashboard.hbs"
+          "moduleName": "forw/templates/o/dashboard.hbs"
         },
         arity: 0,
         cachedFragment: null,
@@ -3023,7 +3360,7 @@ define('forw/templates/dashboard', ['exports'], function (exports) {
             "column": 0
           }
         },
-        "moduleName": "forw/templates/dashboard.hbs"
+        "moduleName": "forw/templates/o/dashboard.hbs"
       },
       arity: 0,
       cachedFragment: null,
@@ -3138,10 +3475,10 @@ define('forw/templates/dashboard', ['exports'], function (exports) {
         return morphs;
       },
       statements: [
-        ["block","link-to",["dashboard.accounts"],["classNames","card-image"],0,null,["loc",[null,[7,12],[10,24]]]],
-        ["block","link-to",["dashboard.accounts"],["tagName","li","classNames","tab col s4"],1,null,["loc",[null,[20,10],[22,22]]]],
-        ["block","link-to",["dashboard.payment"],["tagName","li","classNames","tab col s4"],2,null,["loc",[null,[23,10],[25,22]]]],
-        ["block","link-to",["dashboard.preferences"],["tagName","li","classNames","tab col s4"],3,null,["loc",[null,[26,10],[28,22]]]],
+        ["block","link-to",["o.dashboard.accounts"],["classNames","card-image"],0,null,["loc",[null,[7,12],[10,24]]]],
+        ["block","link-to",["o.dashboard.accounts"],["tagName","li","classNames","tab col s4"],1,null,["loc",[null,[20,10],[22,22]]]],
+        ["block","link-to",["o.dashboard.payment"],["tagName","li","classNames","tab col s4"],2,null,["loc",[null,[23,10],[25,22]]]],
+        ["block","link-to",["o.dashboard.preferences"],["tagName","li","classNames","tab col s4"],3,null,["loc",[null,[26,10],[28,22]]]],
         ["content","outlet",["loc",[null,[33,6],[33,16]]]]
       ],
       locals: [],
@@ -3150,7 +3487,7 @@ define('forw/templates/dashboard', ['exports'], function (exports) {
   }()));
 
 });
-define('forw/templates/dashboard/account', ['exports'], function (exports) {
+define('forw/templates/o/dashboard/account', ['exports'], function (exports) {
 
   'use strict';
 
@@ -3167,10 +3504,10 @@ define('forw/templates/dashboard/account', ['exports'], function (exports) {
             },
             "end": {
               "line": 1,
-              "column": 202
+              "column": 204
             }
           },
-          "moduleName": "forw/templates/dashboard/account.hbs"
+          "moduleName": "forw/templates/o/dashboard/account.hbs"
         },
         arity: 0,
         cachedFragment: null,
@@ -3204,14 +3541,14 @@ define('forw/templates/dashboard/account', ['exports'], function (exports) {
             "source": null,
             "start": {
               "line": 1,
-              "column": 214
+              "column": 216
             },
             "end": {
               "line": 1,
-              "column": 382
+              "column": 386
             }
           },
-          "moduleName": "forw/templates/dashboard/account.hbs"
+          "moduleName": "forw/templates/o/dashboard/account.hbs"
         },
         arity: 0,
         cachedFragment: null,
@@ -3248,10 +3585,10 @@ define('forw/templates/dashboard/account', ['exports'], function (exports) {
           },
           "end": {
             "line": 1,
-            "column": 412
+            "column": 416
           }
         },
-        "moduleName": "forw/templates/dashboard/account.hbs"
+        "moduleName": "forw/templates/o/dashboard/account.hbs"
       },
       arity: 0,
       cachedFragment: null,
@@ -3279,9 +3616,9 @@ define('forw/templates/dashboard/account', ['exports'], function (exports) {
         return morphs;
       },
       statements: [
-        ["block","link-to",["warehouse.config",["get","model.id",["loc",[null,[1,58],[1,66]]]]],["classNames","waves-effect waves-light btn-large brown"],0,null,["loc",[null,[1,28],[1,214]]]],
-        ["block","link-to",["warehouse.index",["get","model.id",["loc",[null,[1,243],[1,251]]]]],["classNames","waves-effect waves-light btn-large"],1,null,["loc",[null,[1,214],[1,394]]]],
-        ["content","outlet",["loc",[null,[1,400],[1,412]]]]
+        ["block","link-to",["x.warehouse.config",["get","model.id",["loc",[null,[1,60],[1,68]]]]],["classNames","waves-effect waves-light btn-large brown"],0,null,["loc",[null,[1,28],[1,216]]]],
+        ["block","link-to",["x.warehouse.index",["get","model.id",["loc",[null,[1,247],[1,255]]]]],["classNames","waves-effect waves-light btn-large"],1,null,["loc",[null,[1,216],[1,398]]]],
+        ["content","outlet",["loc",[null,[1,404],[1,416]]]]
       ],
       locals: [],
       templates: [child0, child1]
@@ -3289,7 +3626,7 @@ define('forw/templates/dashboard/account', ['exports'], function (exports) {
   }()));
 
 });
-define('forw/templates/dashboard/account/index', ['exports'], function (exports) {
+define('forw/templates/o/dashboard/account/index', ['exports'], function (exports) {
 
   'use strict';
 
@@ -3310,7 +3647,7 @@ define('forw/templates/dashboard/account/index', ['exports'], function (exports)
                 "column": 411
               }
             },
-            "moduleName": "forw/templates/dashboard/account/index.hbs"
+            "moduleName": "forw/templates/o/dashboard/account/index.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -3355,11 +3692,11 @@ define('forw/templates/dashboard/account/index', ['exports'], function (exports)
             return el0;
           },
           buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-            var element2 = dom.childAt(fragment, [0]);
+            var element3 = dom.childAt(fragment, [0]);
             var morphs = new Array(3);
-            morphs[0] = dom.createMorphAt(dom.childAt(element2, [0, 1]),0,0);
-            morphs[1] = dom.createMorphAt(dom.childAt(element2, [1, 1]),0,0);
-            morphs[2] = dom.createMorphAt(dom.childAt(element2, [2, 1]),0,0);
+            morphs[0] = dom.createMorphAt(dom.childAt(element3, [0, 1]),0,0);
+            morphs[1] = dom.createMorphAt(dom.childAt(element3, [1, 1]),0,0);
+            morphs[2] = dom.createMorphAt(dom.childAt(element3, [2, 1]),0,0);
             return morphs;
           },
           statements: [
@@ -3386,7 +3723,7 @@ define('forw/templates/dashboard/account/index', ['exports'], function (exports)
                 "column": 591
               }
             },
-            "moduleName": "forw/templates/dashboard/account/index.hbs"
+            "moduleName": "forw/templates/o/dashboard/account/index.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -3435,7 +3772,7 @@ define('forw/templates/dashboard/account/index', ['exports'], function (exports)
                 "column": 879
               }
             },
-            "moduleName": "forw/templates/dashboard/account/index.hbs"
+            "moduleName": "forw/templates/o/dashboard/account/index.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -3469,10 +3806,10 @@ define('forw/templates/dashboard/account/index', ['exports'], function (exports)
             return el0;
           },
           buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-            var element1 = dom.childAt(fragment, [0]);
+            var element2 = dom.childAt(fragment, [0]);
             var morphs = new Array(2);
-            morphs[0] = dom.createMorphAt(dom.childAt(element1, [0, 1]),0,0);
-            morphs[1] = dom.createMorphAt(dom.childAt(element1, [1, 1]),0,0);
+            morphs[0] = dom.createMorphAt(dom.childAt(element2, [0, 1]),0,0);
+            morphs[1] = dom.createMorphAt(dom.childAt(element2, [1, 1]),0,0);
             return morphs;
           },
           statements: [
@@ -3495,10 +3832,10 @@ define('forw/templates/dashboard/account/index', ['exports'], function (exports)
               },
               "end": {
                 "line": 1,
-                "column": 1135
+                "column": 1151
               }
             },
-            "moduleName": "forw/templates/dashboard/account/index.hbs"
+            "moduleName": "forw/templates/o/dashboard/account/index.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -3509,7 +3846,7 @@ define('forw/templates/dashboard/account/index', ['exports'], function (exports)
             var el2 = dom.createElement("li");
             var el3 = dom.createElement("span");
             dom.setAttribute(el3,"class","bold colon");
-            var el4 = dom.createTextNode("Namespace");
+            var el4 = dom.createTextNode("App Host");
             dom.appendChild(el3, el4);
             dom.appendChild(el2, el3);
             var el3 = dom.createElement("span");
@@ -3520,7 +3857,7 @@ define('forw/templates/dashboard/account/index', ['exports'], function (exports)
             var el2 = dom.createElement("li");
             var el3 = dom.createElement("span");
             dom.setAttribute(el3,"class","bold colon");
-            var el4 = dom.createTextNode("Host");
+            var el4 = dom.createTextNode("Config App Host");
             dom.appendChild(el3, el4);
             dom.appendChild(el2, el3);
             var el3 = dom.createElement("span");
@@ -3532,15 +3869,69 @@ define('forw/templates/dashboard/account/index', ['exports'], function (exports)
             return el0;
           },
           buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-            var element0 = dom.childAt(fragment, [0]);
+            var element1 = dom.childAt(fragment, [0]);
             var morphs = new Array(2);
-            morphs[0] = dom.createMorphAt(dom.childAt(element0, [0, 1]),0,0);
-            morphs[1] = dom.createMorphAt(dom.childAt(element0, [1, 1]),0,0);
+            morphs[0] = dom.createMorphAt(dom.childAt(element1, [0, 1]),0,0);
+            morphs[1] = dom.createMorphAt(dom.childAt(element1, [1, 1]),0,0);
             return morphs;
           },
           statements: [
-            ["content","model.namespace",["loc",[null,[1,1027],[1,1046]]]],
-            ["content","model.host",["loc",[null,[1,1104],[1,1118]]]]
+            ["content","model.uiuxHost",["loc",[null,[1,1027],[1,1045]]]],
+            ["content","model.configHost",["loc",[null,[1,1114],[1,1134]]]]
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      var child4 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 1,
+                "column": 1170
+              },
+              "end": {
+                "line": 1,
+                "column": 1526
+              }
+            },
+            "moduleName": "forw/templates/o/dashboard/account/index.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createElement("form");
+            var el2 = dom.createComment("");
+            dom.appendChild(el1, el2);
+            var el2 = dom.createComment("");
+            dom.appendChild(el1, el2);
+            var el2 = dom.createElement("div");
+            dom.setAttribute(el2,"class","actions");
+            var el3 = dom.createComment("");
+            dom.appendChild(el2, el3);
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+            var element0 = dom.childAt(fragment, [0]);
+            var morphs = new Array(4);
+            morphs[0] = dom.createElementMorph(element0);
+            morphs[1] = dom.createMorphAt(element0,0,0);
+            morphs[2] = dom.createMorphAt(element0,1,1);
+            morphs[3] = dom.createMorphAt(dom.childAt(element0, [2]),0,0);
+            return morphs;
+          },
+          statements: [
+            ["element","action",["submit"],["on","submit"],["loc",[null,[1,1250],[1,1281]]]],
+            ["inline","md-input",[],["value",["subexpr","@mut",[["get","model.namespace",["loc",[null,[1,1299],[1,1314]]]]],[],[]],"label","Backend Namespace","type","text"],["loc",[null,[1,1282],[1,1354]]]],
+            ["inline","md-input",[],["value",["subexpr","@mut",[["get","model.host",["loc",[null,[1,1371],[1,1381]]]]],[],[]],"label","Backend Host","type","text"],["loc",[null,[1,1354],[1,1416]]]],
+            ["inline","md-btn-submit",[],["icon","mdi-content-send","iconPosition","right","text","Change"],["loc",[null,[1,1437],[1,1513]]]]
           ],
           locals: [],
           templates: []
@@ -3557,10 +3948,10 @@ define('forw/templates/dashboard/account/index', ['exports'], function (exports)
             },
             "end": {
               "line": 1,
-              "column": 1154
+              "column": 1545
             }
           },
-          "moduleName": "forw/templates/dashboard/account/index.hbs"
+          "moduleName": "forw/templates/o/dashboard/account/index.hbs"
         },
         arity: 0,
         cachedFragment: null,
@@ -3575,14 +3966,17 @@ define('forw/templates/dashboard/account/index', ['exports'], function (exports)
           dom.appendChild(el0, el1);
           var el1 = dom.createComment("");
           dom.appendChild(el0, el1);
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
           return el0;
         },
         buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-          var morphs = new Array(4);
+          var morphs = new Array(5);
           morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
           morphs[1] = dom.createMorphAt(fragment,1,1,contextualElement);
           morphs[2] = dom.createMorphAt(fragment,2,2,contextualElement);
           morphs[3] = dom.createMorphAt(fragment,3,3,contextualElement);
+          morphs[4] = dom.createMorphAt(fragment,4,4,contextualElement);
           dom.insertBoundary(fragment, 0);
           dom.insertBoundary(fragment, null);
           return morphs;
@@ -3591,10 +3985,11 @@ define('forw/templates/dashboard/account/index', ['exports'], function (exports)
           ["block","md-collapsible",[],["icon","mdi-action-perm-identity","title","Warehouse Identity","active",true],0,null,["loc",[null,[1,45],[1,430]]]],
           ["block","md-collapsible",[],["icon","mdi-av-timer","title","Operations and Location"],1,null,["loc",[null,[1,430],[1,610]]]],
           ["block","md-collapsible",[],["icon","mdi-image-filter-drama","title","Asset Storage Keys"],2,null,["loc",[null,[1,610],[1,898]]]],
-          ["block","md-collapsible",[],["icon","mdi-image-filter-drama","title","Database Details"],3,null,["loc",[null,[1,898],[1,1154]]]]
+          ["block","md-collapsible",[],["icon","mdi-image-filter-drama","title","Application Hosts"],3,null,["loc",[null,[1,898],[1,1170]]]],
+          ["block","md-collapsible",[],["icon","mdi-image-filter-drama","title","Database Details"],4,null,["loc",[null,[1,1170],[1,1545]]]]
         ],
         locals: [],
-        templates: [child0, child1, child2, child3]
+        templates: [child0, child1, child2, child3, child4]
       };
     }());
     return {
@@ -3608,10 +4003,10 @@ define('forw/templates/dashboard/account/index', ['exports'], function (exports)
           },
           "end": {
             "line": 1,
-            "column": 1184
+            "column": 1575
           }
         },
-        "moduleName": "forw/templates/dashboard/account/index.hbs"
+        "moduleName": "forw/templates/o/dashboard/account/index.hbs"
       },
       arity: 0,
       cachedFragment: null,
@@ -3631,7 +4026,7 @@ define('forw/templates/dashboard/account/index', ['exports'], function (exports)
         return morphs;
       },
       statements: [
-        ["block","md-card-collapsible",[],[],0,null,["loc",[null,[1,21],[1,1178]]]]
+        ["block","md-card-collapsible",[],[],0,null,["loc",[null,[1,21],[1,1569]]]]
       ],
       locals: [],
       templates: [child0]
@@ -3639,7 +4034,7 @@ define('forw/templates/dashboard/account/index', ['exports'], function (exports)
   }()));
 
 });
-define('forw/templates/dashboard/accounts', ['exports'], function (exports) {
+define('forw/templates/o/dashboard/accounts', ['exports'], function (exports) {
 
   'use strict';
 
@@ -3658,7 +4053,7 @@ define('forw/templates/dashboard/accounts', ['exports'], function (exports) {
             "column": 12
           }
         },
-        "moduleName": "forw/templates/dashboard/accounts.hbs"
+        "moduleName": "forw/templates/o/dashboard/accounts.hbs"
       },
       arity: 0,
       cachedFragment: null,
@@ -3685,7 +4080,7 @@ define('forw/templates/dashboard/accounts', ['exports'], function (exports) {
   }()));
 
 });
-define('forw/templates/dashboard/accounts/index', ['exports'], function (exports) {
+define('forw/templates/o/dashboard/accounts/index', ['exports'], function (exports) {
 
   'use strict';
 
@@ -3702,10 +4097,10 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
             },
             "end": {
               "line": 1,
-              "column": 178
+              "column": 180
             }
           },
-          "moduleName": "forw/templates/dashboard/accounts/index.hbs"
+          "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
         },
         arity: 0,
         cachedFragment: null,
@@ -3741,14 +4136,14 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 322
+                  "column": 324
                 },
                 "end": {
                   "line": 1,
-                  "column": 664
+                  "column": 666
                 }
               },
-              "moduleName": "forw/templates/dashboard/accounts/index.hbs"
+              "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
             },
             arity: 0,
             cachedFragment: null,
@@ -3807,10 +4202,10 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
               return morphs;
             },
             statements: [
-              ["content","account.user.username",["loc",[null,[1,392],[1,417]]]],
-              ["content","account.timezone",["loc",[null,[1,465],[1,485]]]],
-              ["inline","moment-format",[["get","account.inserted_at",["loc",[null,[1,554],[1,573]]]]],[],["loc",[null,[1,538],[1,575]]]],
-              ["content","account.servicePlan",["loc",[null,[1,631],[1,654]]]]
+              ["content","account.user.username",["loc",[null,[1,394],[1,419]]]],
+              ["content","account.timezone",["loc",[null,[1,467],[1,487]]]],
+              ["inline","moment-format",[["get","account.inserted_at",["loc",[null,[1,556],[1,575]]]]],[],["loc",[null,[1,540],[1,577]]]],
+              ["content","account.servicePlan",["loc",[null,[1,633],[1,656]]]]
             ],
             locals: [],
             templates: []
@@ -3825,14 +4220,14 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
                   "source": null,
                   "start": {
                     "line": 1,
-                    "column": 703
+                    "column": 705
                   },
                   "end": {
                     "line": 1,
-                    "column": 767
+                    "column": 771
                   }
                 },
-                "moduleName": "forw/templates/dashboard/accounts/index.hbs"
+                "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
               },
               arity: 0,
               cachedFragment: null,
@@ -3861,14 +4256,14 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
                   "source": null,
                   "start": {
                     "line": 1,
-                    "column": 779
+                    "column": 783
                   },
                   "end": {
                     "line": 1,
-                    "column": 840
+                    "column": 846
                   }
                 },
-                "moduleName": "forw/templates/dashboard/accounts/index.hbs"
+                "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
               },
               arity: 0,
               cachedFragment: null,
@@ -3897,14 +4292,14 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
                   "source": null,
                   "start": {
                     "line": 1,
-                    "column": 852
+                    "column": 858
                   },
                   "end": {
                     "line": 1,
-                    "column": 918
+                    "column": 926
                   }
                 },
-                "moduleName": "forw/templates/dashboard/accounts/index.hbs"
+                "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
               },
               arity: 0,
               cachedFragment: null,
@@ -3932,14 +4327,14 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 684
+                  "column": 686
                 },
                 "end": {
                   "line": 1,
-                  "column": 930
+                  "column": 938
                 }
               },
-              "moduleName": "forw/templates/dashboard/accounts/index.hbs"
+              "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
             },
             arity: 0,
             cachedFragment: null,
@@ -3964,9 +4359,9 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
               return morphs;
             },
             statements: [
-              ["block","link-to",["warehouse.index",["get","account.id",["loc",[null,[1,732],[1,742]]]]],[],0,null,["loc",[null,[1,703],[1,779]]]],
-              ["block","link-to",["warehouse.config",["get","account.id",["loc",[null,[1,809],[1,819]]]]],[],1,null,["loc",[null,[1,779],[1,852]]]],
-              ["block","link-to",["dashboard.account.index",["get","account.id",["loc",[null,[1,889],[1,899]]]]],[],2,null,["loc",[null,[1,852],[1,930]]]]
+              ["block","link-to",["x.warehouse.index",["get","account.id",["loc",[null,[1,736],[1,746]]]]],[],0,null,["loc",[null,[1,705],[1,783]]]],
+              ["block","link-to",["x.warehouse.config",["get","account.id",["loc",[null,[1,815],[1,825]]]]],[],1,null,["loc",[null,[1,783],[1,858]]]],
+              ["block","link-to",["o.dashboard.account.index",["get","account.id",["loc",[null,[1,897],[1,907]]]]],[],2,null,["loc",[null,[1,858],[1,938]]]]
             ],
             locals: [],
             templates: [child0, child1, child2]
@@ -3979,14 +4374,14 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
               "source": null,
               "start": {
                 "line": 1,
-                "column": 260
+                "column": 262
               },
               "end": {
                 "line": 1,
-                "column": 949
+                "column": 957
               }
             },
-            "moduleName": "forw/templates/dashboard/accounts/index.hbs"
+            "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -4008,8 +4403,8 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
             return morphs;
           },
           statements: [
-            ["block","md-card-content",[],[],0,null,["loc",[null,[1,322],[1,684]]]],
-            ["block","md-card-action",[],[],1,null,["loc",[null,[1,684],[1,949]]]]
+            ["block","md-card-content",[],[],0,null,["loc",[null,[1,324],[1,686]]]],
+            ["block","md-card-action",[],[],1,null,["loc",[null,[1,686],[1,957]]]]
           ],
           locals: [],
           templates: [child0, child1]
@@ -4022,14 +4417,14 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
             "source": null,
             "start": {
               "line": 1,
-              "column": 207
+              "column": 209
             },
             "end": {
               "line": 1,
-              "column": 967
+              "column": 975
             }
           },
-          "moduleName": "forw/templates/dashboard/accounts/index.hbs"
+          "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
         },
         arity: 1,
         cachedFragment: null,
@@ -4049,7 +4444,7 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
           return morphs;
         },
         statements: [
-          ["block","md-card",[],["title",["subexpr","@mut",[["get","account.companyName",["loc",[null,[1,277],[1,296]]]]],[],[]],"titleClass","brown-text"],0,null,["loc",[null,[1,260],[1,961]]]]
+          ["block","md-card",[],["title",["subexpr","@mut",[["get","account.companyName",["loc",[null,[1,279],[1,298]]]]],[],[]],"titleClass","brown-text"],0,null,["loc",[null,[1,262],[1,969]]]]
         ],
         locals: ["account"],
         templates: [child0]
@@ -4065,14 +4460,14 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 1046
+                  "column": 1054
                 },
                 "end": {
                   "line": 1,
-                  "column": 1128
+                  "column": 1136
                 }
               },
-              "moduleName": "forw/templates/dashboard/accounts/index.hbs"
+              "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
             },
             arity: 0,
             cachedFragment: null,
@@ -4102,14 +4497,14 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
                   "source": null,
                   "start": {
                     "line": 1,
-                    "column": 1167
+                    "column": 1175
                   },
                   "end": {
                     "line": 1,
-                    "column": 1230
+                    "column": 1240
                   }
                 },
-                "moduleName": "forw/templates/dashboard/accounts/index.hbs"
+                "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
               },
               arity: 0,
               cachedFragment: null,
@@ -4137,14 +4532,14 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 1148
+                  "column": 1156
                 },
                 "end": {
                   "line": 1,
-                  "column": 1242
+                  "column": 1252
                 }
               },
-              "moduleName": "forw/templates/dashboard/accounts/index.hbs"
+              "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
             },
             arity: 0,
             cachedFragment: null,
@@ -4163,7 +4558,7 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
               return morphs;
             },
             statements: [
-              ["block","link-to",["dashboard.accounts.new"],[],0,null,["loc",[null,[1,1167],[1,1242]]]]
+              ["block","link-to",["o.dashboard.accounts.new"],[],0,null,["loc",[null,[1,1175],[1,1252]]]]
             ],
             locals: [],
             templates: [child0]
@@ -4176,14 +4571,14 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
               "source": null,
               "start": {
                 "line": 1,
-                "column": 1002
+                "column": 1010
               },
               "end": {
                 "line": 1,
-                "column": 1261
+                "column": 1271
               }
             },
-            "moduleName": "forw/templates/dashboard/accounts/index.hbs"
+            "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -4205,8 +4600,8 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
             return morphs;
           },
           statements: [
-            ["block","md-card-content",[],[],0,null,["loc",[null,[1,1046],[1,1148]]]],
-            ["block","md-card-action",[],[],1,null,["loc",[null,[1,1148],[1,1261]]]]
+            ["block","md-card-content",[],[],0,null,["loc",[null,[1,1054],[1,1156]]]],
+            ["block","md-card-action",[],[],1,null,["loc",[null,[1,1156],[1,1271]]]]
           ],
           locals: [],
           templates: [child0, child1]
@@ -4219,14 +4614,14 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
             "source": null,
             "start": {
               "line": 1,
-              "column": 967
+              "column": 975
             },
             "end": {
               "line": 1,
-              "column": 1279
+              "column": 1289
             }
           },
-          "moduleName": "forw/templates/dashboard/accounts/index.hbs"
+          "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
         },
         arity: 0,
         cachedFragment: null,
@@ -4246,7 +4641,7 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
           return morphs;
         },
         statements: [
-          ["block","md-card",[],["title","You Have No Warehouses!"],0,null,["loc",[null,[1,1002],[1,1273]]]]
+          ["block","md-card",[],["title","You Have No Warehouses!"],0,null,["loc",[null,[1,1010],[1,1283]]]]
         ],
         locals: [],
         templates: [child0]
@@ -4263,10 +4658,10 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
           },
           "end": {
             "line": 1,
-            "column": 1300
+            "column": 1310
           }
         },
-        "moduleName": "forw/templates/dashboard/accounts/index.hbs"
+        "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
       },
       arity: 0,
       cachedFragment: null,
@@ -4293,8 +4688,8 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
         return morphs;
       },
       statements: [
-        ["block","link-to",["dashboard.accounts.new"],["classNames","waves-effect waves-light btn-large"],0,null,["loc",[null,[1,21],[1,190]]]],
-        ["block","each",[["get","model",["loc",[null,[1,226],[1,231]]]]],[],1,2,["loc",[null,[1,207],[1,1288]]]]
+        ["block","link-to",["o.dashboard.accounts.new"],["classNames","waves-effect waves-light btn-large"],0,null,["loc",[null,[1,21],[1,192]]]],
+        ["block","each",[["get","model",["loc",[null,[1,228],[1,233]]]]],[],1,2,["loc",[null,[1,209],[1,1298]]]]
       ],
       locals: [],
       templates: [child0, child1, child2]
@@ -4302,7 +4697,7 @@ define('forw/templates/dashboard/accounts/index', ['exports'], function (exports
   }()));
 
 });
-define('forw/templates/dashboard/accounts/new', ['exports'], function (exports) {
+define('forw/templates/o/dashboard/accounts/new', ['exports'], function (exports) {
 
   'use strict';
 
@@ -4319,10 +4714,10 @@ define('forw/templates/dashboard/accounts/new', ['exports'], function (exports) 
             },
             "end": {
               "line": 1,
-              "column": 173
+              "column": 175
             }
           },
-          "moduleName": "forw/templates/dashboard/accounts/new.hbs"
+          "moduleName": "forw/templates/o/dashboard/accounts/new.hbs"
         },
         arity: 0,
         cachedFragment: null,
@@ -4358,14 +4753,14 @@ define('forw/templates/dashboard/accounts/new', ['exports'], function (exports) 
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 383
+                  "column": 385
                 },
                 "end": {
                   "line": 1,
-                  "column": 441
+                  "column": 443
                 }
               },
-              "moduleName": "forw/templates/dashboard/accounts/new.hbs"
+              "moduleName": "forw/templates/o/dashboard/accounts/new.hbs"
             },
             arity: 0,
             cachedFragment: null,
@@ -4384,7 +4779,7 @@ define('forw/templates/dashboard/accounts/new', ['exports'], function (exports) 
               return morphs;
             },
             statements: [
-              ["inline","md-loader",[],["mode","circular","color","yellow"],["loc",[null,[1,397],[1,441]]]]
+              ["inline","md-loader",[],["mode","circular","color","yellow"],["loc",[null,[1,399],[1,443]]]]
             ],
             locals: [],
             templates: []
@@ -4398,14 +4793,14 @@ define('forw/templates/dashboard/accounts/new', ['exports'], function (exports) 
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 441
+                  "column": 443
                 },
                 "end": {
                   "line": 1,
-                  "column": 847
+                  "column": 849
                 }
               },
-              "moduleName": "forw/templates/dashboard/accounts/new.hbs"
+              "moduleName": "forw/templates/o/dashboard/accounts/new.hbs"
             },
             arity: 0,
             cachedFragment: null,
@@ -4440,10 +4835,10 @@ define('forw/templates/dashboard/accounts/new', ['exports'], function (exports) 
               return morphs;
             },
             statements: [
-              ["element","action",["submit"],["on","submit"],["loc",[null,[1,455],[1,486]]]],
-              ["inline","md-input",[],["value",["subexpr","@mut",[["get","model.companyName",["loc",[null,[1,504],[1,521]]]]],[],[]],"label","Warehouse Name","type","text"],["loc",[null,[1,487],[1,558]]]],
-              ["inline","em-timezone-input",[],["name","timezone","value",["subexpr","@mut",[["get","model.region",["loc",[null,[1,655],[1,667]]]]],[],[]],"selectClass","browser-default"],["loc",[null,[1,613],[1,699]]]],
-              ["inline","md-btn-submit",[],["icon","mdi-content-send","iconPosition","right","text","submit","classNames","btn-large red white-text"],["loc",[null,[1,720],[1,834]]]]
+              ["element","action",["submit"],["on","submit"],["loc",[null,[1,457],[1,488]]]],
+              ["inline","md-input",[],["value",["subexpr","@mut",[["get","model.companyName",["loc",[null,[1,506],[1,523]]]]],[],[]],"label","Warehouse Name","type","text"],["loc",[null,[1,489],[1,560]]]],
+              ["inline","em-timezone-input",[],["name","timezone","value",["subexpr","@mut",[["get","model.region",["loc",[null,[1,657],[1,669]]]]],[],[]],"selectClass","browser-default"],["loc",[null,[1,615],[1,701]]]],
+              ["inline","md-btn-submit",[],["icon","mdi-content-send","iconPosition","right","text","submit","classNames","btn-large red white-text"],["loc",[null,[1,722],[1,836]]]]
             ],
             locals: [],
             templates: []
@@ -4456,14 +4851,14 @@ define('forw/templates/dashboard/accounts/new', ['exports'], function (exports) 
               "source": null,
               "start": {
                 "line": 1,
-                "column": 306
+                "column": 308
               },
               "end": {
                 "line": 1,
-                "column": 854
+                "column": 856
               }
             },
-            "moduleName": "forw/templates/dashboard/accounts/new.hbs"
+            "moduleName": "forw/templates/o/dashboard/accounts/new.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -4482,7 +4877,7 @@ define('forw/templates/dashboard/accounts/new', ['exports'], function (exports) 
             return morphs;
           },
           statements: [
-            ["block","if",[["get","isBusy",["loc",[null,[1,389],[1,395]]]]],[],0,1,["loc",[null,[1,383],[1,854]]]]
+            ["block","if",[["get","isBusy",["loc",[null,[1,391],[1,397]]]]],[],0,1,["loc",[null,[1,385],[1,856]]]]
           ],
           locals: [],
           templates: [child0, child1]
@@ -4496,14 +4891,14 @@ define('forw/templates/dashboard/accounts/new', ['exports'], function (exports) 
               "source": null,
               "start": {
                 "line": 1,
-                "column": 873
+                "column": 875
               },
               "end": {
                 "line": 1,
-                "column": 1123
+                "column": 1125
               }
             },
-            "moduleName": "forw/templates/dashboard/accounts/new.hbs"
+            "moduleName": "forw/templates/o/dashboard/accounts/new.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -4532,14 +4927,14 @@ define('forw/templates/dashboard/accounts/new', ['exports'], function (exports) 
               "source": null,
               "start": {
                 "line": 1,
-                "column": 1142
+                "column": 1144
               },
               "end": {
                 "line": 1,
-                "column": 1258
+                "column": 1260
               }
             },
-            "moduleName": "forw/templates/dashboard/accounts/new.hbs"
+            "moduleName": "forw/templates/o/dashboard/accounts/new.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -4567,14 +4962,14 @@ define('forw/templates/dashboard/accounts/new', ['exports'], function (exports) 
             "source": null,
             "start": {
               "line": 1,
-              "column": 282
+              "column": 284
             },
             "end": {
               "line": 1,
-              "column": 1277
+              "column": 1279
             }
           },
-          "moduleName": "forw/templates/dashboard/accounts/new.hbs"
+          "moduleName": "forw/templates/o/dashboard/accounts/new.hbs"
         },
         arity: 0,
         cachedFragment: null,
@@ -4599,9 +4994,9 @@ define('forw/templates/dashboard/accounts/new', ['exports'], function (exports) 
           return morphs;
         },
         statements: [
-          ["block","md-collapsible",[],["title","Step One. Basic Warehouse Information","active",true],0,null,["loc",[null,[1,306],[1,873]]]],
-          ["block","md-collapsible",[],["title","Step Two. Specific Dock and Camera Setup"],1,null,["loc",[null,[1,873],[1,1142]]]],
-          ["block","md-collapsible",[],["title","Step Three. Deploy!"],2,null,["loc",[null,[1,1142],[1,1277]]]]
+          ["block","md-collapsible",[],["title","Step One. Basic Warehouse Information","active",true],0,null,["loc",[null,[1,308],[1,875]]]],
+          ["block","md-collapsible",[],["title","Step Two. Specific Dock and Camera Setup"],1,null,["loc",[null,[1,875],[1,1144]]]],
+          ["block","md-collapsible",[],["title","Step Three. Deploy!"],2,null,["loc",[null,[1,1144],[1,1279]]]]
         ],
         locals: [],
         templates: [child0, child1, child2]
@@ -4618,10 +5013,10 @@ define('forw/templates/dashboard/accounts/new', ['exports'], function (exports) 
           },
           "end": {
             "line": 1,
-            "column": 1307
+            "column": 1309
           }
         },
-        "moduleName": "forw/templates/dashboard/accounts/new.hbs"
+        "moduleName": "forw/templates/o/dashboard/accounts/new.hbs"
       },
       arity: 0,
       cachedFragment: null,
@@ -4654,8 +5049,8 @@ define('forw/templates/dashboard/accounts/new', ['exports'], function (exports) 
         return morphs;
       },
       statements: [
-        ["block","link-to",["dashboard.accounts.index"],["classNames","waves-effect waves-light btn-large"],0,null,["loc",[null,[1,21],[1,185]]]],
-        ["block","md-card-collapsible",[],[],1,null,["loc",[null,[1,282],[1,1301]]]]
+        ["block","link-to",["o.dashboard.accounts.index"],["classNames","waves-effect waves-light btn-large"],0,null,["loc",[null,[1,21],[1,187]]]],
+        ["block","md-card-collapsible",[],[],1,null,["loc",[null,[1,284],[1,1303]]]]
       ],
       locals: [],
       templates: [child0, child1]
@@ -4663,7 +5058,7 @@ define('forw/templates/dashboard/accounts/new', ['exports'], function (exports) 
   }()));
 
 });
-define('forw/templates/dashboard/preferences', ['exports'], function (exports) {
+define('forw/templates/o/dashboard/preferences', ['exports'], function (exports) {
 
   'use strict';
 
@@ -4682,7 +5077,7 @@ define('forw/templates/dashboard/preferences', ['exports'], function (exports) {
             "column": 108
           }
         },
-        "moduleName": "forw/templates/dashboard/preferences.hbs"
+        "moduleName": "forw/templates/o/dashboard/preferences.hbs"
       },
       arity: 0,
       cachedFragment: null,
@@ -4710,7 +5105,7 @@ define('forw/templates/dashboard/preferences', ['exports'], function (exports) {
   }()));
 
 });
-define('forw/templates/index', ['exports'], function (exports) {
+define('forw/templates/o/index', ['exports'], function (exports) {
 
   'use strict';
 
@@ -4727,10 +5122,10 @@ define('forw/templates/index', ['exports'], function (exports) {
             },
             "end": {
               "line": 1,
-              "column": 1605
+              "column": 1607
             }
           },
-          "moduleName": "forw/templates/index.hbs"
+          "moduleName": "forw/templates/o/index.hbs"
         },
         arity: 0,
         cachedFragment: null,
@@ -4763,14 +5158,14 @@ define('forw/templates/index', ['exports'], function (exports) {
               "source": null,
               "start": {
                 "line": 1,
-                "column": 1786
+                "column": 1788
               },
               "end": {
                 "line": 1,
-                "column": 1826
+                "column": 1828
               }
             },
-            "moduleName": "forw/templates/index.hbs"
+            "moduleName": "forw/templates/o/index.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -4800,14 +5195,14 @@ define('forw/templates/index', ['exports'], function (exports) {
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 1865
+                  "column": 1867
                 },
                 "end": {
                   "line": 1,
-                  "column": 1910
+                  "column": 1914
                 }
               },
-              "moduleName": "forw/templates/index.hbs"
+              "moduleName": "forw/templates/o/index.hbs"
             },
             arity: 0,
             cachedFragment: null,
@@ -4835,14 +5230,14 @@ define('forw/templates/index', ['exports'], function (exports) {
               "source": null,
               "start": {
                 "line": 1,
-                "column": 1846
+                "column": 1848
               },
               "end": {
                 "line": 1,
-                "column": 1922
+                "column": 1926
               }
             },
-            "moduleName": "forw/templates/index.hbs"
+            "moduleName": "forw/templates/o/index.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -4861,7 +5256,7 @@ define('forw/templates/index', ['exports'], function (exports) {
             return morphs;
           },
           statements: [
-            ["block","link-to",["sample"],[],0,null,["loc",[null,[1,1865],[1,1922]]]]
+            ["block","link-to",["o.sample"],[],0,null,["loc",[null,[1,1867],[1,1926]]]]
           ],
           locals: [],
           templates: [child0]
@@ -4874,14 +5269,14 @@ define('forw/templates/index', ['exports'], function (exports) {
             "source": null,
             "start": {
               "line": 1,
-              "column": 1691
+              "column": 1693
             },
             "end": {
               "line": 1,
-              "column": 1941
+              "column": 1945
             }
           },
-          "moduleName": "forw/templates/index.hbs"
+          "moduleName": "forw/templates/o/index.hbs"
         },
         arity: 0,
         cachedFragment: null,
@@ -4903,8 +5298,8 @@ define('forw/templates/index', ['exports'], function (exports) {
           return morphs;
         },
         statements: [
-          ["block","md-card-content",[],[],0,null,["loc",[null,[1,1786],[1,1846]]]],
-          ["block","md-card-action",[],[],1,null,["loc",[null,[1,1846],[1,1941]]]]
+          ["block","md-card-content",[],[],0,null,["loc",[null,[1,1788],[1,1848]]]],
+          ["block","md-card-action",[],[],1,null,["loc",[null,[1,1848],[1,1945]]]]
         ],
         locals: [],
         templates: [child0, child1]
@@ -4919,14 +5314,14 @@ define('forw/templates/index', ['exports'], function (exports) {
               "source": null,
               "start": {
                 "line": 1,
-                "column": 2082
+                "column": 2086
               },
               "end": {
                 "line": 1,
-                "column": 2122
+                "column": 2126
               }
             },
-            "moduleName": "forw/templates/index.hbs"
+            "moduleName": "forw/templates/o/index.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -4956,14 +5351,14 @@ define('forw/templates/index', ['exports'], function (exports) {
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 2161
+                  "column": 2165
                 },
                 "end": {
                   "line": 1,
-                  "column": 2206
+                  "column": 2212
                 }
               },
-              "moduleName": "forw/templates/index.hbs"
+              "moduleName": "forw/templates/o/index.hbs"
             },
             arity: 0,
             cachedFragment: null,
@@ -4991,14 +5386,14 @@ define('forw/templates/index', ['exports'], function (exports) {
               "source": null,
               "start": {
                 "line": 1,
-                "column": 2142
+                "column": 2146
               },
               "end": {
                 "line": 1,
-                "column": 2218
+                "column": 2224
               }
             },
-            "moduleName": "forw/templates/index.hbs"
+            "moduleName": "forw/templates/o/index.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -5017,7 +5412,7 @@ define('forw/templates/index', ['exports'], function (exports) {
             return morphs;
           },
           statements: [
-            ["block","link-to",["sample"],[],0,null,["loc",[null,[1,2161],[1,2218]]]]
+            ["block","link-to",["o.sample"],[],0,null,["loc",[null,[1,2165],[1,2224]]]]
           ],
           locals: [],
           templates: [child0]
@@ -5030,14 +5425,14 @@ define('forw/templates/index', ['exports'], function (exports) {
             "source": null,
             "start": {
               "line": 1,
-              "column": 1987
+              "column": 1991
             },
             "end": {
               "line": 1,
-              "column": 2237
+              "column": 2243
             }
           },
-          "moduleName": "forw/templates/index.hbs"
+          "moduleName": "forw/templates/o/index.hbs"
         },
         arity: 0,
         cachedFragment: null,
@@ -5059,8 +5454,8 @@ define('forw/templates/index', ['exports'], function (exports) {
           return morphs;
         },
         statements: [
-          ["block","md-card-content",[],[],0,null,["loc",[null,[1,2082],[1,2142]]]],
-          ["block","md-card-action",[],[],1,null,["loc",[null,[1,2142],[1,2237]]]]
+          ["block","md-card-content",[],[],0,null,["loc",[null,[1,2086],[1,2146]]]],
+          ["block","md-card-action",[],[],1,null,["loc",[null,[1,2146],[1,2243]]]]
         ],
         locals: [],
         templates: [child0, child1]
@@ -5075,14 +5470,14 @@ define('forw/templates/index', ['exports'], function (exports) {
               "source": null,
               "start": {
                 "line": 1,
-                "column": 2378
+                "column": 2384
               },
               "end": {
                 "line": 1,
-                "column": 2418
+                "column": 2424
               }
             },
-            "moduleName": "forw/templates/index.hbs"
+            "moduleName": "forw/templates/o/index.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -5112,14 +5507,14 @@ define('forw/templates/index', ['exports'], function (exports) {
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 2457
+                  "column": 2463
                 },
                 "end": {
                   "line": 1,
-                  "column": 2502
+                  "column": 2510
                 }
               },
-              "moduleName": "forw/templates/index.hbs"
+              "moduleName": "forw/templates/o/index.hbs"
             },
             arity: 0,
             cachedFragment: null,
@@ -5147,14 +5542,14 @@ define('forw/templates/index', ['exports'], function (exports) {
               "source": null,
               "start": {
                 "line": 1,
-                "column": 2438
+                "column": 2444
               },
               "end": {
                 "line": 1,
-                "column": 2514
+                "column": 2522
               }
             },
-            "moduleName": "forw/templates/index.hbs"
+            "moduleName": "forw/templates/o/index.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -5173,7 +5568,7 @@ define('forw/templates/index', ['exports'], function (exports) {
             return morphs;
           },
           statements: [
-            ["block","link-to",["sample"],[],0,null,["loc",[null,[1,2457],[1,2514]]]]
+            ["block","link-to",["o.sample"],[],0,null,["loc",[null,[1,2463],[1,2522]]]]
           ],
           locals: [],
           templates: [child0]
@@ -5186,14 +5581,14 @@ define('forw/templates/index', ['exports'], function (exports) {
             "source": null,
             "start": {
               "line": 1,
-              "column": 2283
+              "column": 2289
             },
             "end": {
               "line": 1,
-              "column": 2533
+              "column": 2541
             }
           },
-          "moduleName": "forw/templates/index.hbs"
+          "moduleName": "forw/templates/o/index.hbs"
         },
         arity: 0,
         cachedFragment: null,
@@ -5215,8 +5610,8 @@ define('forw/templates/index', ['exports'], function (exports) {
           return morphs;
         },
         statements: [
-          ["block","md-card-content",[],[],0,null,["loc",[null,[1,2378],[1,2438]]]],
-          ["block","md-card-action",[],[],1,null,["loc",[null,[1,2438],[1,2533]]]]
+          ["block","md-card-content",[],[],0,null,["loc",[null,[1,2384],[1,2444]]]],
+          ["block","md-card-action",[],[],1,null,["loc",[null,[1,2444],[1,2541]]]]
         ],
         locals: [],
         templates: [child0, child1]
@@ -5233,10 +5628,10 @@ define('forw/templates/index', ['exports'], function (exports) {
           },
           "end": {
             "line": 1,
-            "column": 3375
+            "column": 3383
           }
         },
-        "moduleName": "forw/templates/index.hbs"
+        "moduleName": "forw/templates/o/index.hbs"
       },
       arity: 0,
       cachedFragment: null,
@@ -5489,10 +5884,10 @@ define('forw/templates/index', ['exports'], function (exports) {
         return morphs;
       },
       statements: [
-        ["block","link-to",["sample"],["classNames","deep-orange darken-2 white-text btn-large waves-effect waves-light"],0,null,["loc",[null,[1,1440],[1,1617]]]],
-        ["block","md-card",[],["title","basic plan","titleClass","indigo-text text-darken-2","image","images/waifu.jpg"],1,null,["loc",[null,[1,1691],[1,1953]]]],
-        ["block","md-card",[],["title","basic plan","titleClass","indigo-text text-darken-2","image","images/waifu.jpg"],2,null,["loc",[null,[1,1987],[1,2249]]]],
-        ["block","md-card",[],["title","basic plan","titleClass","indigo-text text-darken-2","image","images/waifu.jpg"],3,null,["loc",[null,[1,2283],[1,2545]]]]
+        ["block","link-to",["o.sample"],["classNames","deep-orange darken-2 white-text btn-large waves-effect waves-light"],0,null,["loc",[null,[1,1440],[1,1619]]]],
+        ["block","md-card",[],["title","basic plan","titleClass","indigo-text text-darken-2","image","images/waifu.jpg"],1,null,["loc",[null,[1,1693],[1,1957]]]],
+        ["block","md-card",[],["title","basic plan","titleClass","indigo-text text-darken-2","image","images/waifu.jpg"],2,null,["loc",[null,[1,1991],[1,2255]]]],
+        ["block","md-card",[],["title","basic plan","titleClass","indigo-text text-darken-2","image","images/waifu.jpg"],3,null,["loc",[null,[1,2289],[1,2553]]]]
       ],
       locals: [],
       templates: [child0, child1, child2, child3]
@@ -5500,7 +5895,7 @@ define('forw/templates/index', ['exports'], function (exports) {
   }()));
 
 });
-define('forw/templates/session', ['exports'], function (exports) {
+define('forw/templates/o/session', ['exports'], function (exports) {
 
   'use strict';
 
@@ -5521,7 +5916,7 @@ define('forw/templates/session', ['exports'], function (exports) {
                 "column": 718
               }
             },
-            "moduleName": "forw/templates/session.hbs"
+            "moduleName": "forw/templates/o/session.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -5580,7 +5975,7 @@ define('forw/templates/session', ['exports'], function (exports) {
                   "column": 1557
                 }
               },
-              "moduleName": "forw/templates/session.hbs"
+              "moduleName": "forw/templates/o/session.hbs"
             },
             arity: 0,
             cachedFragment: null,
@@ -5620,7 +6015,7 @@ define('forw/templates/session', ['exports'], function (exports) {
                   "column": 1615
                 }
               },
-              "moduleName": "forw/templates/session.hbs"
+              "moduleName": "forw/templates/o/session.hbs"
             },
             arity: 0,
             cachedFragment: null,
@@ -5659,7 +6054,7 @@ define('forw/templates/session', ['exports'], function (exports) {
                 "column": 1635
               }
             },
-            "moduleName": "forw/templates/session.hbs"
+            "moduleName": "forw/templates/o/session.hbs"
           },
           arity: 0,
           cachedFragment: null,
@@ -5724,7 +6119,7 @@ define('forw/templates/session', ['exports'], function (exports) {
               "column": 1654
             }
           },
-          "moduleName": "forw/templates/session.hbs"
+          "moduleName": "forw/templates/o/session.hbs"
         },
         arity: 0,
         cachedFragment: null,
@@ -5767,7 +6162,7 @@ define('forw/templates/session', ['exports'], function (exports) {
             "column": 1702
           }
         },
-        "moduleName": "forw/templates/session.hbs"
+        "moduleName": "forw/templates/o/session.hbs"
       },
       arity: 0,
       cachedFragment: null,
@@ -5933,7 +6328,59 @@ define('forw/templates/shared/login', ['exports'], function (exports) {
   }()));
 
 });
-define('forw/templates/warehouse', ['exports'], function (exports) {
+define('forw/templates/x', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 2,
+            "column": 57
+          }
+        },
+        "moduleName": "forw/templates/x.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var morphs = new Array(2);
+        morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+        morphs[1] = dom.createMorphAt(fragment,2,2,contextualElement);
+        dom.insertBoundary(fragment, 0);
+        dom.insertBoundary(fragment, null);
+        return morphs;
+      },
+      statements: [
+        ["content","outlet",["loc",[null,[1,0],[1,10]]]],
+        ["inline","ember-notify",[],["closeAfter",4000,"messageStyle","bootstrap"],["loc",[null,[2,0],[2,57]]]]
+      ],
+      locals: [],
+      templates: []
+    };
+  }()));
+
+});
+define('forw/templates/x/warehouse', ['exports'], function (exports) {
 
   'use strict';
 
@@ -5949,10 +6396,10 @@ define('forw/templates/warehouse', ['exports'], function (exports) {
           },
           "end": {
             "line": 1,
-            "column": 112
+            "column": 38
           }
         },
-        "moduleName": "forw/templates/warehouse.hbs"
+        "moduleName": "forw/templates/x/warehouse.hbs"
       },
       arity: 0,
       cachedFragment: null,
@@ -5961,24 +6408,110 @@ define('forw/templates/warehouse', ['exports'], function (exports) {
         var el0 = dom.createDocumentFragment();
         var el1 = dom.createElement("div");
         dom.setAttribute(el1,"id","warehouse");
-        var el2 = dom.createElement("div");
-        dom.setAttribute(el2,"id","notifications");
-        var el3 = dom.createComment("");
-        dom.appendChild(el2, el3);
-        dom.appendChild(el1, el2);
-        var el2 = dom.createElement("div");
-        dom.setAttribute(el2,"id","external-application-iframe");
+        var el2 = dom.createComment("");
         dom.appendChild(el1, el2);
         dom.appendChild(el0, el1);
         return el0;
       },
       buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
         var morphs = new Array(1);
-        morphs[0] = dom.createUnsafeMorphAt(dom.childAt(fragment, [0, 0]),0,0);
+        morphs[0] = dom.createUnsafeMorphAt(dom.childAt(fragment, [0]),0,0);
         return morphs;
       },
       statements: [
-        ["content","outlet",["loc",[null,[1,44],[1,56]]]]
+        ["content","outlet",["loc",[null,[1,20],[1,32]]]]
+      ],
+      locals: [],
+      templates: []
+    };
+  }()));
+
+});
+define('forw/templates/x/warehouse/config', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 62
+          }
+        },
+        "moduleName": "forw/templates/x/warehouse/config.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createElement("iframe");
+        dom.setAttribute(el1,"id","external-application");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var element0 = dom.childAt(fragment, [0]);
+        var morphs = new Array(1);
+        morphs[0] = dom.createAttrMorph(element0, 'src');
+        return morphs;
+      },
+      statements: [
+        ["attribute","src",["get","configHost",["loc",[null,[1,40],[1,50]]]]]
+      ],
+      locals: [],
+      templates: []
+    };
+  }()));
+
+});
+define('forw/templates/x/warehouse/index', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 66
+          }
+        },
+        "moduleName": "forw/templates/x/warehouse/index.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createElement("iframe");
+        dom.setAttribute(el1,"id","external-application");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var element0 = dom.childAt(fragment, [0]);
+        var morphs = new Array(1);
+        morphs[0] = dom.createAttrMorph(element0, 'src');
+        return morphs;
+      },
+      statements: [
+        ["attribute","src",["get","model.uiuxHost",["loc",[null,[1,40],[1,54]]]]]
       ],
       locals: [],
       templates: []
@@ -6175,7 +6708,7 @@ catch(err) {
 if (runningTests) {
   require("forw/tests/test-helper");
 } else {
-  require("forw/app")["default"].create({"name":"forw","version":"0.0.0+33c13fb4"});
+  require("forw/app")["default"].create({"name":"forw","version":"0.0.0+6a1926b1"});
 }
 
 /* jshint ignore:end */
