@@ -1,6 +1,6 @@
 `import Ember from 'ember'`
 `import WarehouseController from '../warehouse'`
 
-WarehouseIndexController = WarehouseController.extend({})
+WarehouseIndexController = WarehouseController.extend()
 
 `export default WarehouseIndexController`

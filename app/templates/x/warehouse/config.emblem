@@ -1,2 +1,7 @@
-iframe#external-application src=configHost
+.popout-action
+  if popLink
+    a.btn-floating.waves-effect.waves-light.amber href=popLink target="blank"
+      i.material-icons launch
+
+ember-iframe iframeId="external-application" src=configHost action="hashchange"
   md-loader mode="circular" color="yellow"

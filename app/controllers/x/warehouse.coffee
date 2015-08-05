@@ -15,4 +15,8 @@ WarehouseController = Ember.Controller.extend
     paramString = Ember.$.param token: token, account: id
     "#{url}/#/?#{paramString}"
 
+  actions:
+    hashchange: (url) ->
+      @set "popLink", url
+
 `export default WarehouseController`
