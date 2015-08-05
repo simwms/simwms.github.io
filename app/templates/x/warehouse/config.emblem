@@ -1,1 +1,2 @@
 iframe#external-application src=configHost
+  md-loader mode="circular" color="yellow"

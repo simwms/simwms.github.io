@@ -40,19 +40,25 @@ SessionController = Ember.Controller.extend
     clicked: (tab) ->
       @set "tab", tab
     submitLogin: ->
+      @set "isBusy", true
       @set "errors", Ember.Object.create()
       @get("user").login @store
       .then =>
         @transitionToRoute "o.dashboard"
       .catch ({errors}) =>
         @hashifyErrors errors
+      .finally =>
+        @set "isBusy", false
     submitRegister: ->
+      @set "isBusy", true
       @set "errors", Ember.Object.create()
       @get("user").register @store
       .then =>
         @transitionToRoute "o.dashboard"
       .catch ({errors}) =>
         @hashifyErrors errors
+      .finally =>
+        @set "isBusy", false
       
 
 `export default SessionController`
