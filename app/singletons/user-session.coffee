@@ -50,7 +50,8 @@ UserSession = Ember.Object.extend
     .then @handleLoginSuccess.bind(@)
 
   handleLoginSuccess: (session) ->
-    Cookies.set "rememberToken", token if token = session.get("rememberToken")
+    if token = session.get("rememberToken")
+      Cookies.set "rememberToken", token, expires: 365 
     @set "session", session
 
 UserSession.instance = UserSession.create()

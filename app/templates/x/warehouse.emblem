@@ -5,7 +5,7 @@
         link-to "x.warehouse" model.id classNames="btn-floating waves-effect waves-light green"
           i.material-icons play_arrow
         link-to "o.dashboard.account" model.id classNames="btn-floating btn-large waves-effect waves-light blue"
-          i.material-icons done
+          i.fa.fa-times
     .col.s12
       .z-depth-2
         == outlet

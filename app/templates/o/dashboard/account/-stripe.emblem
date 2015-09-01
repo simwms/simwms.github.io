@@ -1,0 +1,3 @@
+stripe-checkout classNames="btn-large" image="images/waifu.jpg" name="SimWMS" description=chosenPlan.presentation amount=chosenPlan.monthlyPrice panelLabel="Modify Subscription" action="processStripeToken" email=currentUser.user.email
+  fa-icon "plus-circle" classNames="right"
+  span modify subscription

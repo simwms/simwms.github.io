@@ -1,8 +1,10 @@
 .col.s12.m10.l8
-  link-to "x.warehouse.config" model.id classNames="waves-effect waves-light btn-large brown"
+  link-to "x.warehouse.config" model.id classNames="waves-effect waves-light btn-large brown" target="blank"
     i.material-icons.right open_in_new
     span Launch Configuration
-  link-to "x.warehouse.index" model.id classNames="waves-effect waves-light btn-large"
+  link-to "x.warehouse.index" model.id classNames="waves-effect waves-light btn-large" target="blank"
     i.material-icons.left open_in_browser
     span Launch Application
-== outlet
+.col.s12
+  .row
+    == outlet

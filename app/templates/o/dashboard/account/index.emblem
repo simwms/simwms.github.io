@@ -7,10 +7,14 @@
           span= model.companyName
         li
           span.bold.colon Service Plan
-          span= model.servicePlan
+          span= model.servicePlan.presentation
         li
           span.bold.colon Owner Username
           span= model.user.username
+      .actions
+        link-to "o.dashboard.account.upgrade" model.id classNames="btn-large waves-effect waves-light orange"
+          fa-icon "credit-card" classNames="left"
+          span Change Service Plan
 
     md-collapsible icon="mdi-av-timer" title="Operations and Location"
       ul

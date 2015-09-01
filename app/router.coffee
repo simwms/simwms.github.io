@@ -10,6 +10,7 @@ Router.map ->
       @route "config"
   
   @resource "o", path: "/o", ->
+    @route "pricing"
     @route "about"
     @resource "o.guides", path: "/guides", ->
       @resource "o.guides.guide", path: "/:id", ->
@@ -19,6 +20,7 @@ Router.map ->
       @resource "o.dashboard.preferences", path: "/preferences", ->
       @resource "o.dashboard.payment", path: "payment", ->
       @resource "o.dashboard.account", path: "/account/:id", ->
+        @route "upgrade"
         @route "config"
         @route "edit"
       @resource "o.dashboard.accounts", path: "/accounts", ->

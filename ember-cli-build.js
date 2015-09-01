@@ -7,7 +7,8 @@ module.exports = function(defaults) {
       includePaths: [
         'bower_components/materialize/sass',
         'node_modules/compass-mixins/lib',
-        'node_modules/ember-timezone-input/addon/styles'
+        'node_modules/ember-timezone-input/addon/styles',
+        'bower_components/font-awesome/scss'
       ]
     }
   });

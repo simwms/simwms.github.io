@@ -13,8 +13,13 @@ module.exports = function(environment) {
       "media-src": "'self' http://localhost:*",
       "font-src": "*",
       "style-src": "'self' 'unsafe-inline' *",
-      "script-src": "'self'",
-      "frame-src": "'self' https://simwms.github.io"
+      "script-src": "'self' https://checkout.stripe.com",
+      "frame-src": "'self' https://simwms.github.io https://checkout.stripe.com"
+    },
+    uiuxHost: "https://simwms.github.io/uiux",
+    configHost: "https://simwms.github.io/config",
+    stripe: {
+      key: "pk_test_9VNs5lmJpCba3wXgHTbjTcCh"
     },
     EmberENV: {
       FEATURES: {
@@ -51,11 +56,12 @@ module.exports = function(environment) {
 
   if (environment === 'staging') {
     ENV.locationType = "hash";
-    ENV.host = "https://lit-atoll-7843.herokuapp.com"
+    ENV.host = "https://lit-atoll-7843.herokuapp.com";
   }
 
   if (environment === 'production') {
-
+    ENV.locationType = "hash";
+    ENV.host = "https://lit-atoll-7843.herokuapp.com";
   }
 
   return ENV;

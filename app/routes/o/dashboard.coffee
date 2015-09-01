@@ -2,7 +2,8 @@
 
 DashboardRoute = Ember.Route.extend
   model: ->
-    @currentUser
+    @store.findAll "servicePlan"
+    .then => @currentUser
   afterModel: (model) ->
     @transitionTo "index" unless model.get("isLoggedIn")
       

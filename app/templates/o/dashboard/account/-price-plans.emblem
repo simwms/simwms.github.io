@@ -1,0 +1,19 @@
+em-pricing-table plans=plans chosenPlan=chosenPlan as |plan|
+  em-pricing-card plan=plan btnText=plan.pricePresentation
+    li.title= plan.presentation
+    if plan.isDeprecated
+      li.description.red-text This plan is no longer available (deprecated {{moment-from-now plan.deprecatedAt}})
+    else
+      li.description= plan.description
+    li
+      span.feature-name loading docks
+      span.feature-spec= plan.docks
+    li
+      span.feature-name availability
+      span.feature-spec {{plan.availability}} hours / day
+    li
+      span.feature-name user accounts
+      span.feature-spec= plan.users
+    li
+      span.feature-name appointments
+      span.feature-spec {{plan.appointments}} / day
