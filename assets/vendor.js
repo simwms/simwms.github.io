@@ -1,6 +1,6 @@
 /* jshint ignore:start */
 
-window.EmberENV = {"FEATURES":{}};
+window.EmberENV = {"FEATURES":{},"_ENABLE_LEGACY_VIEW_SUPPORT":true};
 var runningTests = false;
 
 
@@ -91805,6 +91805,136 @@ define('ember-cli-content-security-policy', ['ember-cli-content-security-policy/
   }));
 });
 
+define('ember-cli-font-awesome', ['ember-cli-font-awesome/index', 'ember', 'exports'], function(__index__, __Ember__, __exports__) {
+  'use strict';
+  var keys = Object.keys || __Ember__['default'].keys;
+  var forEach = Array.prototype.forEach && function(array, cb) {
+    array.forEach(cb);
+  } || __Ember__['default'].EnumerableUtils.forEach;
+
+  forEach(keys(__index__), (function(key) {
+    __exports__[key] = __index__[key];
+  }));
+});
+
+define('ember-cli-font-awesome/helpers/fa-icon', ['exports', 'ember'], function (exports, Ember) {
+
+  'use strict';
+
+  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
+  var FA_PREFIX = /^fa\-.+/;
+
+  var warn = Ember['default'].Logger.warn;
+
+  /**
+   * Handlebars helper for generating HTML that renders a FontAwesome icon.
+   *
+   * @param  {String} name    The icon name. Note that the `fa-` prefix is optional.
+   *                          For example, you can pass in either `fa-camera` or just `camera`.
+   * @param  {Object} options Options passed to helper.
+   * @return {Ember.Handlebars.SafeString} The HTML markup.
+   */
+  var faIcon = function faIcon(_ref, params) {
+    var _ref2 = _slicedToArray(_ref, 1);
+
+    var name = _ref2[0];
+
+    if (Ember['default'].typeOf(name) !== 'string') {
+      var message = "fa-icon: no icon specified";
+      warn(message);
+      return Ember['default'].String.htmlSafe(message);
+    }
+
+    var classNames = [],
+        html = "";
+
+    classNames.push("fa");
+    if (!name.match(FA_PREFIX)) {
+      name = "fa-" + name;
+    }
+    classNames.push(name);
+    if (params.spin) {
+      classNames.push("fa-spin");
+    }
+    if (params.pulse) {
+      classNames.push("fa-pulse");
+    }
+    if (params.flip) {
+      classNames.push("fa-flip-" + params.flip);
+    }
+    if (params.rotate) {
+      classNames.push("fa-rotate-" + params.rotate);
+    }
+    if (params.lg) {
+      warn("fa-icon: the 'lg' parameter is deprecated. Use 'size' instead. I.e. {{fa-icon size=\"lg\"}}");
+      classNames.push("fa-lg");
+    }
+    if (params.x) {
+      warn("fa-icon: the 'x' parameter is deprecated. Use 'size' instead. I.e. {{fa-icon size=\"" + params.x + "\"}}");
+      classNames.push("fa-" + params.x + "x");
+    }
+    if (params.size) {
+      if (Ember['default'].typeOf(params.size) === "string" && params.size.match(/^\d+$/)) {
+        params.size = Number(params.size);
+      }
+      if (Ember['default'].typeOf(params.size) === "number") {
+        classNames.push("fa-" + params.size + "x");
+      } else {
+        classNames.push("fa-" + params.size);
+      }
+    }
+    if (params.fixedWidth) {
+      classNames.push("fa-fw");
+    }
+    if (params.listItem) {
+      classNames.push("fa-li");
+    }
+    if (params.pull) {
+      classNames.push("pull-" + params.pull);
+    }
+    if (params.border) {
+      classNames.push("fa-border");
+    }
+    if (params.stack) {
+      if (Ember['default'].typeOf(params.stack) === "string" && params.stack.match(/^\d+$/)) {
+        params.size = Number(params.stack);
+      }
+      if (Ember['default'].typeOf(params.stack) === "number") {
+        classNames.push("fa-stack-" + params.stack + "x");
+      } else {
+        classNames.push("fa-stack-" + params.stack);
+      }
+    }
+    if (params.inverse) {
+      classNames.push("fa-inverse");
+    }
+    if (params.classNames && !Ember['default'].isArray(params.classNames)) {
+      params.classNames = [params.classNames];
+    }
+    if (!Ember['default'].isEmpty(params.classNames)) {
+      Array.prototype.push.apply(classNames, params.classNames);
+    }
+
+    html += "<";
+    var tagName = params.tagName || 'i';
+    html += tagName;
+    html += " class='" + classNames.join(" ") + "'";
+    if (params.title) {
+      html += " title='" + params.title + "'";
+    }
+    if (params.ariaHidden === undefined || params.ariaHidden) {
+      html += " aria-hidden=\"true\"";
+    }
+    html += "></" + tagName + ">";
+    return Ember['default'].String.htmlSafe(html);
+  };
+
+  exports['default'] = Ember['default'].Helper.helper(faIcon);
+
+  exports.faIcon = faIcon;
+
+});
 define('ember-cli-materialize', ['ember-cli-materialize/index', 'ember', 'exports'], function(__index__, __Ember__, __exports__) {
   'use strict';
   var keys = Object.keys || __Ember__['default'].keys;
@@ -91821,7 +91951,10 @@ define('ember-cli-materialize/components/-md-fixed-btn-base', ['exports', 'ember
 
   'use strict';
 
-  exports['default'] = Ember['default'].Component.extend({
+  var computed = Ember['default'].computed;
+  var Component = Ember['default'].Component;
+
+  exports['default'] = Component.extend({
     actionArgs: null,
     large: true,
 
@@ -91836,7 +91969,7 @@ define('ember-cli-materialize/components/-md-fixed-btn-base', ['exports', 'ember
       }
     },
 
-    _btnClassString: Ember['default'].computed('btnClass', function () {
+    _btnClassString: computed('btnClass', function () {
       return this.get('btnClass') + ' btn-floating ' + (this.get('large') ? 'btn-large' : '');
     })
   });
@@ -91846,7 +91979,9 @@ define('ember-cli-materialize/components/md-badge', ['exports', 'ember', 'ember-
 
   'use strict';
 
-  exports['default'] = Ember['default'].Component.extend({
+  var Component = Ember['default'].Component;
+
+  exports['default'] = Component.extend({
     layout: layout['default'],
     tagName: 'span',
     text: null,
@@ -91854,39 +91989,41 @@ define('ember-cli-materialize/components/md-badge', ['exports', 'ember', 'ember-
   });
 
 });
-define('ember-cli-materialize/components/md-btn-dropdown', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-btn-dropdown', 'ember-new-computed', 'ember-cli-materialize/components/md-btn'], function (exports, Ember, layout, computed, MaterializeButton) {
+define('ember-cli-materialize/components/md-btn-dropdown', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-btn-dropdown', 'ember-cli-materialize/components/md-btn'], function (exports, Ember, layout, MaterializeButton) {
 
   'use strict';
+
+  var scheduleOnce = Ember['default'].run.scheduleOnce;
+  var computed = Ember['default'].computed;
 
   exports['default'] = MaterializeButton['default'].extend({
     layout: layout['default'],
     tagName: 'a',
     classNames: ['dropdown-button'],
-    icon: "mdi-navigation-expand-more",
+    icon: 'mdi-navigation-expand-more',
     iconPosition: 'right',
     attributeBindings: ['inDuration', 'outDuration', 'constrainWidth', 'hover', 'gutter', 'belowOrigin'],
+
     didInsertElement: function didInsertElement() {
       this._super.apply(this, arguments);
-      Ember['default'].run.scheduleOnce('afterRender', this, this._setupDropdown);
+      scheduleOnce('afterRender', this, this._setupDropdown);
     },
+
     _setupDropdown: function _setupDropdown() {
       // needed until the Materialize.dropdown plugin is replaced
       this.$().attr('data-activates', this.get('_dropdownContentId'));
 
-      var that = this;
       this.$().dropdown({
-        hover: this.getWithDefault('hover', false) === 'true',
-        constrainWidth: this.getWithDefault('constrainWidth', true) === 'true',
-        inDuration: this.getWithDefault('inDuration', that.get('_mdSettings.dropdownInDuration')),
-        outDuration: this.getWithDefault('outDuration', that.get('_mdSettings.dropdownOutDuration')),
+        hover: !!this.getWithDefault('hover', false),
+        constrainWidth: !!this.getWithDefault('constrainWidth', true),
+        inDuration: this.getWithDefault('inDuration', this.get('_mdSettings.dropdownInDuration')),
+        outDuration: this.getWithDefault('outDuration', this.get('_mdSettings.dropdownOutDuration')),
         gutter: this.getWithDefault('gutter', 0),
-        belowOrigin: this.getWithDefault('belowOrigin', false) === 'true'
+        belowOrigin: !!this.getWithDefault('belowOrigin', false)
       });
     },
-    _dropdownContentId: computed['default']({
-      get: function get() {
-        return this.get('element.id') + '-dropdown-content';
-      }
+    _dropdownContentId: computed(function () {
+      return this.get('elementId') + '-dropdown-content';
     })
   });
 
@@ -91903,46 +92040,51 @@ define('ember-cli-materialize/components/md-btn-submit', ['exports', 'ember-cli-
   });
 
 });
-define('ember-cli-materialize/components/md-btn', ['exports', 'ember', 'ember-cli-materialize/mixins/uses-settings', 'ember-cli-materialize/templates/components/md-btn', 'ember-new-computed'], function (exports, Ember, UsesSettings, layout, computed) {
+define('ember-cli-materialize/components/md-btn', ['exports', 'ember', 'ember-cli-materialize/mixins/uses-settings', 'ember-cli-materialize/templates/components/md-btn'], function (exports, Ember, UsesSettings, layout) {
 
   'use strict';
 
+  var Component = Ember['default'].Component;
+  var computed = Ember['default'].computed;
   var oneWay = Ember['default'].computed.oneWay;
+  var typeOf = Ember['default'].typeOf;
+  var scheduleOnce = Ember['default'].run.scheduleOnce;
 
-  exports['default'] = Ember['default'].Component.extend(UsesSettings['default'], {
+  exports['default'] = Component.extend(UsesSettings['default'], {
     layout: layout['default'],
     tagName: 'a',
-    classNameBindings: ['btn:waves-effect', 'isFlat::waves-light', 'isDisabled:disabled:waves-effect', 'buttonClass'],
+    classNameBindings: ['btn:waves-effect', 'wavesClass', 'isDisabled:disabled:waves-effect', 'buttonClass'],
     attributeBindings: ['isDisabled:disabled'],
+    wavesClass: 'waves-light',
     text: null,
     icon: null,
     iconPosition: oneWay('_mdSettings.buttonIconPosition'),
     buttonType: null,
     actionArg: null,
-    isFlat: Ember['default'].computed.equal('buttonType', 'flat'),
+    isFlat: computed.equal('buttonType', 'flat'),
     isDisabled: false,
 
     didInsertElement: function didInsertElement() {
       this._super.apply(this, arguments);
-      Ember['default'].run.scheduleOnce('afterRender', this, this._setupWaves);
+      scheduleOnce('afterRender', this, this._setupWaves);
     },
 
-    buttonClass: computed['default']('buttonType', {
-      get: function get() {
-        var buttonType = this.get('buttonType');
-        return buttonType ? 'btn-' + buttonType : 'btn';
-      }
+    buttonClass: computed('buttonType', function () {
+      var buttonType = this.get('buttonType');
+      return buttonType ? 'btn-' + buttonType : 'btn';
     }),
 
     _setupWaves: function _setupWaves() {
       var Waves = window.Waves || {};
-      if (Ember['default'].typeOf(Waves.displayEffect) === 'function') {
+      if (typeOf(Waves.displayEffect) === 'function') {
         Waves.displayEffect();
       }
     },
 
     click: function click() {
-      this.sendAction('action', this.get('actionArg'));
+      if (!this.get('disabled')) {
+        this.sendAction('action', this.get('actionArg'));
+      }
     }
   });
 
@@ -91956,21 +92098,22 @@ define('ember-cli-materialize/components/md-card-action', ['exports', 'ember'], 
   });
 
 });
-define('ember-cli-materialize/components/md-card-collapsible', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-card-collapsible', 'ember-new-computed'], function (exports, Ember, layout, computed) {
+define('ember-cli-materialize/components/md-card-collapsible', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-card-collapsible'], function (exports, Ember, layout) {
 
   'use strict';
 
-  exports['default'] = Ember['default'].Component.extend({
+  var computed = Ember['default'].computed;
+  var Component = Ember['default'].Component;
+
+  exports['default'] = Component.extend({
     layout: layout['default'],
     tagName: 'ul',
     classNames: ['collapsible'],
     attributeBindings: ['data-collapsible'],
     accordion: true,
 
-    'data-collapsible': computed['default']({
-      get: function get() {
-        return this.get('accordion') ? 'accordion' : 'expandable';
-      }
+    'data-collapsible': computed(function () {
+      return this.get('accordion') ? 'accordion' : 'expandable';
     }),
 
     didInsertElement: function didInsertElement() {
@@ -91979,13 +92122,14 @@ define('ember-cli-materialize/components/md-card-collapsible', ['exports', 'embe
     },
 
     _setupCollapsible: function _setupCollapsible() {
-      this.$().collapsible({ accordion: this.get('accordion') });
+      var accordion = this.get('accordion');
+      this.$().collapsible({ accordion: accordion });
     },
 
     _teardownCollapsible: function _teardownCollapsible() {
-      var $panel_headers = this.$('> li > .collapsible-header');
+      var $panelHeaders = this.$('> li > .collapsible-header');
       this.$().off('click.collapse', '.collapsible-header');
-      $panel_headers.off('click.collapse');
+      $panelHeaders.off('click.collapse');
     },
 
     willDestroyElement: function willDestroyElement() {
@@ -91995,11 +92139,14 @@ define('ember-cli-materialize/components/md-card-collapsible', ['exports', 'embe
   });
 
 });
-define('ember-cli-materialize/components/md-card-content', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-card-content', 'ember-new-computed'], function (exports, Ember, layout, computed) {
+define('ember-cli-materialize/components/md-card-content', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-card-content'], function (exports, Ember, layout) {
 
   'use strict';
 
-  exports['default'] = Ember['default'].Component.extend({
+  var Component = Ember['default'].Component;
+  var computed = Ember['default'].computed;
+
+  exports['default'] = Component.extend({
     layout: layout['default'],
 
     classNames: ['card-content'],
@@ -92009,11 +92156,8 @@ define('ember-cli-materialize/components/md-card-content', ['exports', 'ember', 
     titleClassBinding: 'parentView.titleClass',
     activatorBinding: 'parentView.activator',
 
-    cardTitleClass: computed['default']('titleClass', {
-      get: function get() {
-        var clz = this.get('titleClass');
-        return clz ? clz : 'black-text';
-      }
+    cardTitleClass: computed('titleClass', function () {
+      return this.get('titleClass') || 'black-text';
     })
   });
 
@@ -92022,11 +92166,12 @@ define('ember-cli-materialize/components/md-card-panel', ['exports', 'ember', 'e
 
   'use strict';
 
-  exports['default'] = Ember['default'].Component.extend({
+  var Component = Ember['default'].Component;
+
+  exports['default'] = Component.extend({
     layout: layout['default'],
 
     classNames: ['card-panel'],
-
     classNameBinding: 'class'
   });
 
@@ -92035,12 +92180,13 @@ define('ember-cli-materialize/components/md-card-reveal', ['exports', 'ember', '
 
   'use strict';
 
-  exports['default'] = Ember['default'].Component.extend({
+  var Component = Ember['default'].Component;
+
+  exports['default'] = Component.extend({
     layout: layout['default'],
     tagName: 'div',
 
     classNames: ['card-reveal'],
-
     classNameBinding: 'class',
     activatorBinding: 'parentView.activator'
   });
@@ -92050,11 +92196,12 @@ define('ember-cli-materialize/components/md-card', ['exports', 'ember', 'ember-c
 
   'use strict';
 
-  exports['default'] = Ember['default'].Component.extend({
+  var Component = Ember['default'].Component;
+
+  exports['default'] = Component.extend({
     layout: layout['default'],
 
     classNames: ['card'],
-
     classNameBinding: 'class'
   });
 
@@ -92069,30 +92216,36 @@ define('ember-cli-materialize/components/md-check', ['exports', 'ember-cli-mater
   });
 
 });
-define('ember-cli-materialize/components/md-checks', ['exports', 'ember-cli-materialize/components/selectable-item-group', 'ember-cli-materialize/components/md-check', 'ember-cli-materialize/mixins/group-selectable-item'], function (exports, SelectableItemGroup, CheckboxComponent, GroupSelectableItemMixin) {
+define('ember-cli-materialize/components/md-checks-check', ['exports', 'ember-cli-materialize/components/md-check', 'ember-cli-materialize/mixins/group-selectable-item'], function (exports, CheckboxComponent, GroupSelectableItemMixin) {
+
+	'use strict';
+
+	exports['default'] = CheckboxComponent['default'].extend(GroupSelectableItemMixin['default'], {});
+
+});
+define('ember-cli-materialize/components/md-checks', ['exports', 'ember-cli-materialize/components/selectable-item-group'], function (exports, SelectableItemGroup) {
 
   'use strict';
 
-  var GroupCheckboxComponent = CheckboxComponent['default'].extend(GroupSelectableItemMixin['default'], {});
-
   exports['default'] = SelectableItemGroup['default'].extend({
-    selectableItemView: GroupCheckboxComponent,
+    selectableItemView: 'md-checks-check',
     multiple: true
   });
 
 });
-define('ember-cli-materialize/components/md-collapsible', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-collapsible', 'ember-new-computed'], function (exports, Ember, layout, computed) {
+define('ember-cli-materialize/components/md-collapsible', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-collapsible', 'ember-new-computed'], function (exports, Ember, layout, _computed) {
 
   'use strict';
 
   var deprecate = Ember['default'].deprecate;
+  var Component = Ember['default'].Component;
 
-  exports['default'] = Ember['default'].Component.extend({
+  exports['default'] = Component.extend({
     layout: layout['default'],
     tagName: 'li',
     classNameBindings: ['class'],
     actionArg: null,
-    model: computed['default']('actionArg', {
+    model: _computed['default']('actionArg', {
       get: function get() {
         deprecate('md-collapsible#model is deprecated. Please use md-collapsible#actionArg instead');
         return this.get('actionArg');
@@ -92104,7 +92257,7 @@ define('ember-cli-materialize/components/md-collapsible', ['exports', 'ember', '
     }),
     actions: {
       headerClicked: function headerClicked() {
-        this.sendAction("action", this.get("actionArg"));
+        this.sendAction('action', this.get('actionArg'));
       }
     }
   });
@@ -92114,23 +92267,27 @@ define('ember-cli-materialize/components/md-collection', ['exports', 'ember', 'e
 
   'use strict';
 
+  var Component = Ember['default'].Component;
   var bool = Ember['default'].computed.bool;
 
-  exports['default'] = Ember['default'].Component.extend({
+  exports['default'] = Component.extend({
+    layout: layout['default'],
     classNames: ['collection'],
     classNameBindings: ['_hasHeader:with-header'],
     headerView: DefaultCollectionHeaderView['default'],
     header: null,
-    layout: layout['default'],
     _hasHeader: bool('header')
   });
 
 });
-define('ember-cli-materialize/components/md-copyright', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-copyright', 'ember-new-computed'], function (exports, Ember, layout, computed) {
+define('ember-cli-materialize/components/md-copyright', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-copyright'], function (exports, Ember, layout) {
 
   'use strict';
 
-  exports['default'] = Ember['default'].Component.extend({
+  var Component = Ember['default'].Component;
+  var computed = Ember['default'].computed;
+
+  exports['default'] = Component.extend({
     layout: layout['default'],
     classNames: ['footer-copyright'],
 
@@ -92142,16 +92299,14 @@ define('ember-cli-materialize/components/md-copyright', ['exports', 'ember', 'em
     startYear: null,
     text: null,
 
-    date: computed['default']({
-      get: function get() {
-        var currentYear = new Date().getFullYear();
-        var startYear = this.get('startYear');
+    date: computed(function () {
+      var currentYear = new Date().getFullYear();
+      var startYear = this.get('startYear');
 
-        if (startYear === null || startYear === currentYear) {
-          return '' + currentYear;
-        } else {
-          return startYear + ' - ' + currentYear;
-        }
+      if (startYear === null || startYear === currentYear) {
+        return '' + currentYear;
+      } else {
+        return startYear + ' - ' + currentYear;
       }
     })
   });
@@ -92165,7 +92320,6 @@ define('ember-cli-materialize/components/md-fixed-btn', ['exports', 'ember-cli-m
     layout: layout['default'],
     tagName: 'li',
     classNames: ['md-fixed-btn']
-
   });
 
 });
@@ -92209,14 +92363,16 @@ define('ember-cli-materialize/components/md-input-date', ['exports', 'ember', 'e
     },
 
     _setupPicker: function _setupPicker() {
+      var _this = this;
+
       var datePickerOptions = this.getProperties('selectMonths', 'numberOfYears', 'min', 'max');
       datePickerOptions.selectYears = datePickerOptions.numberOfYears;
 
-      this._onDateSet = (function (evt) {
+      this._onDateSet = function (evt) {
         if (evt.select) {
-          this.set('value', formatDate(evt.select));
+          _this.set('value', formatDate(evt.select));
         }
-      }).bind(this);
+      };
 
       this.$('.datepicker').pickadate(Ember['default'].$.extend(datePickerOptions, {
         onSet: this._onDateSet
@@ -92232,14 +92388,18 @@ define('ember-cli-materialize/components/md-input-date', ['exports', 'ember', 'e
   });
 
 });
-define('ember-cli-materialize/components/md-input-field', ['exports', 'ember', 'ember-new-computed'], function (exports, Ember, computed) {
+define('ember-cli-materialize/components/md-input-field', ['exports', 'ember'], function (exports, Ember) {
 
   'use strict';
 
-  exports['default'] = Ember['default'].Component.extend({
+  var Component = Ember['default'].Component;
+  var computed = Ember['default'].computed;
+  var isPresent = Ember['default'].isPresent;
+
+  exports['default'] = Component.extend({
     classNames: ['input-field'],
 
-    bindAttributes: ['disabled', 'readonly'],
+    bindAttributes: ['disabled', 'readonly', 'autofocus'],
     validate: false,
 
     errorsPath: 'errors',
@@ -92247,11 +92407,11 @@ define('ember-cli-materialize/components/md-input-field', ['exports', 'ember', '
     init: function init() {
       this._super.apply(this, arguments);
       // bind validation errors
-      //TODO: This is private API usage, which may bite us when glimmer arrives
+      // TODO: This is private API usage, which may bite us when glimmer arrives
       //  We should find some less brittle way of introspecting the binding path,
       //  or propose a framework modification to support this in the long term
       var propertyPath = this.get('valueBinding._label');
-      if (Ember['default'].isPresent(propertyPath)) {
+      if (isPresent(propertyPath)) {
         Ember['default'].Binding.from('targetObject.' + this.get('errorsPath') + '.' + propertyPath).to('errors').connect(this);
       }
     },
@@ -92259,21 +92419,19 @@ define('ember-cli-materialize/components/md-input-field', ['exports', 'ember', '
     didInsertElement: function didInsertElement() {
       this._super.apply(this, arguments);
       // pad the errors element when an icon is present
-      if (Ember['default'].isPresent(this.get('icon'))) {
+      if (isPresent(this.get('icon'))) {
         this.$('> span').css('padding-left', '3rem');
       }
     },
 
-    id: computed['default']('elementId', {
-      get: function get() {
-        return this.get('elementId') + '-input';
-      }
+    id: computed('elementId', function () {
+      return this.get('elementId') + '-input';
     }),
 
     _setupLabel: function _setupLabel() {
-      var labelSelector = this.$('> label');
-      if (Ember['default'].isPresent(this.get('value')) && !labelSelector.hasClass('active')) {
-        labelSelector.addClass('active');
+      var $label = this.$('> label');
+      if (isPresent(this.get('value')) && !$label.hasClass('active')) {
+        $label.addClass('active');
       }
     }
 
@@ -92296,13 +92454,15 @@ define('ember-cli-materialize/components/md-input', ['exports', 'ember-cli-mater
   });
 
 });
-define('ember-cli-materialize/components/md-loader', ['exports', 'ember', 'ember-cli-materialize/mixins/uses-settings', 'ember-cli-materialize/templates/components/md-loader', 'ember-new-computed'], function (exports, Ember, UsesSettings, layout, computed) {
+define('ember-cli-materialize/components/md-loader', ['exports', 'ember', 'ember-cli-materialize/mixins/uses-settings', 'ember-cli-materialize/templates/components/md-loader'], function (exports, Ember, UsesSettings, layout) {
 
   'use strict';
 
+  var Component = Ember['default'].Component;
+  var computed = Ember['default'].computed;
   var oneWay = Ember['default'].computed.oneWay;
 
-  exports['default'] = Ember['default'].Component.extend(UsesSettings['default'], {
+  exports['default'] = Component.extend(UsesSettings['default'], {
     layout: layout['default'],
 
     classNameBindings: ['isBarType:progress:preloader-wrapper', 'active:active', 'size'],
@@ -92313,48 +92473,38 @@ define('ember-cli-materialize/components/md-loader', ['exports', 'ember', 'ember
     active: true,
     color: null,
 
-    isBarType: computed['default']('mode', {
-      get: function get() {
-        return ['determinate', 'indeterminate'].indexOf(this.get('mode')) >= 0;
+    isBarType: computed('mode', function () {
+      return ['determinate', 'indeterminate'].indexOf(this.get('mode')) >= 0;
+    }),
+
+    isDeterminate: computed('mode', function () {
+      return ['determinate'].indexOf(this.get('mode'));
+    }),
+
+    barStyle: computed('mode', 'percent', function () {
+      if (this.get('mode') === 'determinate') {
+        return new Ember['default'].Handlebars.SafeString('width: ' + parseInt(this.get('percent'), 10) + '%');
+      } else {
+        return new Ember['default'].Handlebars.SafeString('');
       }
     }),
 
-    isDeterminate: computed['default']('mode', {
-      get: function get() {
-        return ['determinate'].indexOf(this.get('mode'));
-      }
+    barClassName: computed('isBarType', 'mode', function () {
+      return this.get('isBarType') ? this.get('mode') : null;
     }),
 
-    barStyle: computed['default']('mode', 'percent', {
-      get: function get() {
-        if (this.get('mode') === 'determinate') {
-          return Ember['default'].String.htmlSafe('width: ' + parseInt(this.get('percent'), 10) + '%').string;
+    spinnerClassNames: computed('color', 'isBarType', function () {
+      if (!this.get('isBarType')) {
+        var color = this.get('color');
+        if (!color) {
+          return Ember['default'].A(['blue', 'red', 'green', 'yellow'].map(function (c) {
+            return 'spinner-layer spinner-' + c;
+          }));
         } else {
-          return null;
+          return Ember['default'].A(['spinner-layer spinner-' + color + '-only']);
         }
-      }
-    }),
-
-    barClassName: computed['default']('isBarType', 'mode', {
-      get: function get() {
-        return this.get('isBarType') ? this.get('mode') : null;
-      }
-    }),
-
-    spinnerClassNames: computed['default']('color', 'isBarType', {
-      get: function get() {
-        if (!this.get('isBarType')) {
-          var color = this.get('color');
-          if (!color) {
-            return Ember['default'].A(['blue', 'red', 'green', 'yellow'].map(function (c) {
-              return 'spinner-layer spinner-' + c;
-            }));
-          } else {
-            return Ember['default'].A(['spinner-layer spinner-' + color + '-only']);
-          }
-        } else {
-          return Ember['default'].A();
-        }
+      } else {
+        return Ember['default'].A();
       }
     })
   });
@@ -92364,44 +92514,43 @@ define('ember-cli-materialize/components/md-modal-container', ['exports', 'ember
 
   'use strict';
 
+  var Component = Ember['default'].Component;
   var oneWay = Ember['default'].computed.oneWay;
 
-  exports['default'] = Ember['default'].Component.extend(UsesSettings['default'], {
-    modalContainerId: oneWay('_mdSettings.modalContainerId'),
-    layout: layout['default']
+  exports['default'] = Component.extend(UsesSettings['default'], {
+    layout: layout['default'],
+    modalContainerId: oneWay('_mdSettings.modalContainerId')
   });
 
 });
-define('ember-cli-materialize/components/md-modal', ['exports', 'ember', 'ember-cli-materialize/mixins/uses-settings', 'ember-cli-materialize/templates/components/md-modal', 'ember-new-computed'], function (exports, Ember, UsesSettings, layout, computed) {
+define('ember-cli-materialize/components/md-modal', ['exports', 'ember', 'ember-cli-materialize/mixins/uses-settings', 'ember-cli-materialize/templates/components/md-modal'], function (exports, Ember, UsesSettings, layout) {
 
   'use strict';
 
+  var Component = Ember['default'].Component;
+  var computed = Ember['default'].computed;
   var oneWay = Ember['default'].computed.oneWay;
 
-  exports['default'] = Ember['default'].Component.extend(UsesSettings['default'], {
+  exports['default'] = Component.extend(UsesSettings['default'], {
     layout: layout['default'],
 
     acceptsKeyResponder: true,
     attributeBindings: ['style:inlineStyle'],
     concatenatedProperties: ['modalClassNames'],
 
-    inlineStyle: computed['default']({
-      get: function get() {
-        return 'z-index: 1000;';
-      }
+    inlineStyle: computed(function () {
+      return new Ember['default'].Handlebars.SafeString('z-index: 1000;');
     }),
 
     isFooterFixed: oneWay('_mdSettings.modalIsFooterFixed'),
 
     modalClassNames: ['modal', 'show'],
-    _modalClassString: computed['default']('modalClassNames.@each', 'isFooterFixed', {
-      get: function get() {
-        var names = this.get('modalClassNames');
-        if (this.get('isFooterFixed')) {
-          names.push('modal-fixed-footer');
-        }
-        return names.join(' ');
+    _modalClassString: computed('modalClassNames.[]', 'isFooterFixed', function () {
+      var names = this.get('modalClassNames');
+      if (this.get('isFooterFixed')) {
+        names.push('modal-fixed-footer');
       }
+      return names.join(' ');
     }),
 
     didInsertElement: function didInsertElement() {
@@ -92427,23 +92576,28 @@ define('ember-cli-materialize/components/md-modal', ['exports', 'ember', 'ember-
   });
 
 });
-define('ember-cli-materialize/components/md-navbar', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-navbar', 'ember-new-computed'], function (exports, Ember, layout, computed) {
+define('ember-cli-materialize/components/md-navbar', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-navbar'], function (exports, Ember, layout) {
 
   'use strict';
 
-  exports['default'] = Ember['default'].Component.extend({
+  var computed = Ember['default'].computed;
+  var Component = Ember['default'].Component;
+  var typeOf = Ember['default'].typeOf;
+  var scheduleOnce = Ember['default'].run.scheduleOnce;
+
+  exports['default'] = Component.extend({
     tagName: 'nav',
     layout: layout['default'],
     homeRoute: 'index',
 
     didInsertElement: function didInsertElement() {
       this._super.apply(this, arguments);
-      //TODO: is this scheduling necessary?
-      Ember['default'].run.scheduleOnce('afterRender', this, this._setupNavbar);
+      // TODO: is this scheduling necessary?
+      scheduleOnce('afterRender', this, this._setupNavbar);
     },
 
     _setupNavbar: function _setupNavbar() {
-      if (Ember['default'].typeOf(Ember['default'].$('.button-collapse').sideNav) === 'function') {
+      if (typeOf(Ember['default'].$('.button-collapse').sideNav) === 'function') {
         this.notifyPropertyChange('_sideNavId');
         this.$('.button-collapse').sideNav({
           closeOnClick: true
@@ -92451,24 +92605,26 @@ define('ember-cli-materialize/components/md-navbar', ['exports', 'ember', 'ember
       }
     },
 
-    _sideNavId: computed['default']({
-      get: function get() {
-        return this.get('element.id') + '-sidenav';
-      }
+    _sideNavId: computed(function () {
+      return this.get('element.id') + '-sidenav';
     })
 
-    //TODO: Unregister any listeners that $.sideNav() puts in place
+    // TODO: Unregister any listeners that $.sideNav() puts in place
     // _teardownNavbar() {
     //
     // }
   });
 
 });
-define('ember-cli-materialize/components/md-pagination', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-pagination', 'ember-new-computed'], function (exports, Ember, layout, computed) {
+define('ember-cli-materialize/components/md-pagination', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-pagination'], function (exports, Ember, layout) {
 
   'use strict';
 
-  exports['default'] = Ember['default'].Component.extend({
+  var Component = Ember['default'].Component;
+  var computed = Ember['default'].computed;
+  var A = Ember['default'].A;
+
+  exports['default'] = Component.extend({
     layout: layout['default'],
 
     classNames: ['pagination'],
@@ -92479,65 +92635,53 @@ define('ember-cli-materialize/components/md-pagination', ['exports', 'ember', 'e
     range: 5,
     tagName: 'ul',
 
-    windowRange: computed['default']('min', 'max', 'range', 'current', {
-      get: function get() {
-        //TODO: this should be broken out into a util, so that it can be tested independently
-        var max = this.get('max');
-        var min = this.get('min');
-        var range = this.get('range');
-        var current = this.get('current');
+    windowRange: computed('min', 'max', 'range', 'current', function () {
+      // TODO: this should be broken out into a util, so that it can be tested independently
+      var max = this.get('max');
+      var min = this.get('min');
+      var range = this.get('range');
+      var current = this.get('current');
 
-        var middle = Math.floor((max - min) / 2);
-        var low = Math.max(min, current - Math.floor(range / 2));
-        var high = Math.min(max, current + Math.floor(range / 2));
+      var middle = Math.floor((max - min) / 2);
+      var low = Math.max(min, current - Math.floor(range / 2));
+      var high = Math.min(max, current + Math.floor(range / 2));
 
-        if (high - low < range - 1) {
-          if (current <= middle) {
-            high = Math.min(max, low + range - 1);
-          } else {
-            low = Math.max(min, high - (range - 1));
-          }
+      if (high - low < range - 1) {
+        if (current <= middle) {
+          high = Math.min(max, low + range - 1);
+        } else {
+          low = Math.max(min, high - (range - 1));
         }
-        return {
-          low: low, high: high
-        };
       }
+      return {
+        low: low, high: high
+      };
     }),
 
-    _pages: computed['default']('windowRange.low', 'windowRange.high', 'current', {
-      get: function get() {
-        var a = Ember['default'].A();
-        var winRange = this.get('windowRange');
-        var current = this.get('current');
-        for (var i = winRange.low; i <= winRange.high; i += 1) {
-          a.addObject({ val: i, cssClass: current === i ? 'active' : 'waves-effect' });
-        }
-        return a;
+    _pages: computed('windowRange.low', 'windowRange.high', 'current', function () {
+      var a = new A([]);
+      var winRange = this.get('windowRange');
+      var current = this.get('current');
+      for (var i = winRange.low; i <= winRange.high; i += 1) {
+        a.addObject({ val: i, cssClass: current === i ? 'active' : 'waves-effect' });
       }
+      return a;
     }),
 
-    _canGoBack: computed['default']('min', 'current', {
-      get: function get() {
-        return this.get('current') > this.get('min');
-      }
+    _canGoBack: computed('min', 'current', function () {
+      return this.get('current') > this.get('min');
     }),
 
-    _canGoFwd: computed['default']('max', 'current', {
-      get: function get() {
-        return this.get('current') < this.get('max');
-      }
+    _canGoFwd: computed('max', 'current', function () {
+      return this.get('current') < this.get('max');
     }),
 
-    incrementClass: computed['default']('_canGoFwd', {
-      get: function get() {
-        return this.get('_canGoFwd') ? '' : 'disabled';
-      }
+    incrementClass: computed('_canGoFwd', function () {
+      return this.get('_canGoFwd') ? '' : 'disabled';
     }),
 
-    decrementClass: computed['default']('_canGoBack', {
-      get: function get() {
-        return this.get('_canGoBack') ? '' : 'disabled';
-      }
+    decrementClass: computed('_canGoBack', function () {
+      return this.get('_canGoBack') ? '' : 'disabled';
     }),
 
     actions: {
@@ -92562,7 +92706,9 @@ define('ember-cli-materialize/components/md-parallax', ['exports', 'ember', 'emb
 
   'use strict';
 
-  exports['default'] = Ember['default'].Component.extend({
+  var Component = Ember['default'].Component;
+
+  exports['default'] = Component.extend({
     layout: layout['default'],
     classNames: ['parallax-container'],
 
@@ -92575,16 +92721,18 @@ define('ember-cli-materialize/components/md-parallax', ['exports', 'ember', 'emb
       this.$('.parallax').parallax();
     }
 
+    // TODO: unregister any listeners that $.parallax() registers
+    // _teardownParallax() {
+    //
+    // }
   });
-  //TODO: unregister any listeners that $.parallax() registers
-  // _teardownParallax() {
-  //
-  // }
 
 });
-define('ember-cli-materialize/components/md-radio', ['exports', 'ember', 'ember-cli-materialize/components/selectable-item', 'ember-cli-materialize/templates/components/md-radio', 'ember-new-computed'], function (exports, Ember, SelectableItem, layout, computed) {
+define('ember-cli-materialize/components/md-radio', ['exports', 'ember', 'ember-cli-materialize/components/selectable-item', 'ember-cli-materialize/templates/components/md-radio'], function (exports, Ember, SelectableItem, layout) {
 
   'use strict';
+
+  var computed = Ember['default'].computed;
 
   exports['default'] = SelectableItem['default'].extend({
     layout: layout['default'],
@@ -92594,10 +92742,8 @@ define('ember-cli-materialize/components/md-radio', ['exports', 'ember', 'ember-
 
     className: ['materialize-radio'],
 
-    checked: computed['default']('groupValue', 'value', {
-      get: function get() {
-        return this.get('groupValue') === this.get('value');
-      }
+    checked: computed('groupValue', 'value', function () {
+      return this.get('groupValue') === this.get('value');
     }),
 
     didInsertElement: function didInsertElement() {
@@ -92607,22 +92753,30 @@ define('ember-cli-materialize/components/md-radio', ['exports', 'ember', 'ember-
   });
 
 });
-define('ember-cli-materialize/components/md-radios', ['exports', 'ember-cli-materialize/components/selectable-item-group', 'ember-cli-materialize/components/md-radio', 'ember-cli-materialize/mixins/group-selectable-item'], function (exports, SelectableItemGroup, RadioComponent, GroupSelectableItemMixin) {
+define('ember-cli-materialize/components/md-radios-radio', ['exports', 'ember-cli-materialize/components/md-radio', 'ember-cli-materialize/mixins/group-selectable-item'], function (exports, RadioComponent, GroupSelectableItemMixin) {
 
-    'use strict';
+	'use strict';
 
-    var GroupRadioComponent = RadioComponent['default'].extend(GroupSelectableItemMixin['default'], {});
+	exports['default'] = RadioComponent['default'].extend(GroupSelectableItemMixin['default'], {});
 
-    exports['default'] = SelectableItemGroup['default'].extend({
-        selectableItemView: GroupRadioComponent
-    });
+});
+define('ember-cli-materialize/components/md-radios', ['exports', 'ember-cli-materialize/components/selectable-item-group'], function (exports, SelectableItemGroup) {
+
+  'use strict';
+
+  exports['default'] = SelectableItemGroup['default'].extend({
+    classNames: ['md-radios'],
+    selectableItemView: 'md-radios-radio'
+  });
 
 });
 define('ember-cli-materialize/components/md-range', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-range'], function (exports, Ember, layout) {
 
   'use strict';
 
-  exports['default'] = Ember['default'].Component.extend({
+  var Component = Ember['default'].Component;
+
+  exports['default'] = Component.extend({
     layout: layout['default'],
 
     classNames: ['range-field'],
@@ -92649,15 +92803,17 @@ define('ember-cli-materialize/components/md-select', ['exports', 'ember', 'ember
     },
 
     _setupSelect: function _setupSelect() {
+      // jscs: disable
       this.$('select').material_select();
+      // jscs: enable
     },
 
-    //TODO: clean up any listeners that $.select() puts in place
+    // TODO: clean up any listeners that $.select() puts in place
     // _teardownSelect() {
     //
     // }
 
-    //TODO: this could be converted to a computed property, returning a string
+    // TODO: this could be converted to a computed property, returning a string
     //  that is bound to the class attribute of the inputSelector
     errorsDidChange: Ember['default'].observer('errors', function () {
       var inputSelector = this.$('input');
@@ -92678,9 +92834,11 @@ define('ember-cli-materialize/components/md-select', ['exports', 'ember', 'ember
   });
 
 });
-define('ember-cli-materialize/components/md-switch', ['exports', 'ember-cli-materialize/components/selectable-item', 'ember-cli-materialize/templates/components/md-switch', 'ember-new-computed'], function (exports, SelectableItem, layout, computed) {
+define('ember-cli-materialize/components/md-switch', ['exports', 'ember', 'ember-cli-materialize/components/selectable-item', 'ember-cli-materialize/templates/components/md-switch'], function (exports, Ember, SelectableItem, layout) {
 
   'use strict';
+
+  var computed = Ember['default'].computed;
 
   exports['default'] = SelectableItem['default'].extend({
     layout: layout['default'],
@@ -92691,33 +92849,38 @@ define('ember-cli-materialize/components/md-switch', ['exports', 'ember-cli-mate
     onLabel: 'On',
     disabled: false,
 
-    _labelClass: computed['default']('name', {
-      get: function get() {
-        return this.get('name') ? 'right' : '';
-      }
+    _labelClass: computed('name', function () {
+      return this.get('name') ? 'right' : '';
     })
   });
 
 });
-define('ember-cli-materialize/components/md-switches', ['exports', 'ember-cli-materialize/components/selectable-item-group', 'ember-cli-materialize/mixins/group-selectable-item', 'ember-cli-materialize/components/md-switch'], function (exports, SelectableItemGroup, GroupSelectableItemMixin, SwitchComponent) {
+define('ember-cli-materialize/components/md-switches-switch', ['exports', 'ember-cli-materialize/mixins/group-selectable-item', 'ember-cli-materialize/components/md-switch'], function (exports, GroupSelectableItemMixin, SwitchComponent) {
+
+	'use strict';
+
+	exports['default'] = SwitchComponent['default'].extend(GroupSelectableItemMixin['default'], {});
+
+});
+define('ember-cli-materialize/components/md-switches', ['exports', 'ember-cli-materialize/components/selectable-item-group'], function (exports, SelectableItemGroup) {
 
   'use strict';
 
-  var GroupSwitchComponent = SwitchComponent['default'].extend(GroupSelectableItemMixin['default'], {});
-
   exports['default'] = SelectableItemGroup['default'].extend({
-    selectableItemView: GroupSwitchComponent,
+    selectableItemView: 'md-switches-switch',
     multiple: true
   });
 
 });
-define('ember-cli-materialize/components/md-tab', ['exports', 'ember', 'ember-composability/mixins/child-component-support', 'ember-cli-materialize/components/md-tabs', 'ember-cli-materialize/templates/components/md-tab', 'ember-new-computed'], function (exports, Ember, ChildComponentSupport, MdTabs, layout, computed) {
+define('ember-cli-materialize/components/md-tab', ['exports', 'ember', 'ember-composability/mixins/child-component-support', 'ember-cli-materialize/components/md-tabs', 'ember-cli-materialize/templates/components/md-tab'], function (exports, Ember, ChildComponentSupport, MdTabs, layout) {
 
   'use strict';
 
+  var Component = Ember['default'].Component;
+  var computed = Ember['default'].computed;
   var oneWay = Ember['default'].computed.oneWay;
 
-  exports['default'] = Ember['default'].Component.extend(ChildComponentSupport['default'], {
+  exports['default'] = Component.extend(ChildComponentSupport['default'], {
     _parentComponentTypes: [MdTabs['default']],
     tagName: 'li',
     layout: layout['default'],
@@ -92727,157 +92890,126 @@ define('ember-cli-materialize/components/md-tab', ['exports', 'ember', 'ember-co
 
     colWidth: oneWay('composableParent.colWidth'),
 
-    click: function click() {
-      this.get('composableParent').send('tabClicked', this);
-    },
+    _colClass: computed('colWidth', function () {
+      return 's' + this.get('colWidth');
+    }),
 
-    _colClass: computed['default']('colWidth', {
-      get: function get() {
-        return 's' + this.get('colWidth');
+    active: computed('composableParent.composableChildren.[]', 'composableParent.selected', 'value', function () {
+      var selected = this.get('composableParent.selected');
+      if (selected) {
+        return selected === this.get('value');
+      } else {
+        var values = this.get('composableParent').tabComponents().map(function (t) {
+          return t.get('value');
+        });
+        return values.indexOf(this.get('value')) === 0;
       }
-    })
+    }).readOnly(),
+
+    click: function click() {
+      this.get('composableParent').set('selected', this.get('value'));
+    }
 
   });
 
 });
-define('ember-cli-materialize/components/md-table-col', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-table-col', 'ember-new-computed', 'ember-cli-materialize/components/md-table', 'ember-cli-materialize/views/default-column-header'], function (exports, Ember, layout, computed, Table, DefaultColumnHeaderView) {
+define('ember-cli-materialize/components/md-table-col', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-table-col', 'ember-cli-materialize/components/md-table', 'ember-composability/mixins/child-component-support', 'ember-cli-materialize/views/default-column-header'], function (exports, Ember, layout, Table, ChildComponentSupport, DefaultColumnHeaderView) {
 
   'use strict';
 
-  var _get = Ember['default'].get;
+  var Component = Ember['default'].Component;
+  var computed = Ember['default'].computed;
+  var get = Ember['default'].get;
   var oneWay = Ember['default'].computed.oneWay;
 
-  exports['default'] = Ember['default'].Component.extend({
+  exports['default'] = Component.extend(ChildComponentSupport['default'], {
+    _parentComponentTypes: [Table['default']],
     tagName: 'td',
     layout: layout['default'],
     valueBindingPath: null,
     headerView: DefaultColumnHeaderView['default'],
     header: oneWay('valueBindingPath'),
     key: oneWay('valueBindingPath'),
-    _value: computed['default']('valueBindingPath', 'row', {
-      get: function get() {
-        var vbp = this.get('valueBindingPath');
-        if (!vbp) {
-          return '';
-        } else {
-          return _get(this.get('row'), this.get('valueBindingPath'));
-        }
+    _value: computed('valueBindingPath', 'row', function () {
+      var vbp = this.get('valueBindingPath');
+      if (!vbp) {
+        return '';
+      } else {
+        return get(this.get('row'), this.get('valueBindingPath'));
       }
-    }),
-
-    didInsertElement: function didInsertElement() {
-      this._super.apply(this, arguments);
-      this.registerWithTable();
-    },
-    willDestroyElement: function willDestroyElement() {
-      this._super.apply(this, arguments);
-      this.unregisterWithTable();
-    },
-
-    registerWithTable: function registerWithTable() {
-      var table = this.nearestOfType(Table['default']);
-      table.registerColumn(this.get('key'), this);
-    },
-
-    unregisterWithTable: function unregisterWithTable() {
-      var table = this.nearestOfType(Table['default']);
-      table.unregisterColumn(this.get('key'), this);
-    }
+    })
   });
 
 });
-define('ember-cli-materialize/components/md-table', ['exports', 'ember', 'ember-cli-materialize/templates/components/md-table', 'ember-new-computed'], function (exports, Ember, layout, computed) {
+define('ember-cli-materialize/components/md-table', ['exports', 'ember', 'ember-composability/mixins/parent-component-support', 'ember-cli-materialize/templates/components/md-table'], function (exports, Ember, ParentComponentSupport, layout) {
 
   'use strict';
 
-  exports['default'] = Ember['default'].Component.extend({
+  var A = Ember['default'].A;
+  var Component = Ember['default'].Component;
+  var computed = Ember['default'].computed;
+
+  exports['default'] = Component.extend(ParentComponentSupport['default'], {
     tagName: 'table',
     layout: layout['default'],
     columns: null,
+    composableChildrenDebounceTime: 1,
     init: function init() {
       this._super.apply(this, arguments);
       this.set('columns', Ember['default'].A());
     },
 
-    registerColumn: function registerColumn(key, column) {
-      var existingColumn = this.get('columns').findBy('key', key);
-      if (existingColumn) {
-        return;
-      } else {
-        this.get('columns').addObject({ key: key, column: column });
-      }
+    columnComponents: computed('composableChildren', function () {
+      return new A(this.get('composableChildren'));
+    }).readOnly(),
+
+    registerChildComponent: function registerChildComponent(childComponent) {
+      this.get('_childComponents').add(childComponent, childComponent.get('key'));
+      this._notifyComposableChildrenChanged();
     },
 
-    columnComponents: computed['default']('columns.@each.key', {
-      get: function get() {
-        return Ember['default'].A(this.get('columns').mapBy('column'));
-      }
-    }),
-
-    unregisterColumn: function unregisterColumn(key) {
-      this.get('columns').removeObject(this.get('columns').findBy('key', key));
+    unregisterChildComponent: function unregisterChildComponent(childComponent) {
+      this.get('_childComponents')['delete'](childComponent, childComponent.get('key'));
+      this._notifyComposableChildrenChanged();
     }
   });
 
 });
-define('ember-cli-materialize/components/md-tabs', ['exports', 'ember', 'ember-composability/mixins/parent-component-support', 'ember-cli-materialize/templates/components/md-tabs', 'ember-new-computed'], function (exports, Ember, ParentComponentSupport, layout, computed) {
+define('ember-cli-materialize/components/md-tabs', ['exports', 'ember', 'ember-composability/mixins/parent-component-support', 'ember-cli-materialize/templates/components/md-tabs'], function (exports, Ember, ParentComponentSupport, layout) {
 
   'use strict';
 
-  var get = Ember['default'].get;
+  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-  exports['default'] = Ember['default'].Component.extend(ParentComponentSupport['default'], {
+  var get = Ember['default'].get;
+  var Component = Ember['default'].Component;
+  var computed = Ember['default'].computed;
+  var alias = Ember['default'].computed.alias;
+  var debounce = Ember['default'].run.debounce;
+
+  exports['default'] = Component.extend(ParentComponentSupport['default'], {
     layout: layout['default'],
     classNames: ['materialize-tabs', 'row'],
-
+    composableChildrenDebounceTime: 1,
     content: null,
-    numTabs: Ember['default'].computed.alias('composableChildren.length'),
-    _selected: null,
+    numTabs: alias('composableChildren.length'),
     optionValuePath: 'id',
     optionLabelPath: 'title',
     colWidth: 2,
 
+    selected: null,
+
     didInsertElement: function didInsertElement() {
       this._super.apply(this, arguments);
-      this._setInitialTabSelection();
       this._updateIndicatorPosition(false);
     },
 
-    selected: computed['default']('_selected', {
-      get: function get() {
-        return this.get('_selected');
-      },
-      set: function set(key, newVal) {
-        var tabComponents = this.tabComponents();
-        var tc = tabComponents.findBy('value', newVal);
-        if (tc) {
-          this._setActiveTab(tc);
-        }
-        return newVal;
-      }
-    }),
-
     _indicatorUpdater: Ember['default'].observer('selected', 'content.[]', 'composableChildren.[]', function () {
-      Ember['default'].run.debounce(this, this._updateIndicatorPosition, 100);
+      debounce(this, this._updateIndicatorPosition, 100);
     }),
 
     tabComponents: function tabComponents() {
-      var tabComponents = this.get('composableChildren') || Ember['default'].A();
-      tabComponents.reverse();
-      return tabComponents;
-    },
-
-    _setInitialTabSelection: function _setInitialTabSelection() {
-      var tabComponents = this.tabComponents();
-      if (this.get('selected') === null && tabComponents.length > 0) {
-        var tc = tabComponents[tabComponents.length - 1];
-        this._setActiveTab(tc);
-      } else {
-        if (this.get('selected')) {
-          var tc = tabComponents.findBy('value', this.get('selected'));
-          this._setActiveTab(tc);
-        }
-      }
+      return Ember['default'].A(this.get('composableChildren')) || Ember['default'].A();
     },
 
     _updateIndicatorPosition: function _updateIndicatorPosition() {
@@ -92888,9 +93020,15 @@ define('ember-cli-materialize/components/md-tabs', ['exports', 'ember', 'ember-c
       if (!this.element) {
         return;
       }
-      var tabComponent = (this.get('composableChildren') || []).filter(function (item) {
+
+      var _filter = (this.get('composableChildren') || []).filter(function (item) {
         return get(item, 'value') === _this.get('selected');
-      })[0];
+      });
+
+      var _filter2 = _slicedToArray(_filter, 1);
+
+      var tabComponent = _filter2[0];
+
       var tabSetRect = this.element.getBoundingClientRect();
       if (tabComponent) {
         var tabRect = tabComponent.element.getBoundingClientRect();
@@ -92909,30 +93047,13 @@ define('ember-cli-materialize/components/md-tabs', ['exports', 'ember', 'ember-c
       }
     },
 
-    _content: computed['default']('content.[]', 'optionLabelPath', 'optionValuePath', {
-      get: function get() {
-        var labelPath = this.get('optionLabelPath');
-        var valuePath = this.get('optionValuePath');
-        return new Ember['default'].A((this.get('content') || []).map(function (contentItem) {
-          return { id: contentItem[valuePath], title: contentItem[labelPath] };
-        }));
-      }
-    }),
-
-    _setActiveTab: function _setActiveTab(tabComponent) {
-      this.set('_selected', tabComponent.get('value'));
-      tabComponent.set('active', true);
-      this.tabComponents().forEach(function (tc) {
-        if (tc !== tabComponent) {
-          tc.set('active', false);
-        }
-      });
-    },
-    actions: {
-      tabClicked: function tabClicked(tab) {
-        this._setActiveTab(tab);
-      }
-    }
+    _content: computed('content.[]', 'optionLabelPath', 'optionValuePath', function () {
+      var labelPath = this.get('optionLabelPath');
+      var valuePath = this.get('optionValuePath');
+      return new Ember['default'].A((this.get('content') || []).map(function (contentItem) {
+        return { id: contentItem[valuePath], title: contentItem[labelPath] };
+      }));
+    })
   });
 
 });
@@ -92951,13 +93072,16 @@ define('ember-cli-materialize/components/md-textarea', ['exports', 'ember-cli-ma
   });
 
 });
-define('ember-cli-materialize/components/selectable-item-group', ['exports', 'ember', 'ember-composability/mixins/parent-component-support', 'ember-cli-materialize/templates/components/selectable-item-group', 'ember-new-computed'], function (exports, Ember, ParentComponentSupport, layout, computed) {
+define('ember-cli-materialize/components/selectable-item-group', ['exports', 'ember', 'ember-composability/mixins/parent-component-support', 'ember-cli-materialize/templates/components/selectable-item-group'], function (exports, Ember, ParentComponentSupport, layout) {
 
   'use strict';
 
-  var _get = Ember['default'].get;
+  var get = Ember['default'].get;
+  var Component = Ember['default'].Component;
+  var A = Ember['default'].A;
+  var computed = Ember['default'].computed;
 
-  exports['default'] = Ember['default'].Component.extend(ParentComponentSupport['default'], {
+  exports['default'] = Component.extend(ParentComponentSupport['default'], {
     layout: layout['default'],
 
     content: null,
@@ -92971,7 +93095,7 @@ define('ember-cli-materialize/components/selectable-item-group', ['exports', 'em
     init: function init() {
       this._super.apply(this, arguments);
       if (this.get('selection') === null && !!this.get('multiple')) {
-        this.set('selection', Ember['default'].A());
+        this.set('selection', new A([]));
       }
     },
 
@@ -93010,51 +93134,50 @@ define('ember-cli-materialize/components/selectable-item-group', ['exports', 'em
     },
     disabled: false,
 
-    _valuePath: computed['default']('optionValuePath', {
-      get: function get() {
-        var optionValuePath = _get(this, 'optionValuePath');
-        return optionValuePath.replace(/^content\.?/, '');
-      }
+    _valuePath: computed('optionValuePath', function () {
+      var optionValuePath = get(this, 'optionValuePath');
+      return optionValuePath.replace(/^content\.?/, '');
     }),
 
-    _labelPath: computed['default']('optionLabelPath', {
-      get: function get() {
-        var optionLabelPath = _get(this, 'optionLabelPath');
-        return optionLabelPath.replace(/^content\.?/, '');
-      }
+    _labelPath: computed('optionLabelPath', function () {
+      var optionLabelPath = get(this, 'optionLabelPath');
+      return optionLabelPath.replace(/^content\.?/, '');
     }),
 
-    _content: computed['default']('content.[]', '_valuePath', '_labelPath', {
-      get: function get() {
-        var valuePath = _get(this, '_valuePath');
-        var labelPath = _get(this, '_labelPath');
-        var content = _get(this, 'content') || Ember['default'].A([]);
+    _content: computed('content.[]', '_valuePath', '_labelPath', function () {
+      var valuePath = get(this, '_valuePath');
+      var labelPath = get(this, '_labelPath');
+      var content = get(this, 'content') || new A([]);
 
-        if (valuePath && labelPath) {
-          return Ember['default'].A(content.map(function (el) {
-            return { value: _get(el, valuePath), label: _get(el, labelPath) };
-          }));
-        } else {
-          return Ember['default'].A(content.map(function (el) {
-            return { value: el, label: el };
-          }));
-        }
+      if (valuePath && labelPath) {
+        return new A(content.map(function (el) {
+          return { value: get(el, valuePath), label: get(el, labelPath) };
+        }));
+      } else {
+        return new A(content.map(function (el) {
+          return { value: el, label: el };
+        }));
       }
     })
   });
 
 });
-define('ember-cli-materialize/components/selectable-item', ['exports', 'ember', 'ember-composability/mixins/child-component-support', 'ember-cli-materialize/components/selectable-item-group', 'ember-new-computed'], function (exports, Ember, ChildComponentSupport, SelectableItemGroup, computed) {
+define('ember-cli-materialize/components/selectable-item', ['exports', 'ember', 'ember-composability/mixins/child-component-support', 'ember-cli-materialize/components/selectable-item-group', 'ember-new-computed'], function (exports, Ember, ChildComponentSupport, SelectableItemGroup, _computed) {
 
   'use strict';
 
-  exports['default'] = Ember['default'].Component.extend(ChildComponentSupport['default'], {
+  var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
+  var computed = Ember['default'].computed;
+  var Component = Ember['default'].Component;
+
+  exports['default'] = Component.extend(ChildComponentSupport['default'], {
     _parentComponentTypes: [SelectableItemGroup['default']],
     checked: null,
     disabled: false,
     classNames: ['materialize-selectable-item'],
 
-    _checked: computed['default']('checked', 'group.selection', 'group.selection.[]', {
+    _checked: _computed['default']('checked', 'group.selection', 'group.selection.[]', {
       get: function get() {
         var group = this.get('group');
         if (!group) {
@@ -93078,7 +93201,11 @@ define('ember-cli-materialize/components/selectable-item', ['exports', 'ember', 
     isSelected: Ember['default'].computed.alias('_checked'),
 
     _setupLabel: function _setupLabel() {
-      var $input = this.$('.materialize-selectable-item-input')[0];
+      var _$$toArray = this.$('.materialize-selectable-item-input, .materialize-selectable-item-input-container input').toArray();
+
+      var _$$toArray2 = _slicedToArray(_$$toArray, 1);
+
+      var $input = _$$toArray2[0];
 
       var inputId = $input ? $input.id : null;
       this.$('.materialize-selectable-item-label').attr('for', inputId);
@@ -93089,10 +93216,8 @@ define('ember-cli-materialize/components/selectable-item', ['exports', 'ember', 
       this._setupLabel();
     },
 
-    group: computed['default']({
-      get: function get() {
-        return this.nearestWithProperty('__materializeSelectableItemGroup');
-      }
+    group: computed(function () {
+      return this.nearestWithProperty('__materializeSelectableItemGroup');
     })
   });
 
@@ -93101,24 +93226,25 @@ define('ember-cli-materialize/mixins/group-selectable-item', ['exports', 'ember'
 
   'use strict';
 
+  var Mixin = Ember['default'].Mixin;
   var alias = Ember['default'].computed.alias;
 
-  exports['default'] = Ember['default'].Mixin.create({
+  exports['default'] = Mixin.create({
     name: alias('content.label'),
     value: alias('content.value'),
     disabled: false
   });
 
 });
-define('ember-cli-materialize/mixins/uses-settings', ['exports', 'ember', 'ember-new-computed'], function (exports, Ember, computed) {
+define('ember-cli-materialize/mixins/uses-settings', ['exports', 'ember'], function (exports, Ember) {
 
   'use strict';
 
+  var computed = Ember['default'].computed;
+
   exports['default'] = Ember['default'].Mixin.create({
-    _mdSettings: computed['default']({
-      get: function get() {
-        return this.get('container').lookup('service:materialize-settings');
-      }
+    _mdSettings: computed(function () {
+      return this.get('container').lookup('service:materialize-settings');
     })
   });
 
@@ -93917,6 +94043,53 @@ define('ember-cli-materialize/templates/components/md-checkbox', ['exports'], fu
   }()));
 
 });
+define('ember-cli-materialize/templates/components/md-checks-check', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 2,
+            "column": 0
+          }
+        },
+        "moduleName": "modules/ember-cli-materialize/templates/components/md-checks-check.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var morphs = new Array(1);
+        morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+        dom.insertBoundary(fragment, 0);
+        return morphs;
+      },
+      statements: [
+        ["content","yield",["loc",[null,[1,0],[1,9]]]]
+      ],
+      locals: [],
+      templates: []
+    };
+  }()));
+
+});
 define('ember-cli-materialize/templates/components/md-collapsible', ['exports'], function (exports) {
 
   'use strict';
@@ -94102,7 +94275,7 @@ define('ember-cli-materialize/templates/components/md-collection', ['exports'], 
           },
           "moduleName": "modules/ember-cli-materialize/templates/components/md-collection.hbs"
         },
-        arity: 1,
+        arity: 2,
         cachedFragment: null,
         hasRendered: false,
         buildFragment: function buildFragment(dom) {
@@ -94121,9 +94294,9 @@ define('ember-cli-materialize/templates/components/md-collection', ['exports'], 
           return morphs;
         },
         statements: [
-          ["inline","yield",[["get","item",["loc",[null,[5,10],[5,14]]]]],[],["loc",[null,[5,2],[5,16]]]]
+          ["inline","yield",[["get","item",["loc",[null,[5,10],[5,14]]]],["get","idx",["loc",[null,[5,15],[5,18]]]]],[],["loc",[null,[5,2],[5,20]]]]
         ],
-        locals: ["item"],
+        locals: ["item","idx"],
         templates: []
       };
     }());
@@ -94423,7 +94596,7 @@ define('ember-cli-materialize/templates/components/md-input-date', ['exports'], 
           return morphs;
         },
         statements: [
-          ["attribute","class",["concat",[["get","icon",["loc",[null,[2,14],[2,18]]]]," prefix}}"]]]
+          ["attribute","class",["concat",[["get","icon",["loc",[null,[2,14],[2,18]]]]," prefix"]]]
         ],
         locals: [],
         templates: []
@@ -94644,11 +94817,11 @@ define('ember-cli-materialize/templates/components/md-input', ['exports'], funct
           "loc": {
             "source": null,
             "start": {
-              "line": 21,
+              "line": 22,
               "column": 2
             },
             "end": {
-              "line": 21,
+              "line": 22,
               "column": 40
             }
           },
@@ -94673,7 +94846,7 @@ define('ember-cli-materialize/templates/components/md-input', ['exports'], funct
           return morphs;
         },
         statements: [
-          ["content","errors.firstObject",["loc",[null,[21,17],[21,39]]]]
+          ["content","errors.firstObject",["loc",[null,[22,17],[22,39]]]]
         ],
         locals: [],
         templates: []
@@ -94686,11 +94859,11 @@ define('ember-cli-materialize/templates/components/md-input', ['exports'], funct
           "loc": {
             "source": null,
             "start": {
-              "line": 21,
+              "line": 22,
               "column": 40
             },
             "end": {
-              "line": 21,
+              "line": 22,
               "column": 56
             }
           },
@@ -94723,7 +94896,7 @@ define('ember-cli-materialize/templates/components/md-input', ['exports'], funct
             "column": 0
           },
           "end": {
-            "line": 23,
+            "line": 24,
             "column": 0
           }
         },
@@ -94774,10 +94947,10 @@ define('ember-cli-materialize/templates/components/md-input', ['exports'], funct
       },
       statements: [
         ["block","if",[["get","icon",["loc",[null,[1,6],[1,10]]]]],[],0,null,["loc",[null,[1,0],[3,7]]]],
-        ["inline","input",[],["id",["subexpr","@mut",[["get","id",["loc",[null,[5,11],[5,13]]]]],[],[]],"value",["subexpr","@mut",[["get","value",["loc",[null,[6,8],[6,13]]]]],[],[]],"type",["subexpr","@mut",[["get","type",["loc",[null,[8,7],[8,11]]]]],[],[]],"required",["subexpr","@mut",[["get","required",["loc",[null,[9,11],[9,19]]]]],[],[]],"pattern",["subexpr","@mut",[["get","pattern",["loc",[null,[10,10],[10,17]]]]],[],[]],"maxlength",["subexpr","@mut",[["get","maxlength",["loc",[null,[11,12],[11,21]]]]],[],[]],"readonly",["subexpr","@mut",[["get","readonly",["loc",[null,[12,11],[12,19]]]]],[],[]],"disabled",["subexpr","@mut",[["get","disabled",["loc",[null,[13,11],[13,19]]]]],[],[]],"autocomplete",["subexpr","@mut",[["get","autocomplete",["loc",[null,[14,15],[14,27]]]]],[],[]],"step",["subexpr","@mut",[["get","step",["loc",[null,[15,7],[15,11]]]]],[],[]],"min",["subexpr","@mut",[["get","min",["loc",[null,[16,6],[16,9]]]]],[],[]],"max",["subexpr","@mut",[["get","max",["loc",[null,[17,6],[17,9]]]]],[],[]],"class",["subexpr","concat",[["subexpr","if",[["get","validate",[]],"validate"],[],[]]," ",["subexpr","if",[["get","errors.firstObject",[]],"invalid","valid"],[],[]]," "],[],[]]],["loc",[null,[5,0],[17,11]]]],
-        ["attribute","for",["concat",[["get","id",["loc",[null,[18,14],[18,16]]]]]]],
-        ["content","label",["loc",[null,[18,20],[18,29]]]],
-        ["block","if",[["get","errors",["loc",[null,[21,8],[21,14]]]]],[],1,2,["loc",[null,[21,2],[21,63]]]]
+        ["inline","input",[],["id",["subexpr","@mut",[["get","id",["loc",[null,[5,11],[5,13]]]]],[],[]],"value",["subexpr","@mut",[["get","value",["loc",[null,[6,8],[6,13]]]]],[],[]],"type",["subexpr","@mut",[["get","type",["loc",[null,[8,7],[8,11]]]]],[],[]],"required",["subexpr","@mut",[["get","required",["loc",[null,[9,11],[9,19]]]]],[],[]],"pattern",["subexpr","@mut",[["get","pattern",["loc",[null,[10,10],[10,17]]]]],[],[]],"maxlength",["subexpr","@mut",[["get","maxlength",["loc",[null,[11,12],[11,21]]]]],[],[]],"readonly",["subexpr","@mut",[["get","readonly",["loc",[null,[12,11],[12,19]]]]],[],[]],"disabled",["subexpr","@mut",[["get","disabled",["loc",[null,[13,11],[13,19]]]]],[],[]],"autocomplete",["subexpr","@mut",[["get","autocomplete",["loc",[null,[14,15],[14,27]]]]],[],[]],"autofocus",["subexpr","@mut",[["get","autofocus",["loc",[null,[15,12],[15,21]]]]],[],[]],"step",["subexpr","@mut",[["get","step",["loc",[null,[16,7],[16,11]]]]],[],[]],"min",["subexpr","@mut",[["get","min",["loc",[null,[17,6],[17,9]]]]],[],[]],"max",["subexpr","@mut",[["get","max",["loc",[null,[18,6],[18,9]]]]],[],[]],"class",["subexpr","concat",[["subexpr","if",[["get","validate",[]],"validate"],[],[]]," ",["subexpr","if",[["get","errors.firstObject",[]],"invalid","valid"],[],[]]," "],[],[]]],["loc",[null,[5,0],[18,11]]]],
+        ["attribute","for",["concat",[["get","id",["loc",[null,[19,14],[19,16]]]]]]],
+        ["content","label",["loc",[null,[19,20],[19,29]]]],
+        ["block","if",[["get","errors",["loc",[null,[22,8],[22,14]]]]],[],1,2,["loc",[null,[22,2],[22,63]]]]
       ],
       locals: [],
       templates: [child0, child1, child2]
@@ -94829,7 +95002,7 @@ define('ember-cli-materialize/templates/components/md-loader', ['exports'], func
         },
         statements: [
           ["attribute","class",["concat",[["get","barClassName",["loc",[null,[2,16],[2,28]]]]]]],
-          ["attribute","style",["concat",[["get","barStyle",["loc",[null,[2,41],[2,49]]]]]]]
+          ["attribute","style",["get","barStyle",["loc",[null,[2,40],[2,48]]]]]
         ],
         locals: [],
         templates: []
@@ -95096,7 +95269,7 @@ define('ember-cli-materialize/templates/components/md-modal', ['exports'], funct
         return morphs;
       },
       statements: [
-        ["block","modal-dialog",[],["alignment",["subexpr","@mut",[["get","alignment",["loc",[null,[2,10],[2,19]]]]],[],[]],"alignmentTarget",["subexpr","@mut",[["get","alignmentTarget",["loc",[null,[3,16],[3,31]]]]],[],[]],"hasOverlay",true,"translucentOverlay",true,"overlay-class","lean-modal","close",["subexpr","@mut",[["get","close",["loc",[null,[7,6],[7,11]]]]],[],[]]],0,null,["loc",[null,[1,0],[11,17]]]]
+        ["block","modal-dialog",[],["alignment",["subexpr","@mut",[["get","alignment",["loc",[null,[2,10],[2,19]]]]],[],[]],"alignmentTarget",["subexpr","@mut",[["get","alignmentTarget",["loc",[null,[3,16],[3,31]]]]],[],[]],"hasOverlay",true,"translucentOverlay",true,"overlay-class","lean-modal","close","closeModal"],0,null,["loc",[null,[1,0],[11,17]]]]
       ],
       locals: [],
       templates: [child0]
@@ -95513,9 +95686,56 @@ define('ember-cli-materialize/templates/components/md-radio', ['exports'], funct
         return morphs;
       },
       statements: [
-        ["inline","radio-button",[],["disabled",["subexpr","@mut",[["get","disabled",["loc",[null,[2,11],[2,19]]]]],[],[]],"value",["subexpr","@mut",[["get","value",["loc",[null,[3,8],[3,13]]]]],[],[]],"groupValue",["subexpr","@mut",[["get","groupValue",["loc",[null,[4,13],[4,23]]]]],[],[]],"class","materialize-selectable-item-input"],["loc",[null,[1,0],[5,45]]]],
+        ["inline","radio-button",[],["disabled",["subexpr","@mut",[["get","disabled",["loc",[null,[2,11],[2,19]]]]],[],[]],"value",["subexpr","@mut",[["get","value",["loc",[null,[3,8],[3,13]]]]],[],[]],"groupValue",["subexpr","@mut",[["get","groupValue",["loc",[null,[4,13],[4,23]]]]],[],[]],"radioClass","materialize-selectable-item-input"],["loc",[null,[1,0],[5,50]]]],
         ["content","name",["loc",[null,[7,2],[7,10]]]],
         ["content","yield",["loc",[null,[7,10],[7,19]]]]
+      ],
+      locals: [],
+      templates: []
+    };
+  }()));
+
+});
+define('ember-cli-materialize/templates/components/md-radios-radio', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 2,
+            "column": 0
+          }
+        },
+        "moduleName": "modules/ember-cli-materialize/templates/components/md-radios-radio.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var morphs = new Array(1);
+        morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+        dom.insertBoundary(fragment, 0);
+        return morphs;
+      },
+      statements: [
+        ["content","yield",["loc",[null,[1,0],[1,9]]]]
       ],
       locals: [],
       templates: []
@@ -95802,6 +96022,53 @@ define('ember-cli-materialize/templates/components/md-switch', ['exports'], func
         ["content","offLabel",["loc",[null,[4,25],[4,37]]]],
         ["inline","input",[],["type","checkbox","disabled",["subexpr","@mut",[["get","disabled",["loc",[null,[5,35],[5,43]]]]],[],[]],"checked",["subexpr","@mut",[["get","isSelected",["loc",[null,[5,52],[5,62]]]]],[],[]]],["loc",[null,[5,2],[5,64]]]],
         ["content","onLabel",["loc",[null,[7,24],[7,35]]]]
+      ],
+      locals: [],
+      templates: []
+    };
+  }()));
+
+});
+define('ember-cli-materialize/templates/components/md-switches-switch', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 2,
+            "column": 0
+          }
+        },
+        "moduleName": "modules/ember-cli-materialize/templates/components/md-switches-switch.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var morphs = new Array(1);
+        morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+        dom.insertBoundary(fragment, 0);
+        return morphs;
+      },
+      statements: [
+        ["content","yield",["loc",[null,[1,0],[1,9]]]]
       ],
       locals: [],
       templates: []
@@ -96431,7 +96698,7 @@ define('ember-cli-materialize/templates/components/selectable-item-group', ['exp
           return morphs;
         },
         statements: [
-          ["inline","view",[["get","selectableItemView",["loc",[null,[3,12],[3,30]]]]],["content",["subexpr","@mut",[["get","item",["loc",[null,[3,39],[3,43]]]]],[],[]],"disabled",["subexpr","@mut",[["get","disabled",["loc",[null,[3,53],[3,61]]]]],[],[]]],["loc",[null,[3,5],[3,63]]]]
+          ["inline","component",[["get","selectableItemView",["loc",[null,[3,17],[3,35]]]]],["content",["subexpr","@mut",[["get","item",["loc",[null,[3,44],[3,48]]]]],[],[]],"disabled",["subexpr","@mut",[["get","disabled",["loc",[null,[3,58],[3,66]]]]],[],[]],"groupId","group-{{elementId}}"],["loc",[null,[3,5],[3,98]]]]
         ],
         locals: ["item"],
         templates: []
@@ -96580,7 +96847,9 @@ define('ember-cli-materialize/views/default-collection-header', ['exports', 'emb
 
   'use strict';
 
-  exports['default'] = Ember['default'].View.extend({
+  var View = Ember['default'].View;
+
+  exports['default'] = View.extend({
     layout: layout['default'],
     classNames: ['collection-header']
   });
@@ -96600,6 +96869,18 @@ define('ember-cli-materialize/views/default-column-header', ['exports', 'ember',
   });
 
 });
+define('ember-cli-stripe', ['ember-cli-stripe/index', 'ember', 'exports'], function(__index__, __Ember__, __exports__) {
+  'use strict';
+  var keys = Object.keys || __Ember__['default'].keys;
+  var forEach = Array.prototype.forEach && function(array, cb) {
+    array.forEach(cb);
+  } || __Ember__['default'].EnumerableUtils.forEach;
+
+  forEach(keys(__index__), (function(key) {
+    __exports__[key] = __index__[key];
+  }));
+});
+
 define('ember-composability', ['ember-composability/index', 'ember', 'exports'], function(__index__, __Ember__, __exports__) {
   'use strict';
   var keys = Object.keys || __Ember__['default'].keys;
@@ -96612,11 +96893,12 @@ define('ember-composability', ['ember-composability/index', 'ember', 'exports'],
   }));
 });
 
-define('ember-composability/mixins/child-component-support', ['exports', 'ember', 'ember-new-computed'], function (exports, Ember, _computed) {
+define('ember-composability/mixins/child-component-support', ['exports', 'ember'], function (exports, Ember) {
 
   'use strict';
 
   var assert = Ember['default'].assert;
+  var computed = Ember['default'].computed;
 
   exports['default'] = Ember['default'].Mixin.create({
 
@@ -96631,10 +96913,8 @@ define('ember-composability/mixins/child-component-support', ['exports', 'ember'
       this._super.apply(this, arguments);
     },
 
-    composableParent: _computed['default']({
-      get: function get() {
-        return this._componentToRegisterTo();
-      }
+    composableParent: computed(function () {
+      return this._componentToRegisterTo();
     }),
 
     _componentToRegisterTo: function _componentToRegisterTo() {
@@ -96673,24 +96953,44 @@ define('ember-composability/mixins/parent-component-support', ['exports', 'ember
 
   'use strict';
 
-  var alias = Ember['default'].computed.alias;
+  var A = Ember['default'].A;
+  var computed = Ember['default'].computed;
+  var debounce = Ember['default'].run.debounce;
 
   exports['default'] = Ember['default'].Mixin.create({
     _childComponents: null,
+    composableChildrenDebounceTime: 0,
 
     init: function init() {
       this._super.apply(this, arguments);
-      this.set('_childComponents', Ember['default'].A([]));
+      this.set('_childComponents', new Ember['default'].OrderedSet());
     },
 
-    composableChildren: alias('_childComponents'),
+    composableChildren: computed(function () {
+      var comps = this.get('_childComponents');
+      return new A(comps && comps.size ? this.get('_childComponents').list : []);
+    }).readOnly(),
+
+    _fireComposableChildrenChanged: function _fireComposableChildrenChanged() {
+      this.propertyDidChange('composableChildren');
+    },
+
+    _notifyComposableChildrenChanged: function _notifyComposableChildrenChanged() {
+      if (this.get('composableChildrenDebounceTime')) {
+        debounce(this, this._fireComposableChildrenChanged, this.get('composableChildrenDebounceTime'));
+      } else {
+        this._fireComposableChildrenChanged();
+      }
+    },
 
     registerChildComponent: function registerChildComponent(childComponent) {
-      this.get('_childComponents').addObject(childComponent);
+      this.get('_childComponents').add(childComponent);
+      this._notifyComposableChildrenChanged();
     },
 
     unregisterChildComponent: function unregisterChildComponent(childComponent) {
-      this.get('_childComponents').removeObject(childComponent);
+      this.get('_childComponents')['delete'](childComponent);
+      this._notifyComposableChildrenChanged();
     }
   });
 
@@ -97973,12 +98273,15 @@ define('ember-modal-dialog/components/modal-dialog', ['exports', 'ember', 'ember
   'use strict';
 
   var dasherize = Ember['default'].String.dasherize;
+  var $ = Ember['default'].$;
   var computed = Ember['default'].computed;
+
   var get = Ember['default'].get;
   var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   var injectService = Ember['default'].inject.service;
-  var reads = Ember['default'].computed.reads;
+  var reads = computed.reads;
+
   var computedJoin = function computedJoin(prop) {
     return computed(prop, function () {
       return this.get(prop).join(' ');
@@ -98053,6 +98356,7 @@ define('ember-modal-dialog/components/modal-dialog', ['exports', 'ember', 'ember
 
     hasOverlay: true,
     translucentOverlay: false,
+    clickOutsideToClose: false,
     renderInPlace: false,
 
     _attachmentNormalized: computed('alignment', 'attachment', function () {
@@ -98094,6 +98398,30 @@ define('ember-modal-dialog/components/modal-dialog', ['exports', 'ember', 'ember
         Ember['default'].$('div[data-ember-modal-dialog-overlay]').css('cursor', 'pointer');
       }
     }),
+
+    didInsertElement: function didInsertElement() {
+      var _this = this;
+
+      if (!this.get('clickOutsideToClose')) {
+        return;
+      }
+
+      var handleClick = function handleClick(event) {
+        if (!$(event.target).closest('.ember-modal-dialog').length) {
+          _this.send('close');
+        }
+      };
+      var registerClick = function registerClick() {
+        return $(document).on('click.ember-modal-dialog', handleClick);
+      };
+
+      // setTimeout needed or else the click handler will catch the click that spawned this modal dialog
+      setTimeout(registerClick);
+    },
+    willDestroyElement: function willDestroyElement() {
+      $(document).off('click.ember-modal-dialog');
+    },
+
     actions: {
       close: function close() {
         this.sendAction('close');
@@ -98135,48 +98463,86 @@ define('ember-modal-dialog/components/positioned-container', ['exports', 'ember'
       }
     })),
 
+    getWrappedAlignmentElement: function getWrappedAlignmentElement() {
+      var alignmentTarget = this.get('alignmentTarget');
+      if (!alignmentTarget) {
+        return null;
+      }
+
+      if (Ember['default'].typeOf(alignmentTarget) === 'string') {
+        var alignmentTargetSelector = alignmentTarget;
+        var wrappedElement = Ember['default'].$(alignmentTargetSelector).eq(0);
+        Ember['default'].assert('No element found for modal-dialog\'s alignmentTarget selector \'' + alignmentTargetSelector + '\'.', wrappedElement); // '
+        return wrappedElement;
+      }
+
+      // passed an ember view or component
+      if (alignmentTarget.element) {
+        return Ember['default'].$(alignmentTarget.element);
+      }
+
+      // passed an element directly
+      return Ember['default'].$(alignmentTarget);
+    },
+
     //TODO: Add resize and scroll handlers
     updateAlignment: function updateAlignment() {
-      var alignmentTarget = this.get('alignmentTarget');
-      if (Ember['default'].typeOf(alignmentTarget) === 'string') {
-        alignmentTarget = Ember['default'].$(alignmentTarget)[0];
-      } else if (alignmentTarget && alignmentTarget.element) {
-        alignmentTarget = alignmentTarget.element;
-      }
-      var $alignmentTarget = Ember['default'].$(alignmentTarget);
-      var originOffset = alignmentTarget && $alignmentTarget.offset();
       var alignment = this.get('alignment');
+      var alignmentMethod = 'align' + Ember['default'].String.capitalize(alignment);
+      var alignmentElement = this.getWrappedAlignmentElement();
 
-      var originOffsetTop;
-      if (originOffset) {
-        originOffsetTop = originOffset.top - Ember['default'].$(window).scrollTop();
-      }
-      var elementWidth, elementHeight, targetWidth, targetHeight;
-      elementWidth = this.$().outerWidth();
-      switch (alignment) {
-        case 'left':
-          this.$().css('left', originOffset.left - elementWidth).css('top', originOffsetTop);
-          break;
-        case 'right':
-          targetWidth = $alignmentTarget.outerWidth();
-          this.$().css('left', originOffset.left + targetWidth).css('top', originOffsetTop);
-          break;
-        case 'bottom':
-          targetWidth = $alignmentTarget.outerWidth();
-          targetHeight = $alignmentTarget.outerHeight();
-          this.$().css('left', originOffset.left + targetWidth / 2 - elementWidth / 2).css('top', originOffsetTop + targetHeight);
-          break;
-        case 'top':
-          targetWidth = $alignmentTarget.outerWidth();
-          elementHeight = this.$().outerHeight();
-          this.$().css('left', originOffset.left + targetWidth / 2 - elementWidth / 2).css('top', originOffsetTop - elementHeight);
-          break;
-        case 'center':
-          elementWidth = this.$().outerWidth();
-          elementHeight = this.$().outerHeight();
-          this.$().css('left', '50%').css('top', '50%').css('margin-left', elementWidth * -0.5).css('margin-top', elementHeight * -0.5);
-          break;
-      }
+      this[alignmentMethod](alignmentElement);
+    },
+
+    alignCenter: function alignCenter() {
+      var elementWidth = this.$().outerWidth();
+      var elementHeight = this.$().outerHeight();
+
+      this.$().css('left', '50%').css('top', '50%').css('margin-left', elementWidth * -0.5).css('margin-top', elementHeight * -0.5);
+    },
+
+    alignLeft: function alignLeft(alignmentElement) {
+      Ember['default'].assert('Left alignment requires a target', alignmentElement.length > 0);
+
+      var elementWidth = this.$().outerWidth();
+      var originOffset = alignmentElement.offset();
+      var originOffsetTop = originOffset.top - Ember['default'].$(window).scrollTop();
+
+      this.$().css('left', originOffset.left - elementWidth).css('top', originOffsetTop);
+    },
+
+    alignRight: function alignRight(alignmentElement) {
+      Ember['default'].assert('Right alignment requires a target', alignmentElement.length > 0);
+
+      var targetWidth = alignmentElement.outerWidth();
+      var originOffset = alignmentElement.offset();
+      var originOffsetTop = originOffset.top - Ember['default'].$(window).scrollTop();
+
+      this.$().css('left', originOffset.left + targetWidth).css('top', originOffsetTop);
+    },
+
+    alignTop: function alignTop(alignmentElement) {
+      Ember['default'].assert('Top alignment requires a target', alignmentElement.length > 0);
+
+      var elementWidth = this.$().outerWidth();
+      var elementHeight = this.$().outerHeight();
+      var originOffset = alignmentElement.offset();
+      var originOffsetTop = originOffset.top - Ember['default'].$(window).scrollTop();
+      var targetWidth = alignmentElement.outerWidth();
+
+      this.$().css('left', originOffset.left + targetWidth / 2 - elementWidth / 2).css('top', originOffsetTop - elementHeight);
+    },
+
+    alignBottom: function alignBottom(alignmentElement) {
+      Ember['default'].assert('Bottom alignment requires a target', alignmentElement.length > 0);
+
+      var elementWidth = this.$().outerWidth();
+      var originOffset = alignmentElement.offset();
+      var originOffsetTop = originOffset.top - Ember['default'].$(window).scrollTop();
+      var targetWidth = alignmentElement.outerWidth();
+      var targetHeight = alignmentElement.outerHeight();
+
+      this.$().css('left', originOffset.left + targetWidth / 2 - elementWidth / 2).css('top', originOffsetTop + targetHeight);
     }
   });
 
@@ -99215,6 +99581,121 @@ define('ember-notify/message', ['exports', 'ember'], function (exports, Ember) {
   });
 
 });
+define('ember-pricing-table', ['ember-pricing-table/index', 'ember', 'exports'], function(__index__, __Ember__, __exports__) {
+  'use strict';
+  var keys = Object.keys || __Ember__['default'].keys;
+  var forEach = Array.prototype.forEach && function(array, cb) {
+    array.forEach(cb);
+  } || __Ember__['default'].EnumerableUtils.forEach;
+
+  forEach(keys(__index__), (function(key) {
+    __exports__[key] = __index__[key];
+  }));
+});
+
+define('ember-pricing-table/components/em-pricing-card', ['exports', 'ember'], function (exports, Ember) {
+
+  'use strict';
+
+  var Co, alias, bootstrapClasses, equal, foundationClasses, materializeClasses;
+
+  alias = Ember['default'].computed.alias;
+
+  equal = function (key1, key2) {
+    return Ember['default'].computed(key1, key2, function () {
+      return this.get(key1) != null && this.get(key1) === this.get(key2);
+    });
+  };
+
+  materializeClasses = ["col", "s12", "m6", "l3"];
+
+  bootstrapClasses = ["col-lg-3", "col-md-6", "col-sm-12", "col-xs-12"];
+
+  foundationClasses = ["columns", "large-3", "medium-6", "small-12"];
+
+  Co = Ember['default'].Component.extend({
+    flavor: alias("parentView.flavor"),
+    fontFlavor: alias("parentView.fontFlavor"),
+    classNameBindings: ["frameworkContainerClass"],
+    frameworkContainerClass: Ember['default'].computed("flavor", function () {
+      switch (this.get("flavor")) {
+        case "materialize":
+          return materializeClasses.join(" ");
+        case "bootstrap":
+          return bootstrapClasses.join(" ");
+        case "foundationClasses":
+          return foundationClasses.join(" ");
+        default:
+          return "";
+      }
+    }),
+    isSelected: equal("plan", "parentView.chosenPlan"),
+    cardContentClassNames: "",
+    cardClassNames: Ember['default'].computed("isSelected", function () {
+      if (this.get("isSelected")) {
+        return "z-depth-2 amber lighten-5";
+      }
+    }),
+    btnClassNames: Ember['default'].computed("flavor", "isSelected", function () {
+      var color, frame;
+      color = this.get("isSelected") ? "red" : "grey";
+      frame = (function () {
+        switch (this.get("flavor")) {
+          case "materialize":
+            return "waves-light btn-large waves-effect waves-light red";
+          default:
+            return "";
+        }
+      }).call(this);
+      return frame + " " + color;
+    }),
+    btnText: "whatever",
+    actions: {
+      select: function select() {
+        var ref;
+        return (ref = this.get("parentView")) != null ? ref.send("select", this.get("plan")) : void 0;
+      }
+    }
+  });
+
+  exports['default'] = Co;
+
+});
+define('ember-pricing-table/components/em-pricing-table', ['exports', 'ember'], function (exports, Ember) {
+
+  'use strict';
+
+  var Co, alias;
+
+  alias = Ember['default'].computed.alias;
+
+  Co = Ember['default'].Component.extend({
+    flavor: "materialize",
+    fontFlavor: "fontawesome",
+    value: alias("chosenPlan"),
+    chosenPlan: null,
+    classNames: ["ember-pricing-table"],
+    classNameBindings: ["cardContainerClass"],
+    cardContainerClass: Ember['default'].computed("flavor", function () {
+      switch (this.get("flavor")) {
+        case "materialize":
+        case "bootstrap":
+          return "row";
+        default:
+          return "";
+      }
+    }),
+    actions: {
+      select: function select(plan) {
+        this.set("chosenPlan", plan);
+        return this.sendAction("action", plan);
+      }
+    }
+  });
+
+  exports['default'] = Co;
+
+});
 define('ember-radio-button', ['ember-radio-button/index', 'ember', 'exports'], function(__index__, __Ember__, __exports__) {
   'use strict';
   var keys = Object.keys || __Ember__['default'].keys;
@@ -99235,98 +99716,107 @@ define('ember-radio-button/components/labeled-radio-button', ['exports', 'ember'
 
   exports['default'] = Ember['default'].Component.extend({
     tagName: 'label',
+    attributeBindings: ['for'],
     classNameBindings: ['checked'],
     classNames: ['ember-radio-button'],
+    defaultLayout: null, // ie8 support
 
-    checked: computed('groupValue', 'value', function(){
+    checked: computed('groupValue', 'value', function () {
       return this.get('groupValue') === this.get('value');
     }).readOnly(),
 
+    'for': computed.readOnly('radioId'),
+
     actions: {
-      innerRadioChanged: function(value) {
+      innerRadioChanged: function innerRadioChanged(value) {
         this.sendAction('changed', value);
       }
     }
   });
 
 });
-define('ember-radio-button/components/radio-button-base', ['exports', 'ember'], function (exports, Ember) {
-
-  'use strict';
-
-  var boundAttributeKeys = [
-    'checked',
-    'disabled',
-    'name',
-    'required',
-    'type',
-    'value'
-  ];
-
-  exports['default'] = Ember['default'].Component.extend({
-    tagName: 'input',
-    type: 'radio',
-    value: null,
-
-    attributeBindings: boundAttributeKeys
-  });
-
-  exports.boundAttributeKeys = boundAttributeKeys;
-
-});
-define('ember-radio-button/components/radio-button', ['exports', 'ember', 'ember-radio-button/components/radio-button-base'], function (exports, Ember, RadioButtonBase) {
+define('ember-radio-button/components/radio-button-input', ['exports', 'ember'], function (exports, Ember) {
 
   'use strict';
 
   var computed = Ember['default'].computed;
-  var on = Ember['default'].on;
 
-  exports['default'] = RadioButtonBase['default'].extend({
-    value: null,
-    groupValue: null,
+  exports['default'] = Ember['default'].Component.extend({
+    tagName: 'input',
+    type: 'radio',
 
-    wrapInLabelIfUsedAsBlock: on('init', function() {
-      if (this.get('template')) {
-        this.set('tagName', 'label');
-        this.set('layoutName', 'components/labeled-radio-button');
+    // value - required
+    // groupValue - required
 
-        // our change event handler becomes unused
-        this.set('change', undefined);
+    // disabled - optional
+    // name - optional
+    // required - optional
+    // radioClass - string
+    // radioId - string
 
-        // don't bind name, type, etc to the label
-        var originalAttrs = this.get('attributeBindings');
-        var updatedAttrs = Ember['default'].copy(originalAttrs).removeObjects(
-          RadioButtonBase.boundAttributeKeys
-        );
-        this.set('attributeBindings', updatedAttrs);
-        this.get('classNameBindings').pushObject('checked');
-        this.get('classNames').pushObject('ember-radio-button');
-      }
-    }),
+    defaultLayout: null, // ie8 support
 
-    checked: computed('groupValue', 'value', function(){
+    attributeBindings: ['checked', 'disabled', 'name', 'required', 'type', 'value'],
+
+    checked: computed('groupValue', 'value', function () {
       return this.get('groupValue') === this.get('value');
     }).readOnly(),
 
-    change: function() {
-      var value = this.get('value');
-      var groupValue = this.get('groupValue');
-
-      if (groupValue !== value){
-        this.set('groupValue', value);
-        Ember['default'].run.once(this, 'sendChangedAction');
-      }
-    },
-
-    sendChangedAction: function() {
+    sendChangedAction: function sendChangedAction() {
       this.sendAction('changed', this.get('value'));
     },
 
+    change: function change() {
+      var value = this.get('value');
+      var groupValue = this.get('groupValue');
+
+      if (groupValue !== value) {
+        this.set('groupValue', value); // violates DDAU
+        Ember['default'].run.once(this, 'sendChangedAction');
+      }
+    }
+  });
+
+});
+define('ember-radio-button/components/radio-button', ['exports', 'ember'], function (exports, Ember) {
+
+  'use strict';
+
+  var computed = Ember['default'].computed;
+
+  exports['default'] = Ember['default'].Component.extend({
+    tagName: '',
+    // value - passed in, required, the value for this radio button
+    // groupValue - passed in, required, the currently selected value
+
+    // optionally passed in:
+    // disabled - boolean
+    // required - boolean
+    // name - string
+    // radioClass - string
+    // radioId - string
+
+    // polyfill hasBlock for ember versions < 1.13
+    hasBlock: computed.bool('template').readOnly(),
+
+    joinedClassNames: computed('classNames', function () {
+      var classNames = this.get('classNames');
+      if (classNames && classNames.length && classNames.join) {
+        return classNames.join(' ');
+      }
+      return classNames;
+    }),
+
+    // is this needed here or just on radio-button-input?
+    defaultLayout: null, // ie8 support
+
+    checked: computed('groupValue', 'value', function () {
+      return this.get('groupValue') === this.get('value');
+    }).readOnly(),
+
     actions: {
-      // when used as a block, our layout wraps a non-block
-      // radio-button which maps changed to this
-      innerRadioChanged: function(value) {
-        this.sendAction('changed', value);
+      changed: function changed(newValue) {
+        this.sendAction('changed', newValue);
       }
     }
   });

@@ -44,6 +44,24 @@ define('forw/app', ['exports', 'ember', 'ember/resolver', 'ember/load-initialize
   exports['default'] = App;
 
 });
+define('forw/components/em-pricing-card', ['exports', 'ember-pricing-table/components/em-pricing-card'], function (exports, em_pricing_card) {
+
+	'use strict';
+
+
+
+	exports.default = em_pricing_card.default;
+
+});
+define('forw/components/em-pricing-table', ['exports', 'ember-pricing-table/components/em-pricing-table'], function (exports, em_pricing_table) {
+
+	'use strict';
+
+
+
+	exports.default = em_pricing_table.default;
+
+});
 define('forw/components/em-timezone-input', ['exports', 'ember-timezone-input/components/em-timezone-input'], function (exports, em_timezone_input) {
 
 	'use strict';
@@ -51,6 +69,51 @@ define('forw/components/em-timezone-input', ['exports', 'ember-timezone-input/co
 
 
 	exports.default = em_timezone_input.default;
+
+});
+define('forw/components/ember-iframe', ['exports', 'ember'], function (exports, Ember) {
+
+  'use strict';
+
+  var EmberIframeComponent;
+
+  EmberIframeComponent = Ember['default'].Component.extend({
+    classNames: ["ember-iframe-container"],
+    iframeClassNames: "ember-iframe",
+    iframeId: "ember-iframe",
+    window$: function window$() {
+      return this.$(this.$("iframe")[0].contentWindow);
+    },
+    document$: function document$() {
+      return this.$(this.$("iframe")[0].contentDocument);
+    },
+    didInsertElement: function didInsertElement() {
+      this.window$().on("hashchange", (function (_this) {
+        return function (arg) {
+          var newUrl;
+          newUrl = arg.newUrl;
+          return _this.sendAction("action", newUrl);
+        };
+      })(this));
+      this.document$().ready((function (_this) {
+        return function () {
+          _this.sendAction("action", _this.get("src"));
+          return _this.$(".ember-iframe-loading").hide();
+        };
+      })(this));
+      return this.document$().load((function (_this) {
+        return function () {
+          _this.sendAction("action", _this.get("src"));
+          return _this.$(".ember-iframe-loading").hide();
+        };
+      })(this));
+    },
+    willDestroyElement: function willDestroyElement() {
+      return this.window$().off("hashchange");
+    }
+  });
+
+  exports['default'] = EmberIframeComponent;
 
 });
 define('forw/components/ember-modal-dialog-positioned-container', ['exports', 'ember-modal-dialog/components/positioned-container'], function (exports, Component) {
@@ -520,6 +583,15 @@ define('forw/components/md-check', ['exports', 'ember-cli-materialize/components
 	exports['default'] = materializeCheckbox['default'];
 
 });
+define('forw/components/md-checks-check', ['exports', 'ember-cli-materialize/components/md-checks-check'], function (exports, md_checks_check) {
+
+	'use strict';
+
+
+
+	exports.default = md_checks_check.default;
+
+});
 define('forw/components/md-checks', ['exports', 'ember-cli-materialize/components/md-checks'], function (exports, materializeCheckboxes) {
 
 	'use strict';
@@ -638,6 +710,15 @@ define('forw/components/md-radio', ['exports', 'ember-cli-materialize/components
 	exports['default'] = materializeRadio['default'];
 
 });
+define('forw/components/md-radios-radio', ['exports', 'ember-cli-materialize/components/md-radios-radio'], function (exports, md_radios_radio) {
+
+	'use strict';
+
+
+
+	exports.default = md_radios_radio.default;
+
+});
 define('forw/components/md-radios', ['exports', 'ember-cli-materialize/components/md-radios'], function (exports, materializeRadios) {
 
 	'use strict';
@@ -664,6 +745,15 @@ define('forw/components/md-switch', ['exports', 'ember-cli-materialize/component
 	'use strict';
 
 	exports['default'] = materializeSwitch['default'];
+
+});
+define('forw/components/md-switches-switch', ['exports', 'ember-cli-materialize/components/md-switches-switch'], function (exports, md_switches_switch) {
+
+	'use strict';
+
+
+
+	exports.default = md_switches_switch.default;
 
 });
 define('forw/components/md-switches', ['exports', 'ember-cli-materialize/components/md-switches'], function (exports, materializeSwitches) {
@@ -719,11 +809,238 @@ define('forw/components/modal-dialog', ['exports', 'ember-modal-dialog/component
 	exports['default'] = Component['default'];
 
 });
+define('forw/components/radio-button-input', ['exports', 'ember-radio-button/components/radio-button-input'], function (exports, RadioButtonInput) {
+
+	'use strict';
+
+	exports['default'] = RadioButtonInput['default'];
+
+});
 define('forw/components/radio-button', ['exports', 'ember-radio-button/components/radio-button'], function (exports, RadioButton) {
 
 	'use strict';
 
 	exports['default'] = RadioButton['default'];
+
+});
+define('forw/components/stripe-checkout', ['exports', 'ember', 'forw/config/environment'], function (exports, Ember, config) {
+
+  'use strict';
+
+  exports['default'] = Ember['default'].Component.extend({
+    tagName: 'button',
+    classNames: ['stripe-checkout'],
+    attributeBindings: ['isDisabled:disabled'],
+
+    /**********************************
+     * Required attributes
+     **********************************/
+
+    /**
+     * Your publishable key (test or live).
+     */
+    key: config['default'].stripe.key,
+
+    /**********************************
+     * Highly recommended attributes
+     **********************************/
+
+    /**
+     * A relative URL pointing to a square image of your brand or
+     * product. The recommended minimum size is 128x128px.
+     * Eg. "/square-image.png"
+     */
+    image: null,
+
+    /**
+     * The name of your company or website.
+     */
+    name: "Demo Site",
+
+    /**
+     * A description of the product or service being purchased.
+     */
+    description: "2 widgets ($20.00)",
+
+    /**
+     * The amount (in cents) that's shown to the user. Note that you
+     * will still have to explicitly include it when you create a
+     * charge using the Stripe API.
+     */
+    amount: 2000,
+
+    /**********************************
+     * Optional attributes
+     **********************************/
+
+    /**
+     * Accept Bitcoin payments.
+     */
+    bitcoin: false,
+
+    /**
+     * The currency of the amount (3-letter ISO code). The default is USD.
+     */
+    currency: "USD",
+
+    /**
+     * The label of the payment button in the Checkout form (e.g. “Subscribe”,
+     * “Pay {{amount}}”, etc.). If you include {{amount}}, it will be replaced
+     * by the provided amount. Otherwise, the amount will be appended to the
+     * end of your label.
+     */
+    panelLabel: null,
+
+    /**
+     * Specify whether Checkout should validate the billing ZIP code
+     * (true or false). The default is false.
+     */
+    zipCode: false,
+
+    /**
+     * Specify whether Checkout should collect the customer's billing address
+     * (true or false). The default is false.
+     */
+    address: false,
+
+    /**
+     * If you already know the email address of your user, you can provide
+     * it to Checkout to be pre-filled.
+     */
+    email: null,
+
+    /**
+     * The text to be shown on the default blue button.
+     */
+    label: "Pay with card",
+
+    /**
+     * Specify whether to include the option to "Remember Me" for future
+     * purchases (true or false). The default is true.
+     */
+    allowRememberMe: true,
+
+    /**
+     * Specify whether to include the option to use alipay to
+     * checkout (true or false or auto). The default is false.
+     */
+    alipay: false,
+
+    /**
+     * Specify whether to reuse alipay information to
+     * checkout (true or false). The default is false.
+     */
+    'alipay-reusable': false,
+
+    /**
+     * Specify language preference.
+     */
+    locale: config['default'].stripe.locale,
+
+    /**********************************
+     * Extras
+     **********************************/
+
+    /**
+     * Bind to this attribute to disable the stripe
+     * button until the user completes prior requirements
+     * (like choosing a plan)
+     */
+    isDisabled: false,
+
+    /**
+     * Stripe handler
+     */
+    handler: null,
+
+    /**
+     * By default we add stripe button classes.
+     * Set to false to disable Stripe styles
+     *
+     * TODO: Need to load stripe styles in order for this to apply
+     */
+    useStripeStyles: true,
+
+    /**
+     * Sets up Stripe and sends component action
+     * with the Stripe token when checkout succeeds.
+     *
+     * The token looks like this
+     * {
+     *   "id": "tok_150enDGA2quO03uZPF8Nve2a",
+     *   "livemode": false,
+     *   "created": 1416427871,
+     *   "used": false,
+     *   "object": "token",
+     *   "type": "card",
+     *   "card": {
+     *     "id": "card_150enDGA2quO03uZK8AwnT9x",
+     *     "object": "card",
+     *     "last4": "4242",
+     *     "brand": "Visa",
+     *     "funding": "credit",
+     *     "exp_month": 8,
+     *     "exp_year": 2015,
+     *     "fingerprint": "AwGY3mROvhSpEvSc",
+     *     "country": "US",
+     *     "name": null,
+     *     "address_line1": null,
+     *     "address_line2": null,
+     *     "address_city": null,
+     *     "address_state": null,
+     *     "address_zip": null,
+     *     "address_country": null,
+     *     "dynamic_last4": null,
+     *     "customer": null
+     *   }
+     * }
+     *
+     * Source: https://stripe.com/docs/api#tokens
+     */
+    setupStripe: Ember['default'].on('init', function () {
+      var self = this;
+
+      if (Ember['default'].isNone(this.get('key'))) {
+        throw ["Your Stripe key must be set to use the stripe-checkout component. ", "Set the key in your environment.js file (ENV.stripe.key) or set the ", "key property on the component when instantiating it in your hbs template. ", "Find your Stripe publishable key at https://dashboard.stripe.com/account/apikeys"].join('\n');
+      }
+
+      var handler = StripeCheckout.configure({
+        key: this.get('key'),
+        locale: this.get('locale'),
+        token: function token(_token) {
+          self.sendAction('action', _token);
+        },
+        opened: function opened() {
+          self.sendAction('opened');
+        },
+        closed: function closed() {
+          self.sendAction('closed');
+        }
+      });
+      this.set('handler', handler);
+    }),
+
+    /**
+     * Kick up the modal if we're clicked
+     */
+    click: function click(e) {
+      this.openModal();
+      e.preventDefault();
+    },
+
+    /**
+     * Opens the Stripe modal for payment
+     */
+    openModal: function openModal() {
+      var options = this.getProperties(['image', 'name', 'description', 'amount', 'bitcoin', 'currency', 'panelLabel', 'zipCode', 'address', 'email', 'label', 'allowRememberMe', 'alipay', 'alipay-reusable']);
+      this.get('handler').open(options);
+    },
+
+    closeOnDestroy: Ember['default'].on('willDestroyElement', function () {
+      // Close modal if the user navigates away from page
+      this.get('handler').close();
+    })
+  });
 
 });
 define('forw/controllers/application', ['exports', 'ember'], function (exports, Ember) {
@@ -766,6 +1083,99 @@ define('forw/controllers/o/dashboard/account/index', ['exports', 'ember'], funct
   });
 
   exports['default'] = DashboardAccountIndexController;
+
+});
+define('forw/controllers/o/dashboard/account/upgrade', ['exports', 'ember', 'ember-cpm'], function (exports, Ember, CPM) {
+
+  'use strict';
+
+  var DashboardAccountUpgradeController, a, eq, gt, notOneOf, same;
+
+  notOneOf = function (objKey, arrKey) {
+    return Ember['default'].computed(objKey, arrKey, function () {
+      return !this.getWithDefault(arrKey, []).contains(this.get(objKey));
+    });
+  };
+
+  a = Ember['default'].computed.alias;
+
+  gt = Ember['default'].computed.gt;
+
+  eq = Ember['default'].computed.equal;
+
+  same = function (k1, k2) {
+    return Ember['default'].computed(k1, k2, function () {
+      return this.get(k1) != null && this.get(k1) === this.get(k2);
+    });
+  };
+
+  DashboardAccountUpgradeController = Ember['default'].Controller.extend({
+    plans: a("model.plans"),
+    chosenPlan: a("model.chosenPlan"),
+    originalPlan: a("model.originalPlan"),
+    paymentSubscription: a("model.paymentSubscription"),
+    account: a("model.account"),
+    phase: a("model.phase"),
+    usingDeprecatedPlan: notOneOf("chosenPlan", "plans"),
+    isSelectionStage: eq("phase", "selection"),
+    isConfirmationStage: eq("phase", "confirmation"),
+    chosenPlanRequiresPayment: gt("chosenPlan.monthlyPrice", 0),
+    chosenEqOriginalPlan: same("chosenPlan.id", "originalPlan.id"),
+    actions: {
+      processStripeToken: function processStripeToken(token) {
+        var ps;
+        ps = this.get("paymentSubscription");
+        ps.set("source", token.id);
+        ps.set("servicePlan", this.get("chosenPlan"));
+        this.set("isBusy", true);
+        return ps.save().then((function (_this) {
+          return function () {
+            var presentation;
+            presentation = _this.get("chosenPlan.presentation");
+            _this.notify.success("It worked! Service plan switched to: " + presentation);
+            _this.transitionToRoute("o.dashboard.account.index", _this.get("account.id"));
+            return _this.get("account").reload();
+          };
+        })(this))["catch"]((function (_this) {
+          return function (error) {
+            _this.notify.alert("Uh-oh! The server was unable to complete your request");
+            return console.log(error);
+          };
+        })(this))["finally"]((function (_this) {
+          return function () {
+            return _this.set("isBusy", false);
+          };
+        })(this));
+      },
+      confirm: function confirm() {
+        var ps;
+        ps = this.get("paymentSubscription");
+        this.set("isBusy", true);
+        return ps.destroyRecord().then((function (_this) {
+          return function () {
+            var presentation;
+            presentation = _this.get("chosenPlan.presentation");
+            _this.notify.success("It worked! Service plan switched to: " + presentation);
+            return _this.transitionToRoute("o.dashboard.account.index", _this.get("account.id"));
+          };
+        })(this))["catch"]((function (_this) {
+          return function (error) {
+            _this.notify.alert("Uh-oh! The server was unable to complete your request");
+            return console.log(error);
+          };
+        })(this))["finally"]((function (_this) {
+          return function () {
+            return _this.set("isBusy", false);
+          };
+        })(this));
+      },
+      next: function next() {
+        return this.set("phase", "confirmation");
+      }
+    }
+  });
+
+  exports['default'] = DashboardAccountUpgradeController;
 
 });
 define('forw/controllers/o/dashboard/accounts/new', ['exports', 'ember'], function (exports, Ember) {
@@ -912,7 +1322,7 @@ define('forw/controllers/x/warehouse', ['exports', 'ember'], function (exports, 
     configHost: Ember['default'].computed("model.id", "model.configHost", "currentUser.rememberToken", function () {
       var id, paramString, token, url;
       url = this.get("model.configHost");
-      token = this.get("currentUser.rememberToken");
+      token = this.get("model.simwmsAccountKey");
       id = this.get("model.id");
       paramString = Ember['default'].$.param({
         token: token,
@@ -923,14 +1333,19 @@ define('forw/controllers/x/warehouse', ['exports', 'ember'], function (exports, 
     uiuxHost: Ember['default'].computed("model.id", "model.uiuxHost", "currentUser.rememberToken", function () {
       var id, paramString, token, url;
       url = this.get("model.uiuxHost");
-      token = this.get("currentUser.rememberToken");
+      token = this.get("model.simwmsAccountKey");
       id = this.get("model.id");
       paramString = Ember['default'].$.param({
         token: token,
         account: id
       });
       return url + "/#/?" + paramString;
-    })
+    }),
+    actions: {
+      hashchange: function hashchange(url) {
+        return this.set("popLink", url);
+      }
+    }
   });
 
   exports['default'] = WarehouseController;
@@ -953,7 +1368,7 @@ define('forw/controllers/x/warehouse/index', ['exports', 'ember', 'forw/controll
 
 	var WarehouseIndexController;
 
-	WarehouseIndexController = WarehouseController['default'].extend({});
+	WarehouseIndexController = WarehouseController['default'].extend();
 
 	exports['default'] = WarehouseIndexController;
 
@@ -970,6 +1385,16 @@ define('forw/helpers/duration', ['exports', 'ember-moment/helpers/deprecated/dur
 	'use strict';
 
 	exports['default'] = makeBoundHelper['default'](durationHelper['default']);
+
+});
+define('forw/helpers/fa-icon', ['exports', 'ember-cli-font-awesome/helpers/fa-icon'], function (exports, fa_icon) {
+
+	'use strict';
+
+
+
+	exports.default = fa_icon.default;
+	exports.faIcon = fa_icon.faIcon;
 
 });
 define('forw/helpers/moment-duration', ['exports', 'ember-moment/helpers/moment-duration', 'ember-moment/utils/make-bound-helper'], function (exports, durationHelper, makeBoundHelper) {
@@ -1532,7 +1957,7 @@ define('forw/key-responder', ['exports', 'ember'], function (exports, Ember) {
   exports.KeyResponderInputSupport = KeyResponderInputSupport;
 
 });
-define('forw/models/account', ['exports', 'ember', 'ember-data'], function (exports, Ember, DS) {
+define('forw/models/account', ['exports', 'ember', 'ember-data', 'forw/shekels/service-plan', 'forw/config/environment'], function (exports, Ember, DS, ServicePlan, ENV) {
 
   'use strict';
 
@@ -1547,19 +1972,110 @@ define('forw/models/account', ['exports', 'ember', 'ember-data'], function (expo
     timezone: DS['default'].attr("string"),
     namespace: DS['default'].attr("string"),
     host: DS['default'].attr("string"),
-    uiuxHost: DS['default'].attr("string"),
-    configHost: DS['default'].attr("string"),
-    servicePlan: DS['default'].attr("string", {
-      defaultValue: "free-trial"
+    uiuxHost: DS['default'].attr("string", {
+      defaultValue: ENV['default'].uiuxHost
+    }),
+    configHost: DS['default'].attr("string", {
+      defaultValue: ENV['default'].configHost
     }),
     user: DS['default'].belongsTo("user", {
       async: true
     }),
     insertedAt: DS['default'].attr("date"),
-    region: alias("timezone")
+    status: DS['default'].attr("string", {
+      defaultValue: "ok"
+    }),
+    region: alias("timezone"),
+    servicePlan: DS['default'].belongsTo("servicePlan", {
+      async: true
+    }),
+    paymentSubscription: DS['default'].belongsTo("paymentSubscription", {
+      async: true
+    }),
+    isProperlySetup: DS['default'].attr("boolean"),
+    simwmsAccountKey: DS['default'].attr("string")
   });
 
   exports['default'] = Account;
+
+});
+define('forw/models/payment-subscription', ['exports', 'ember-data'], function (exports, DS) {
+
+  'use strict';
+
+  var PaymentSubscription;
+
+  PaymentSubscription = DS['default'].Model.extend({
+    source: DS['default'].attr("string"),
+    user: DS['default'].belongsTo("user", {
+      async: true
+    }),
+    account: DS['default'].belongsTo("account", {
+      async: true
+    }),
+    servicePlan: DS['default'].belongsTo("servicePlan", {
+      async: true
+    })
+  });
+
+  exports['default'] = PaymentSubscription;
+
+});
+define('forw/models/service-plan', ['exports', 'ember', 'ember-data'], function (exports, Ember, DS) {
+
+  'use strict';
+
+  var ServicePlan, c;
+
+  c = Ember['default'].computed;
+
+  ServicePlan = DS['default'].Model.extend({
+    permalink: DS['default'].attr("string"),
+    version: DS['default'].attr("string"),
+    presentation: DS['default'].attr("string"),
+    description: DS['default'].attr("string"),
+    monthlyPrice: DS['default'].attr("number", {
+      defaultValue: 0
+    }),
+    docks: DS['default'].attr("number", {
+      defaultValue: Infinity
+    }),
+    scales: DS['default'].attr("number", {
+      defaultValue: Infinity
+    }),
+    warehouses: DS['default'].attr("number", {
+      defaultValue: Infinity
+    }),
+    users: DS['default'].attr("number", {
+      defaultValue: Infinity
+    }),
+    availability: DS['default'].attr("number", {
+      defaultValue: 24
+    }),
+    appointments: DS['default'].attr("number", {
+      defaultValue: Infinity
+    }),
+    deprecatedAt: DS['default'].attr("date"),
+    pricePresentation: c("monthlyPrice", function () {
+      var $p;
+      $p = this.get("monthlyPrice") / 100;
+      if ($p > 0) {
+        return "$" + $p + " / month";
+      } else {
+        return "free";
+      }
+    }),
+    isDeprecated: c.and("deprecatedAt"),
+    isAvailable: c("deprecatedAt", function () {
+      if (this.get("deprecatedAt") != null) {
+        return false;
+      } else {
+        return true;
+      }
+    })
+  });
+
+  exports['default'] = ServicePlan;
 
 });
 define('forw/models/session', ['exports', 'ember', 'ember-data'], function (exports, Ember, DS) {
@@ -1625,6 +2141,7 @@ define('forw/router', ['exports', 'ember', 'forw/config/environment'], function 
     return this.resource("o", {
       path: "/o"
     }, function () {
+      this.route("pricing");
       this.route("about");
       this.resource("o.guides", {
         path: "/guides"
@@ -1647,6 +2164,7 @@ define('forw/router', ['exports', 'ember', 'forw/config/environment'], function 
         this.resource("o.dashboard.account", {
           path: "/account/:id"
         }, function () {
+          this.route("upgrade");
           this.route("config");
           return this.route("edit");
         });
@@ -1706,7 +2224,11 @@ define('forw/routes/o/dashboard', ['exports', 'ember'], function (exports, Ember
 
   DashboardRoute = Ember['default'].Route.extend({
     model: function model() {
-      return this.currentUser;
+      return this.store.findAll("servicePlan").then((function (_this) {
+        return function () {
+          return _this.currentUser;
+        };
+      })(this));
     },
     afterModel: function afterModel(model) {
       if (!model.get("isLoggedIn")) {
@@ -1744,6 +2266,40 @@ define('forw/routes/o/dashboard/account', ['exports', 'ember'], function (export
   });
 
   exports['default'] = DashboardAccountRoute;
+
+});
+define('forw/routes/o/dashboard/account/upgrade', ['exports', 'ember'], function (exports, Ember) {
+
+  'use strict';
+
+  var R, promise;
+
+  promise = function (x) {
+    return new Ember['default'].RSVP.Promise(function (resolve) {
+      return resolve(x);
+    });
+  };
+
+  R = Ember['default'].Route.extend({
+    model: function model() {
+      return this.store.findAll("servicePlan").then((function (_this) {
+        return function () {
+          return Ember['default'].RSVP.hash({
+            plans: _this.store.filter("servicePlan", function (plan) {
+              return plan.get("isAvailable");
+            }),
+            chosenPlan: _this.modelFor("o.dashboard.account").get("servicePlan"),
+            originalPlan: _this.modelFor("o.dashboard.account").get("servicePlan"),
+            paymentSubscription: _this.modelFor("o.dashboard.account").get("paymentSubscription"),
+            account: promise(_this.modelFor("o.dashboard.account")),
+            phase: promise("selection")
+          });
+        };
+      })(this));
+    }
+  });
+
+  exports['default'] = R;
 
 });
 define('forw/routes/o/dashboard/accounts', ['exports', 'ember'], function (exports, Ember) {
@@ -1896,6 +2452,110 @@ define('forw/services/modal-dialog', ['exports', 'ember-modal-dialog/services/mo
 	exports['default'] = Service['default'];
 
 });
+define('forw/shekels/service-plan', ['exports', 'ember'], function (exports, Ember) {
+
+  'use strict';
+
+  var BasicPlan, EnterprisePlan, FreeTrialPlan, Plans, ServicePlan, StandardPlan, TestPlan;
+
+  TestPlan = {
+    name: "test",
+    description: "test plan, should not be visible for selection",
+    monthlyPrice: 0,
+    docks: Infinity,
+    scales: Infinity,
+    warehouses: Infinity,
+    employees: Infinity,
+    availability: 24,
+    appointments: Infinity
+  };
+
+  FreeTrialPlan = {
+    name: "free-trial",
+    description: "Trial plan lets you try out the software on a small pretend warehouse.",
+    monthlyPrice: 0,
+    docks: 1,
+    scales: 1,
+    warehouses: 4,
+    employees: 5,
+    availability: 18,
+    appointments: 10
+  };
+
+  BasicPlan = {
+    name: "basic",
+    description: "Basic plan is ideal for small warehouses with low traffic.",
+    monthlyPrice: 50,
+    docks: 5,
+    scales: 2,
+    warehouses: 36,
+    employees: 10,
+    availability: 24,
+    appointments: 25
+  };
+
+  StandardPlan = {
+    name: "standard",
+    description: "Standard plan for medium sized warehouses with high traffic.",
+    monthlyPrice: 100,
+    docks: 10,
+    scales: Infinity,
+    warehouses: Infinity,
+    employees: 25,
+    availability: 24,
+    appointments: 75
+  };
+
+  EnterprisePlan = {
+    name: "enterprise",
+    description: "Enterprise plan for large enterprise warehouses, no hard limits on anything.",
+    monthlyPrice: 200,
+    docks: Infinity,
+    scales: Infinity,
+    warehouses: Infinity,
+    employees: Infinity,
+    availability: 24,
+    appointments: Infinity
+  };
+
+  Plans = [FreeTrialPlan, BasicPlan, StandardPlan, EnterprisePlan];
+
+  ServicePlan = (function () {
+    ServicePlan.plans = Plans;
+
+    ServicePlan.fromName = function (planName) {
+      return new ServicePlan(planName);
+    };
+
+    function ServicePlan(name) {
+      this.name = name;
+    }
+
+    ServicePlan.prototype.limitations = function () {
+      switch (this.name) {
+        case "test":
+          return TestPlan;
+        case "free-trial":
+          return FreeTrialPlan;
+        case "basic":
+          return BasicPlan;
+        case "standard":
+          return StandardPlan;
+        case "enterprise":
+          return EnterprisePlan;
+        default:
+          return {};
+      }
+    };
+
+    return ServicePlan;
+  })();
+
+  exports['default'] = ServicePlan;
+
+  exports.Plans = Plans;
+
+});
 define('forw/singletons/user-session', ['exports', 'ember'], function (exports, Ember) {
 
   'use strict';
@@ -1970,7 +2630,9 @@ define('forw/singletons/user-session', ['exports', 'ember'], function (exports, 
     handleLoginSuccess: function handleLoginSuccess(session) {
       var token;
       if (token = session.get("rememberToken")) {
-        Cookies.set("rememberToken", token);
+        Cookies.set("rememberToken", token, {
+          expires: 365
+        });
       }
       return this.set("session", session);
     }
@@ -2025,6 +2687,467 @@ define('forw/templates/application', ['exports'], function (exports) {
       ],
       locals: [],
       templates: []
+    };
+  }()));
+
+});
+define('forw/templates/components/em-pricing-card', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    var child0 = (function() {
+      var child0 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 10,
+                "column": 8
+              },
+              "end": {
+                "line": 12,
+                "column": 8
+              }
+            },
+            "moduleName": "forw/templates/components/em-pricing-card.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createTextNode("          ");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("i");
+            dom.setAttribute(el1,"class","fa fa-check-square-o left");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createTextNode("\n");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() { return []; },
+          statements: [
+
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      var child1 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 12,
+                "column": 8
+              },
+              "end": {
+                "line": 14,
+                "column": 8
+              }
+            },
+            "moduleName": "forw/templates/components/em-pricing-card.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createTextNode("          ");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("i");
+            dom.setAttribute(el1,"class","fa fa-square-o left");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createTextNode("\n");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() { return []; },
+          statements: [
+
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 19,
+              "column": 0
+            }
+          },
+          "moduleName": "forw/templates/components/em-pricing-card.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("  ");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createElement("div");
+          var el2 = dom.createTextNode("\n    ");
+          dom.appendChild(el1, el2);
+          var el2 = dom.createElement("div");
+          var el3 = dom.createTextNode("\n      ");
+          dom.appendChild(el2, el3);
+          var el3 = dom.createElement("ul");
+          dom.setAttribute(el3,"class","price-features");
+          var el4 = dom.createTextNode("\n        ");
+          dom.appendChild(el3, el4);
+          var el4 = dom.createComment("");
+          dom.appendChild(el3, el4);
+          var el4 = dom.createTextNode("\n      ");
+          dom.appendChild(el3, el4);
+          dom.appendChild(el2, el3);
+          var el3 = dom.createTextNode("\n    ");
+          dom.appendChild(el2, el3);
+          dom.appendChild(el1, el2);
+          var el2 = dom.createTextNode("\n    ");
+          dom.appendChild(el1, el2);
+          var el2 = dom.createElement("div");
+          dom.setAttribute(el2,"class","card-action");
+          var el3 = dom.createTextNode("\n      ");
+          dom.appendChild(el2, el3);
+          var el3 = dom.createElement("button");
+          var el4 = dom.createTextNode("\n");
+          dom.appendChild(el3, el4);
+          var el4 = dom.createComment("");
+          dom.appendChild(el3, el4);
+          var el4 = dom.createTextNode("        ");
+          dom.appendChild(el3, el4);
+          var el4 = dom.createElement("span");
+          var el5 = dom.createComment("");
+          dom.appendChild(el4, el5);
+          dom.appendChild(el3, el4);
+          var el4 = dom.createTextNode("\n      ");
+          dom.appendChild(el3, el4);
+          dom.appendChild(el2, el3);
+          var el3 = dom.createTextNode("\n    ");
+          dom.appendChild(el2, el3);
+          dom.appendChild(el1, el2);
+          var el2 = dom.createTextNode("\n  ");
+          dom.appendChild(el1, el2);
+          dom.appendChild(el0, el1);
+          var el1 = dom.createTextNode("\n");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var element0 = dom.childAt(fragment, [1]);
+          var element1 = dom.childAt(element0, [1]);
+          var element2 = dom.childAt(element0, [3, 1]);
+          var morphs = new Array(8);
+          morphs[0] = dom.createAttrMorph(element0, 'class');
+          morphs[1] = dom.createAttrMorph(element1, 'class');
+          morphs[2] = dom.createElementMorph(element1);
+          morphs[3] = dom.createMorphAt(dom.childAt(element1, [1]),1,1);
+          morphs[4] = dom.createAttrMorph(element2, 'class');
+          morphs[5] = dom.createElementMorph(element2);
+          morphs[6] = dom.createMorphAt(element2,1,1);
+          morphs[7] = dom.createMorphAt(dom.childAt(element2, [3]),0,0);
+          return morphs;
+        },
+        statements: [
+          ["attribute","class",["concat",["card center ",["get","cardClassNames",["loc",[null,[2,28],[2,42]]]]]]],
+          ["attribute","class",["concat",["card-content ",["get","cardContentClassNames",["loc",[null,[3,31],[3,52]]]]]]],
+          ["element","action",["select"],[],["loc",[null,[3,56],[3,75]]]],
+          ["content","yield",["loc",[null,[5,8],[5,17]]]],
+          ["attribute","class",["get","btnClassNames",["loc",[null,[9,22],[9,35]]]]],
+          ["element","action",["select"],[],["loc",[null,[9,38],[9,57]]]],
+          ["block","if",[["get","isSelected",["loc",[null,[10,14],[10,24]]]]],[],0,1,["loc",[null,[10,8],[14,15]]]],
+          ["content","btnText",["loc",[null,[15,14],[15,25]]]]
+        ],
+        locals: [],
+        templates: [child0, child1]
+      };
+    }());
+    var child1 = (function() {
+      var child0 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 19,
+                "column": 0
+              },
+              "end": {
+                "line": 21,
+                "column": 0
+              }
+            },
+            "moduleName": "forw/templates/components/em-pricing-card.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createTextNode("\n");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() { return []; },
+          statements: [
+
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      var child1 = (function() {
+        var child0 = (function() {
+          return {
+            meta: {
+              "revision": "Ember@1.13.5",
+              "loc": {
+                "source": null,
+                "start": {
+                  "line": 21,
+                  "column": 0
+                },
+                "end": {
+                  "line": 23,
+                  "column": 0
+                }
+              },
+              "moduleName": "forw/templates/components/em-pricing-card.hbs"
+            },
+            arity: 0,
+            cachedFragment: null,
+            hasRendered: false,
+            buildFragment: function buildFragment(dom) {
+              var el0 = dom.createDocumentFragment();
+              var el1 = dom.createTextNode("\n");
+              dom.appendChild(el0, el1);
+              return el0;
+            },
+            buildRenderNodes: function buildRenderNodes() { return []; },
+            statements: [
+
+            ],
+            locals: [],
+            templates: []
+          };
+        }());
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 21,
+                "column": 0
+              },
+              "end": {
+                "line": 23,
+                "column": 0
+              }
+            },
+            "moduleName": "forw/templates/components/em-pricing-card.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createComment("");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+            var morphs = new Array(1);
+            morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+            dom.insertBoundary(fragment, 0);
+            dom.insertBoundary(fragment, null);
+            return morphs;
+          },
+          statements: [
+            ["block","if",[["subexpr","eq",[["get","flavor",["loc",[null,[21,14],[21,20]]]],"foundation"],[],["loc",[null,[21,10],[21,34]]]]],[],0,null,["loc",[null,[21,0],[23,0]]]]
+          ],
+          locals: [],
+          templates: [child0]
+        };
+      }());
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 19,
+              "column": 0
+            },
+            "end": {
+              "line": 23,
+              "column": 0
+            }
+          },
+          "moduleName": "forw/templates/components/em-pricing-card.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+          dom.insertBoundary(fragment, 0);
+          dom.insertBoundary(fragment, null);
+          return morphs;
+        },
+        statements: [
+          ["block","if",[["subexpr","eq",[["get","flavor",["loc",[null,[19,14],[19,20]]]],"bootstrap"],[],["loc",[null,[19,10],[19,33]]]]],[],0,1,["loc",[null,[19,0],[23,0]]]]
+        ],
+        locals: [],
+        templates: [child0, child1]
+      };
+    }());
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 23,
+            "column": 7
+          }
+        },
+        "moduleName": "forw/templates/components/em-pricing-card.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var morphs = new Array(1);
+        morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+        dom.insertBoundary(fragment, 0);
+        dom.insertBoundary(fragment, null);
+        return morphs;
+      },
+      statements: [
+        ["block","if",[["subexpr","eq",[["get","flavor",["loc",[null,[1,10],[1,16]]]],"materialize"],[],["loc",[null,[1,6],[1,31]]]]],[],0,1,["loc",[null,[1,0],[23,7]]]]
+      ],
+      locals: [],
+      templates: [child0, child1]
+    };
+  }()));
+
+});
+define('forw/templates/components/em-pricing-table', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    var child0 = (function() {
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 3,
+              "column": 0
+            }
+          },
+          "moduleName": "forw/templates/components/em-pricing-table.hbs"
+        },
+        arity: 1,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("  ");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createTextNode("\n");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment,1,1,contextualElement);
+          return morphs;
+        },
+        statements: [
+          ["inline","yield",[["get","plan",["loc",[null,[2,10],[2,14]]]]],[],["loc",[null,[2,2],[2,16]]]]
+        ],
+        locals: ["plan"],
+        templates: []
+      };
+    }());
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 3,
+            "column": 9
+          }
+        },
+        "moduleName": "forw/templates/components/em-pricing-table.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var morphs = new Array(1);
+        morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+        dom.insertBoundary(fragment, 0);
+        dom.insertBoundary(fragment, null);
+        return morphs;
+      },
+      statements: [
+        ["block","each",[["get","plans",["loc",[null,[1,8],[1,13]]]]],[],0,null,["loc",[null,[1,0],[3,9]]]]
+      ],
+      locals: [],
+      templates: [child0]
     };
   }()));
 
@@ -2243,6 +3366,71 @@ define('forw/templates/components/em-timezone-input', ['exports'], function (exp
   }()));
 
 });
+define('forw/templates/components/ember-iframe', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 5,
+            "column": 0
+          }
+        },
+        "moduleName": "forw/templates/components/ember-iframe.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createElement("iframe");
+        dom.setAttribute(el1,"frameborder","0");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createElement("div");
+        dom.setAttribute(el1,"class","ember-iframe-loading");
+        var el2 = dom.createTextNode("\n  ");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createComment("");
+        dom.appendChild(el1, el2);
+        var el2 = dom.createTextNode("\n");
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        var el1 = dom.createTextNode("\n");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var element0 = dom.childAt(fragment, [0]);
+        var morphs = new Array(4);
+        morphs[0] = dom.createAttrMorph(element0, 'id');
+        morphs[1] = dom.createAttrMorph(element0, 'class');
+        morphs[2] = dom.createAttrMorph(element0, 'src');
+        morphs[3] = dom.createMorphAt(dom.childAt(fragment, [2]),1,1);
+        return morphs;
+      },
+      statements: [
+        ["attribute","id",["get","iframeId",["loc",[null,[1,13],[1,21]]]]],
+        ["attribute","class",["get","iframeClassNames",["loc",[null,[1,32],[1,48]]]]],
+        ["attribute","src",["get","src",["loc",[null,[1,57],[1,60]]]]],
+        ["content","yield",["loc",[null,[3,2],[3,11]]]]
+      ],
+      locals: [],
+      templates: []
+    };
+  }()));
+
+});
 define('forw/templates/components/ember-notify', ['exports'], function (exports) {
 
   'use strict';
@@ -2404,7 +3592,7 @@ define('forw/templates/components/labeled-radio-button', ['exports'], function (
             "column": 0
           },
           "end": {
-            "line": 10,
+            "line": 12,
             "column": 0
           }
         },
@@ -2433,8 +3621,8 @@ define('forw/templates/components/labeled-radio-button', ['exports'], function (
         return morphs;
       },
       statements: [
-        ["inline","radio-button",[],["changed","innerRadioChanged","disabled",["subexpr","@mut",[["get","disabled",["loc",[null,[3,13],[3,21]]]]],[],[]],"groupValue",["subexpr","@mut",[["get","groupValue",["loc",[null,[4,15],[4,25]]]]],[],[]],"name",["subexpr","@mut",[["get","name",["loc",[null,[5,9],[5,13]]]]],[],[]],"required",["subexpr","@mut",[["get","required",["loc",[null,[6,13],[6,21]]]]],[],[]],"value",["subexpr","@mut",[["get","value",["loc",[null,[7,10],[7,15]]]]],[],[]]],["loc",[null,[1,0],[7,17]]]],
-        ["content","yield",["loc",[null,[9,0],[9,9]]]]
+        ["inline","radio-button",[],["radioClass",["subexpr","@mut",[["get","radioClass",["loc",[null,[2,15],[2,25]]]]],[],[]],"radioId",["subexpr","@mut",[["get","radioId",["loc",[null,[3,12],[3,19]]]]],[],[]],"changed","innerRadioChanged","disabled",["subexpr","@mut",[["get","disabled",["loc",[null,[5,13],[5,21]]]]],[],[]],"groupValue",["subexpr","@mut",[["get","groupValue",["loc",[null,[6,15],[6,25]]]]],[],[]],"name",["subexpr","@mut",[["get","name",["loc",[null,[7,9],[7,13]]]]],[],[]],"required",["subexpr","@mut",[["get","required",["loc",[null,[8,13],[8,21]]]]],[],[]],"value",["subexpr","@mut",[["get","value",["loc",[null,[9,10],[9,15]]]]],[],[]]],["loc",[null,[1,0],[9,17]]]],
+        ["content","yield",["loc",[null,[11,0],[11,9]]]]
       ],
       locals: [],
       templates: []
@@ -2447,6 +3635,283 @@ define('forw/templates/components/modal-dialog', ['exports', 'ember-modal-dialog
 	'use strict';
 
 	exports['default'] = template['default'];
+
+});
+define('forw/templates/components/radio-button', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    var child0 = (function() {
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 15,
+              "column": 0
+            }
+          },
+          "moduleName": "forw/templates/components/radio-button.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("  ");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createElement("label");
+          var el2 = dom.createTextNode("\n    ");
+          dom.appendChild(el1, el2);
+          var el2 = dom.createComment("");
+          dom.appendChild(el1, el2);
+          var el2 = dom.createTextNode("\n\n    ");
+          dom.appendChild(el1, el2);
+          var el2 = dom.createComment("");
+          dom.appendChild(el1, el2);
+          var el2 = dom.createTextNode("\n  ");
+          dom.appendChild(el1, el2);
+          dom.appendChild(el0, el1);
+          var el1 = dom.createTextNode("\n");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var element0 = dom.childAt(fragment, [1]);
+          var morphs = new Array(4);
+          morphs[0] = dom.createAttrMorph(element0, 'class');
+          morphs[1] = dom.createAttrMorph(element0, 'for');
+          morphs[2] = dom.createMorphAt(element0,1,1);
+          morphs[3] = dom.createMorphAt(element0,3,3);
+          return morphs;
+        },
+        statements: [
+          ["attribute","class",["concat",["ember-radio-button ",["subexpr","if",[["get","checked",["loc",[null,[2,40],[2,47]]]],"checked"],[],["loc",[null,[2,35],[2,59]]]]," ",["get","joinedClassNames",["loc",[null,[2,62],[2,78]]]]]]],
+          ["attribute","for",["get","radioId",["loc",[null,[2,88],[2,95]]]]],
+          ["inline","radio-button-input",[],["class",["subexpr","@mut",[["get","radioClass",["loc",[null,[4,14],[4,24]]]]],[],[]],"id",["subexpr","@mut",[["get","radioId",["loc",[null,[5,11],[5,18]]]]],[],[]],"disabled",["subexpr","@mut",[["get","disabled",["loc",[null,[6,17],[6,25]]]]],[],[]],"name",["subexpr","@mut",[["get","name",["loc",[null,[7,13],[7,17]]]]],[],[]],"required",["subexpr","@mut",[["get","required",["loc",[null,[8,17],[8,25]]]]],[],[]],"groupValue",["subexpr","@mut",[["get","groupValue",["loc",[null,[9,19],[9,29]]]]],[],[]],"value",["subexpr","@mut",[["get","value",["loc",[null,[10,14],[10,19]]]]],[],[]],"changed","changed"],["loc",[null,[3,4],[11,27]]]],
+          ["content","yield",["loc",[null,[13,4],[13,13]]]]
+        ],
+        locals: [],
+        templates: []
+      };
+    }());
+    var child1 = (function() {
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 15,
+              "column": 0
+            },
+            "end": {
+              "line": 25,
+              "column": 0
+            }
+          },
+          "moduleName": "forw/templates/components/radio-button.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("  ");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createTextNode("\n");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment,1,1,contextualElement);
+          return morphs;
+        },
+        statements: [
+          ["inline","radio-button-input",[],["class",["subexpr","@mut",[["get","radioClass",["loc",[null,[17,12],[17,22]]]]],[],[]],"id",["subexpr","@mut",[["get","radioId",["loc",[null,[18,9],[18,16]]]]],[],[]],"disabled",["subexpr","@mut",[["get","disabled",["loc",[null,[19,15],[19,23]]]]],[],[]],"name",["subexpr","@mut",[["get","name",["loc",[null,[20,11],[20,15]]]]],[],[]],"required",["subexpr","@mut",[["get","required",["loc",[null,[21,15],[21,23]]]]],[],[]],"groupValue",["subexpr","@mut",[["get","groupValue",["loc",[null,[22,17],[22,27]]]]],[],[]],"value",["subexpr","@mut",[["get","value",["loc",[null,[23,12],[23,17]]]]],[],[]],"changed","changed"],["loc",[null,[16,2],[24,25]]]]
+        ],
+        locals: [],
+        templates: []
+      };
+    }());
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 26,
+            "column": 0
+          }
+        },
+        "moduleName": "forw/templates/components/radio-button.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var morphs = new Array(1);
+        morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+        dom.insertBoundary(fragment, 0);
+        dom.insertBoundary(fragment, null);
+        return morphs;
+      },
+      statements: [
+        ["block","if",[["get","hasBlock",["loc",[null,[1,6],[1,14]]]]],[],0,1,["loc",[null,[1,0],[25,7]]]]
+      ],
+      locals: [],
+      templates: [child0, child1]
+    };
+  }()));
+
+});
+define('forw/templates/components/stripe-checkout', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    var child0 = (function() {
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 3,
+              "column": 0
+            }
+          },
+          "moduleName": "forw/templates/components/stripe-checkout.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("  ");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createTextNode("\n");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment,1,1,contextualElement);
+          return morphs;
+        },
+        statements: [
+          ["content","yield",["loc",[null,[2,2],[2,11]]]]
+        ],
+        locals: [],
+        templates: []
+      };
+    }());
+    var child1 = (function() {
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 3,
+              "column": 0
+            },
+            "end": {
+              "line": 5,
+              "column": 0
+            }
+          },
+          "moduleName": "forw/templates/components/stripe-checkout.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createTextNode("  ");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createTextNode("\n");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment,1,1,contextualElement);
+          return morphs;
+        },
+        statements: [
+          ["content","label",["loc",[null,[4,2],[4,11]]]]
+        ],
+        locals: [],
+        templates: []
+      };
+    }());
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 5,
+            "column": 7
+          }
+        },
+        "moduleName": "forw/templates/components/stripe-checkout.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var morphs = new Array(1);
+        morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+        dom.insertBoundary(fragment, 0);
+        dom.insertBoundary(fragment, null);
+        return morphs;
+      },
+      statements: [
+        ["block","if",[["get","template",["loc",[null,[1,6],[1,14]]]]],[],0,1,["loc",[null,[1,0],[5,7]]]]
+      ],
+      locals: [],
+      templates: [child0, child1]
+    };
+  }()));
 
 });
 define('forw/templates/o', ['exports'], function (exports) {
@@ -3562,7 +5027,7 @@ define('forw/templates/o/dashboard/account', ['exports'], function (exports) {
             },
             "end": {
               "line": 1,
-              "column": 204
+              "column": 219
             }
           },
           "moduleName": "forw/templates/o/dashboard/account.hbs"
@@ -3599,11 +5064,11 @@ define('forw/templates/o/dashboard/account', ['exports'], function (exports) {
             "source": null,
             "start": {
               "line": 1,
-              "column": 216
+              "column": 231
             },
             "end": {
               "line": 1,
-              "column": 386
+              "column": 416
             }
           },
           "moduleName": "forw/templates/o/dashboard/account.hbs"
@@ -3643,7 +5108,7 @@ define('forw/templates/o/dashboard/account', ['exports'], function (exports) {
           },
           "end": {
             "line": 1,
-            "column": 416
+            "column": 496
           }
         },
         "moduleName": "forw/templates/o/dashboard/account.hbs"
@@ -3660,7 +5125,13 @@ define('forw/templates/o/dashboard/account', ['exports'], function (exports) {
         var el2 = dom.createComment("");
         dom.appendChild(el1, el2);
         dom.appendChild(el0, el1);
-        var el1 = dom.createComment("");
+        var el1 = dom.createElement("div");
+        dom.setAttribute(el1,"class","col s12");
+        var el2 = dom.createElement("div");
+        dom.setAttribute(el2,"class","row");
+        var el3 = dom.createComment("");
+        dom.appendChild(el2, el3);
+        dom.appendChild(el1, el2);
         dom.appendChild(el0, el1);
         return el0;
       },
@@ -3669,17 +5140,382 @@ define('forw/templates/o/dashboard/account', ['exports'], function (exports) {
         var morphs = new Array(3);
         morphs[0] = dom.createMorphAt(element0,0,0);
         morphs[1] = dom.createMorphAt(element0,1,1);
-        morphs[2] = dom.createUnsafeMorphAt(fragment,1,1,contextualElement);
+        morphs[2] = dom.createUnsafeMorphAt(dom.childAt(fragment, [1, 0]),0,0);
+        return morphs;
+      },
+      statements: [
+        ["block","link-to",["x.warehouse.config",["get","model.id",["loc",[null,[1,60],[1,68]]]]],["classNames","waves-effect waves-light btn-large brown","target","blank"],0,null,["loc",[null,[1,28],[1,231]]]],
+        ["block","link-to",["x.warehouse.index",["get","model.id",["loc",[null,[1,262],[1,270]]]]],["classNames","waves-effect waves-light btn-large","target","blank"],1,null,["loc",[null,[1,231],[1,428]]]],
+        ["content","outlet",["loc",[null,[1,472],[1,484]]]]
+      ],
+      locals: [],
+      templates: [child0, child1]
+    };
+  }()));
+
+});
+define('forw/templates/o/dashboard/account/-price-plans', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    var child0 = (function() {
+      var child0 = (function() {
+        var child0 = (function() {
+          return {
+            meta: {
+              "revision": "Ember@1.13.5",
+              "loc": {
+                "source": null,
+                "start": {
+                  "line": 1,
+                  "column": 170
+                },
+                "end": {
+                  "line": 1,
+                  "column": 316
+                }
+              },
+              "moduleName": "forw/templates/o/dashboard/account/-price-plans.hbs"
+            },
+            arity: 0,
+            cachedFragment: null,
+            hasRendered: false,
+            buildFragment: function buildFragment(dom) {
+              var el0 = dom.createDocumentFragment();
+              var el1 = dom.createElement("li");
+              dom.setAttribute(el1,"class","description red-text");
+              var el2 = dom.createTextNode("This plan is no longer available (deprecated ");
+              dom.appendChild(el1, el2);
+              var el2 = dom.createComment("");
+              dom.appendChild(el1, el2);
+              var el2 = dom.createTextNode(")");
+              dom.appendChild(el1, el2);
+              dom.appendChild(el0, el1);
+              return el0;
+            },
+            buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+              var morphs = new Array(1);
+              morphs[0] = dom.createMorphAt(dom.childAt(fragment, [0]),1,1);
+              return morphs;
+            },
+            statements: [
+              ["inline","moment-from-now",[["get","plan.deprecatedAt",["loc",[null,[1,291],[1,308]]]]],[],["loc",[null,[1,273],[1,310]]]]
+            ],
+            locals: [],
+            templates: []
+          };
+        }());
+        var child1 = (function() {
+          return {
+            meta: {
+              "revision": "Ember@1.13.5",
+              "loc": {
+                "source": null,
+                "start": {
+                  "line": 1,
+                  "column": 316
+                },
+                "end": {
+                  "line": 1,
+                  "column": 373
+                }
+              },
+              "moduleName": "forw/templates/o/dashboard/account/-price-plans.hbs"
+            },
+            arity: 0,
+            cachedFragment: null,
+            hasRendered: false,
+            buildFragment: function buildFragment(dom) {
+              var el0 = dom.createDocumentFragment();
+              var el1 = dom.createElement("li");
+              dom.setAttribute(el1,"class","description");
+              var el2 = dom.createComment("");
+              dom.appendChild(el1, el2);
+              dom.appendChild(el0, el1);
+              return el0;
+            },
+            buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+              var morphs = new Array(1);
+              morphs[0] = dom.createMorphAt(dom.childAt(fragment, [0]),0,0);
+              return morphs;
+            },
+            statements: [
+              ["content","plan.description",["loc",[null,[1,348],[1,368]]]]
+            ],
+            locals: [],
+            templates: []
+          };
+        }());
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 1,
+                "column": 65
+              },
+              "end": {
+                "line": 1,
+                "column": 826
+              }
+            },
+            "moduleName": "forw/templates/o/dashboard/account/-price-plans.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createElement("li");
+            dom.setAttribute(el1,"class","title");
+            var el2 = dom.createComment("");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            var el1 = dom.createComment("");
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("li");
+            var el2 = dom.createElement("span");
+            dom.setAttribute(el2,"class","feature-name");
+            var el3 = dom.createTextNode("loading docks");
+            dom.appendChild(el2, el3);
+            dom.appendChild(el1, el2);
+            var el2 = dom.createElement("span");
+            dom.setAttribute(el2,"class","feature-spec");
+            var el3 = dom.createComment("");
+            dom.appendChild(el2, el3);
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("li");
+            var el2 = dom.createElement("span");
+            dom.setAttribute(el2,"class","feature-name");
+            var el3 = dom.createTextNode("availability");
+            dom.appendChild(el2, el3);
+            dom.appendChild(el1, el2);
+            var el2 = dom.createElement("span");
+            dom.setAttribute(el2,"class","feature-spec");
+            var el3 = dom.createComment("");
+            dom.appendChild(el2, el3);
+            var el3 = dom.createTextNode(" hours / day");
+            dom.appendChild(el2, el3);
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("li");
+            var el2 = dom.createElement("span");
+            dom.setAttribute(el2,"class","feature-name");
+            var el3 = dom.createTextNode("user accounts");
+            dom.appendChild(el2, el3);
+            dom.appendChild(el1, el2);
+            var el2 = dom.createElement("span");
+            dom.setAttribute(el2,"class","feature-spec");
+            var el3 = dom.createComment("");
+            dom.appendChild(el2, el3);
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("li");
+            var el2 = dom.createElement("span");
+            dom.setAttribute(el2,"class","feature-name");
+            var el3 = dom.createTextNode("appointments");
+            dom.appendChild(el2, el3);
+            dom.appendChild(el1, el2);
+            var el2 = dom.createElement("span");
+            dom.setAttribute(el2,"class","feature-spec");
+            var el3 = dom.createComment("");
+            dom.appendChild(el2, el3);
+            var el3 = dom.createTextNode(" / day");
+            dom.appendChild(el2, el3);
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+            var morphs = new Array(6);
+            morphs[0] = dom.createMorphAt(dom.childAt(fragment, [0]),0,0);
+            morphs[1] = dom.createMorphAt(fragment,1,1,contextualElement);
+            morphs[2] = dom.createMorphAt(dom.childAt(fragment, [2, 1]),0,0);
+            morphs[3] = dom.createMorphAt(dom.childAt(fragment, [3, 1]),0,0);
+            morphs[4] = dom.createMorphAt(dom.childAt(fragment, [4, 1]),0,0);
+            morphs[5] = dom.createMorphAt(dom.childAt(fragment, [5, 1]),0,0);
+            return morphs;
+          },
+          statements: [
+            ["content","plan.presentation",["loc",[null,[1,144],[1,165]]]],
+            ["block","if",[["get","plan.isDeprecated",["loc",[null,[1,176],[1,193]]]]],[],0,1,["loc",[null,[1,170],[1,380]]]],
+            ["content","plan.docks",["loc",[null,[1,458],[1,472]]]],
+            ["content","plan.availability",["loc",[null,[1,561],[1,582]]]],
+            ["content","plan.users",["loc",[null,[1,684],[1,698]]]],
+            ["content","plan.appointments",["loc",[null,[1,787],[1,808]]]]
+          ],
+          locals: [],
+          templates: [child0, child1]
+        };
+      }());
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 1,
+              "column": 846
+            }
+          },
+          "moduleName": "forw/templates/o/dashboard/account/-price-plans.hbs"
+        },
+        arity: 1,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+          dom.insertBoundary(fragment, 0);
+          dom.insertBoundary(fragment, null);
+          return morphs;
+        },
+        statements: [
+          ["block","em-pricing-card",[],["plan",["subexpr","@mut",[["get","plan",["loc",[null,[1,89],[1,93]]]]],[],[]],"btnText",["subexpr","@mut",[["get","plan.pricePresentation",["loc",[null,[1,102],[1,124]]]]],[],[]]],0,null,["loc",[null,[1,65],[1,846]]]]
+        ],
+        locals: ["plan"],
+        templates: [child0]
+      };
+    }());
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 867
+          }
+        },
+        "moduleName": "forw/templates/o/dashboard/account/-price-plans.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var morphs = new Array(1);
+        morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+        dom.insertBoundary(fragment, 0);
         dom.insertBoundary(fragment, null);
         return morphs;
       },
       statements: [
-        ["block","link-to",["x.warehouse.config",["get","model.id",["loc",[null,[1,60],[1,68]]]]],["classNames","waves-effect waves-light btn-large brown"],0,null,["loc",[null,[1,28],[1,216]]]],
-        ["block","link-to",["x.warehouse.index",["get","model.id",["loc",[null,[1,247],[1,255]]]]],["classNames","waves-effect waves-light btn-large"],1,null,["loc",[null,[1,216],[1,398]]]],
-        ["content","outlet",["loc",[null,[1,404],[1,416]]]]
+        ["block","em-pricing-table",[],["plans",["subexpr","@mut",[["get","plans",["loc",[null,[1,26],[1,31]]]]],[],[]],"chosenPlan",["subexpr","@mut",[["get","chosenPlan",["loc",[null,[1,43],[1,53]]]]],[],[]]],0,null,["loc",[null,[1,0],[1,867]]]]
       ],
       locals: [],
-      templates: [child0, child1]
+      templates: [child0]
+    };
+  }()));
+
+});
+define('forw/templates/o/dashboard/account/-stripe', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    var child0 = (function() {
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 1,
+              "column": 315
+            }
+          },
+          "moduleName": "forw/templates/o/dashboard/account/-stripe.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createElement("span");
+          var el2 = dom.createTextNode("modify subscription");
+          dom.appendChild(el1, el2);
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+          dom.insertBoundary(fragment, 0);
+          return morphs;
+        },
+        statements: [
+          ["inline","fa-icon",["plus-circle"],["classNames","right"],["loc",[null,[1,239],[1,283]]]]
+        ],
+        locals: [],
+        templates: []
+      };
+    }());
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 335
+          }
+        },
+        "moduleName": "forw/templates/o/dashboard/account/-stripe.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var morphs = new Array(1);
+        morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+        dom.insertBoundary(fragment, 0);
+        dom.insertBoundary(fragment, null);
+        return morphs;
+      },
+      statements: [
+        ["block","stripe-checkout",[],["classNames","btn-large","image","images/waifu.jpg","name","SimWMS","description",["subexpr","@mut",[["get","chosenPlan.presentation",["loc",[null,[1,93],[1,116]]]]],[],[]],"amount",["subexpr","@mut",[["get","chosenPlan.monthlyPrice",["loc",[null,[1,124],[1,147]]]]],[],[]],"panelLabel","Modify Subscription","action","processStripeToken","email",["subexpr","@mut",[["get","currentUser.user.email",["loc",[null,[1,215],[1,237]]]]],[],[]]],0,null,["loc",[null,[1,0],[1,335]]]]
+      ],
+      locals: [],
+      templates: [child0]
     };
   }()));
 
@@ -3691,6 +5527,49 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
   exports['default'] = Ember.HTMLBars.template((function() {
     var child0 = (function() {
       var child0 = (function() {
+        var child0 = (function() {
+          return {
+            meta: {
+              "revision": "Ember@1.13.5",
+              "loc": {
+                "source": null,
+                "start": {
+                  "line": 1,
+                  "column": 445
+                },
+                "end": {
+                  "line": 1,
+                  "column": 626
+                }
+              },
+              "moduleName": "forw/templates/o/dashboard/account/index.hbs"
+            },
+            arity: 0,
+            cachedFragment: null,
+            hasRendered: false,
+            buildFragment: function buildFragment(dom) {
+              var el0 = dom.createDocumentFragment();
+              var el1 = dom.createComment("");
+              dom.appendChild(el0, el1);
+              var el1 = dom.createElement("span");
+              var el2 = dom.createTextNode("Change Service Plan");
+              dom.appendChild(el1, el2);
+              dom.appendChild(el0, el1);
+              return el0;
+            },
+            buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+              var morphs = new Array(1);
+              morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+              dom.insertBoundary(fragment, 0);
+              return morphs;
+            },
+            statements: [
+              ["inline","fa-icon",["credit-card"],["classNames","left"],["loc",[null,[1,551],[1,594]]]]
+            ],
+            locals: [],
+            templates: []
+          };
+        }());
         return {
           meta: {
             "revision": "Ember@1.13.5",
@@ -3702,7 +5581,7 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
               },
               "end": {
                 "line": 1,
-                "column": 411
+                "column": 644
               }
             },
             "moduleName": "forw/templates/o/dashboard/account/index.hbs"
@@ -3747,23 +5626,30 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
             dom.appendChild(el2, el3);
             dom.appendChild(el1, el2);
             dom.appendChild(el0, el1);
+            var el1 = dom.createElement("div");
+            dom.setAttribute(el1,"class","actions");
+            var el2 = dom.createComment("");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
             return el0;
           },
           buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
             var element3 = dom.childAt(fragment, [0]);
-            var morphs = new Array(3);
+            var morphs = new Array(4);
             morphs[0] = dom.createMorphAt(dom.childAt(element3, [0, 1]),0,0);
             morphs[1] = dom.createMorphAt(dom.childAt(element3, [1, 1]),0,0);
             morphs[2] = dom.createMorphAt(dom.childAt(element3, [2, 1]),0,0);
+            morphs[3] = dom.createMorphAt(dom.childAt(fragment, [1]),0,0);
             return morphs;
           },
           statements: [
             ["content","model.companyName",["loc",[null,[1,195],[1,216]]]],
-            ["content","model.servicePlan",["loc",[null,[1,282],[1,303]]]],
-            ["content","model.user.username",["loc",[null,[1,371],[1,394]]]]
+            ["content","model.servicePlan.presentation",["loc",[null,[1,282],[1,316]]]],
+            ["content","model.user.username",["loc",[null,[1,384],[1,407]]]],
+            ["block","link-to",["o.dashboard.account.upgrade",["get","model.id",["loc",[null,[1,486],[1,494]]]]],["classNames","btn-large waves-effect waves-light orange"],0,null,["loc",[null,[1,445],[1,638]]]]
           ],
           locals: [],
-          templates: []
+          templates: [child0]
         };
       }());
       var child1 = (function() {
@@ -3774,11 +5660,11 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
               "source": null,
               "start": {
                 "line": 1,
-                "column": 430
+                "column": 663
               },
               "end": {
                 "line": 1,
-                "column": 591
+                "column": 824
               }
             },
             "moduleName": "forw/templates/o/dashboard/account/index.hbs"
@@ -3809,7 +5695,7 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
             return morphs;
           },
           statements: [
-            ["content","model.timezone",["loc",[null,[1,556],[1,574]]]]
+            ["content","model.timezone",["loc",[null,[1,789],[1,807]]]]
           ],
           locals: [],
           templates: []
@@ -3823,11 +5709,11 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
               "source": null,
               "start": {
                 "line": 1,
-                "column": 610
+                "column": 843
               },
               "end": {
                 "line": 1,
-                "column": 879
+                "column": 1112
               }
             },
             "moduleName": "forw/templates/o/dashboard/account/index.hbs"
@@ -3871,8 +5757,8 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
             return morphs;
           },
           statements: [
-            ["content","model.accessKeyId",["loc",[null,[1,745],[1,766]]]],
-            ["content","model.secretAccessKey",["loc",[null,[1,837],[1,862]]]]
+            ["content","model.accessKeyId",["loc",[null,[1,978],[1,999]]]],
+            ["content","model.secretAccessKey",["loc",[null,[1,1070],[1,1095]]]]
           ],
           locals: [],
           templates: []
@@ -3886,11 +5772,11 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
               "source": null,
               "start": {
                 "line": 1,
-                "column": 898
+                "column": 1131
               },
               "end": {
                 "line": 1,
-                "column": 1151
+                "column": 1384
               }
             },
             "moduleName": "forw/templates/o/dashboard/account/index.hbs"
@@ -3934,8 +5820,8 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
             return morphs;
           },
           statements: [
-            ["content","model.uiuxHost",["loc",[null,[1,1027],[1,1045]]]],
-            ["content","model.configHost",["loc",[null,[1,1114],[1,1134]]]]
+            ["content","model.uiuxHost",["loc",[null,[1,1260],[1,1278]]]],
+            ["content","model.configHost",["loc",[null,[1,1347],[1,1367]]]]
           ],
           locals: [],
           templates: []
@@ -3949,11 +5835,11 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
               "source": null,
               "start": {
                 "line": 1,
-                "column": 1170
+                "column": 1403
               },
               "end": {
                 "line": 1,
-                "column": 1526
+                "column": 1759
               }
             },
             "moduleName": "forw/templates/o/dashboard/account/index.hbs"
@@ -3986,10 +5872,10 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
             return morphs;
           },
           statements: [
-            ["element","action",["submit"],["on","submit"],["loc",[null,[1,1250],[1,1281]]]],
-            ["inline","md-input",[],["value",["subexpr","@mut",[["get","model.namespace",["loc",[null,[1,1299],[1,1314]]]]],[],[]],"label","Backend Namespace","type","text"],["loc",[null,[1,1282],[1,1354]]]],
-            ["inline","md-input",[],["value",["subexpr","@mut",[["get","model.host",["loc",[null,[1,1371],[1,1381]]]]],[],[]],"label","Backend Host","type","text"],["loc",[null,[1,1354],[1,1416]]]],
-            ["inline","md-btn-submit",[],["icon","mdi-content-send","iconPosition","right","text","Change"],["loc",[null,[1,1437],[1,1513]]]]
+            ["element","action",["submit"],["on","submit"],["loc",[null,[1,1483],[1,1514]]]],
+            ["inline","md-input",[],["value",["subexpr","@mut",[["get","model.namespace",["loc",[null,[1,1532],[1,1547]]]]],[],[]],"label","Backend Namespace","type","text"],["loc",[null,[1,1515],[1,1587]]]],
+            ["inline","md-input",[],["value",["subexpr","@mut",[["get","model.host",["loc",[null,[1,1604],[1,1614]]]]],[],[]],"label","Backend Host","type","text"],["loc",[null,[1,1587],[1,1649]]]],
+            ["inline","md-btn-submit",[],["icon","mdi-content-send","iconPosition","right","text","Change"],["loc",[null,[1,1670],[1,1746]]]]
           ],
           locals: [],
           templates: []
@@ -4006,7 +5892,7 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
             },
             "end": {
               "line": 1,
-              "column": 1545
+              "column": 1778
             }
           },
           "moduleName": "forw/templates/o/dashboard/account/index.hbs"
@@ -4040,11 +5926,11 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
           return morphs;
         },
         statements: [
-          ["block","md-collapsible",[],["icon","mdi-action-perm-identity","title","Warehouse Identity","active",true],0,null,["loc",[null,[1,45],[1,430]]]],
-          ["block","md-collapsible",[],["icon","mdi-av-timer","title","Operations and Location"],1,null,["loc",[null,[1,430],[1,610]]]],
-          ["block","md-collapsible",[],["icon","mdi-image-filter-drama","title","Asset Storage Keys"],2,null,["loc",[null,[1,610],[1,898]]]],
-          ["block","md-collapsible",[],["icon","mdi-image-filter-drama","title","Application Hosts"],3,null,["loc",[null,[1,898],[1,1170]]]],
-          ["block","md-collapsible",[],["icon","mdi-image-filter-drama","title","Database Details"],4,null,["loc",[null,[1,1170],[1,1545]]]]
+          ["block","md-collapsible",[],["icon","mdi-action-perm-identity","title","Warehouse Identity","active",true],0,null,["loc",[null,[1,45],[1,663]]]],
+          ["block","md-collapsible",[],["icon","mdi-av-timer","title","Operations and Location"],1,null,["loc",[null,[1,663],[1,843]]]],
+          ["block","md-collapsible",[],["icon","mdi-image-filter-drama","title","Asset Storage Keys"],2,null,["loc",[null,[1,843],[1,1131]]]],
+          ["block","md-collapsible",[],["icon","mdi-image-filter-drama","title","Application Hosts"],3,null,["loc",[null,[1,1131],[1,1403]]]],
+          ["block","md-collapsible",[],["icon","mdi-image-filter-drama","title","Database Details"],4,null,["loc",[null,[1,1403],[1,1778]]]]
         ],
         locals: [],
         templates: [child0, child1, child2, child3, child4]
@@ -4061,7 +5947,7 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
           },
           "end": {
             "line": 1,
-            "column": 1575
+            "column": 1808
           }
         },
         "moduleName": "forw/templates/o/dashboard/account/index.hbs"
@@ -4084,10 +5970,390 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
         return morphs;
       },
       statements: [
-        ["block","md-card-collapsible",[],[],0,null,["loc",[null,[1,21],[1,1569]]]]
+        ["block","md-card-collapsible",[],[],0,null,["loc",[null,[1,21],[1,1802]]]]
       ],
       locals: [],
       templates: [child0]
+    };
+  }()));
+
+});
+define('forw/templates/o/dashboard/account/upgrade', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    var child0 = (function() {
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 142
+            },
+            "end": {
+              "line": 1,
+              "column": 493
+            }
+          },
+          "moduleName": "forw/templates/o/dashboard/account/upgrade.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createElement("div");
+          dom.setAttribute(el1,"class","col s12");
+          var el2 = dom.createElement("div");
+          dom.setAttribute(el2,"class","card-panel amber darken-3");
+          var el3 = dom.createElement("span");
+          dom.setAttribute(el3,"class","white-text");
+          var el4 = dom.createComment("");
+          dom.appendChild(el3, el4);
+          var el4 = dom.createElement("span");
+          var el5 = dom.createTextNode(" You are currently subscribed to a legacy service plan. You can switch to one of the following new plans, but be warned, you won't be able to switch back!");
+          dom.appendChild(el4, el5);
+          dom.appendChild(el3, el4);
+          dom.appendChild(el2, el3);
+          dom.appendChild(el1, el2);
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(dom.childAt(fragment, [0, 0, 0]),0,0);
+          return morphs;
+        },
+        statements: [
+          ["inline","fa-icon",["info-circle"],[],["loc",[null,[1,277],[1,302]]]]
+        ],
+        locals: [],
+        templates: []
+      };
+    }());
+    var child1 = (function() {
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 610
+            },
+            "end": {
+              "line": 1,
+              "column": 664
+            }
+          },
+          "moduleName": "forw/templates/o/dashboard/account/upgrade.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createElement("div");
+          dom.setAttribute(el1,"class","col s12");
+          var el2 = dom.createComment("");
+          dom.appendChild(el1, el2);
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(dom.childAt(fragment, [0]),0,0);
+          return morphs;
+        },
+        statements: [
+          ["content","md-loader",["loc",[null,[1,645],[1,658]]]]
+        ],
+        locals: [],
+        templates: []
+      };
+    }());
+    var child2 = (function() {
+      var child0 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 1,
+                "column": 693
+              },
+              "end": {
+                "line": 1,
+                "column": 810
+              }
+            },
+            "moduleName": "forw/templates/o/dashboard/account/upgrade.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createElement("span");
+            var el2 = dom.createTextNode("cancel");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() { return []; },
+          statements: [
+
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      var child1 = (function() {
+        var child0 = (function() {
+          return {
+            meta: {
+              "revision": "Ember@1.13.5",
+              "loc": {
+                "source": null,
+                "start": {
+                  "line": 1,
+                  "column": 854
+                },
+                "end": {
+                  "line": 1,
+                  "column": 929
+                }
+              },
+              "moduleName": "forw/templates/o/dashboard/account/upgrade.hbs"
+            },
+            arity: 0,
+            cachedFragment: null,
+            hasRendered: false,
+            buildFragment: function buildFragment(dom) {
+              var el0 = dom.createDocumentFragment();
+              var el1 = dom.createComment("");
+              dom.appendChild(el0, el1);
+              return el0;
+            },
+            buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+              var morphs = new Array(1);
+              morphs[0] = dom.createUnsafeMorphAt(fragment,0,0,contextualElement);
+              dom.insertBoundary(fragment, 0);
+              dom.insertBoundary(fragment, null);
+              return morphs;
+            },
+            statements: [
+              ["inline","partial",["o/dashboard/account/stripe"],[],["loc",[null,[1,887],[1,929]]]]
+            ],
+            locals: [],
+            templates: []
+          };
+        }());
+        var child1 = (function() {
+          return {
+            meta: {
+              "revision": "Ember@1.13.5",
+              "loc": {
+                "source": null,
+                "start": {
+                  "line": 1,
+                  "column": 929
+                },
+                "end": {
+                  "line": 1,
+                  "column": 1100
+                }
+              },
+              "moduleName": "forw/templates/o/dashboard/account/upgrade.hbs"
+            },
+            arity: 0,
+            cachedFragment: null,
+            hasRendered: false,
+            buildFragment: function buildFragment(dom) {
+              var el0 = dom.createDocumentFragment();
+              var el1 = dom.createElement("button");
+              dom.setAttribute(el1,"class","waves-effect waves-light btn-large light-blue");
+              var el2 = dom.createElement("i");
+              dom.setAttribute(el2,"class","material-icons right");
+              var el3 = dom.createTextNode("send");
+              dom.appendChild(el2, el3);
+              dom.appendChild(el1, el2);
+              var el2 = dom.createElement("span");
+              var el3 = dom.createTextNode("confirm");
+              dom.appendChild(el2, el3);
+              dom.appendChild(el1, el2);
+              dom.appendChild(el0, el1);
+              return el0;
+            },
+            buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+              var element0 = dom.childAt(fragment, [0]);
+              var morphs = new Array(1);
+              morphs[0] = dom.createElementMorph(element0);
+              return morphs;
+            },
+            statements: [
+              ["element","action",["confirm"],["on","click"],["loc",[null,[1,945],[1,976]]]]
+            ],
+            locals: [],
+            templates: []
+          };
+        }());
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 1,
+                "column": 822
+              },
+              "end": {
+                "line": 1,
+                "column": 1107
+              }
+            },
+            "moduleName": "forw/templates/o/dashboard/account/upgrade.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createComment("");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+            var morphs = new Array(1);
+            morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+            dom.insertBoundary(fragment, 0);
+            dom.insertBoundary(fragment, null);
+            return morphs;
+          },
+          statements: [
+            ["block","if",[["get","chosenPlanRequiresPayment",["loc",[null,[1,860],[1,885]]]]],[],0,1,["loc",[null,[1,854],[1,1107]]]]
+          ],
+          locals: [],
+          templates: [child0, child1]
+        };
+      }());
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 664
+            },
+            "end": {
+              "line": 1,
+              "column": 1124
+            }
+          },
+          "moduleName": "forw/templates/o/dashboard/account/upgrade.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createElement("div");
+          dom.setAttribute(el1,"class","col s12");
+          var el2 = dom.createComment("");
+          dom.appendChild(el1, el2);
+          var el2 = dom.createComment("");
+          dom.appendChild(el1, el2);
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var element1 = dom.childAt(fragment, [0]);
+          var morphs = new Array(2);
+          morphs[0] = dom.createMorphAt(element1,0,0);
+          morphs[1] = dom.createMorphAt(element1,1,1);
+          return morphs;
+        },
+        statements: [
+          ["block","link-to",["o.dashboard.account.index",["get","account.id",["loc",[null,[1,732],[1,742]]]]],["classNames","waves-light waves-effect btn-flat"],0,null,["loc",[null,[1,693],[1,822]]]],
+          ["block","unless",[["get","chosenEqOriginalPlan",["loc",[null,[1,832],[1,852]]]]],[],1,null,["loc",[null,[1,822],[1,1118]]]]
+        ],
+        locals: [],
+        templates: [child0, child1]
+      };
+    }());
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 1131
+          }
+        },
+        "moduleName": "forw/templates/o/dashboard/account/upgrade.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createElement("div");
+        dom.setAttribute(el1,"class","col s12");
+        var el2 = dom.createElement("ol");
+        dom.setAttribute(el2,"class","ember-completion-steps");
+        var el3 = dom.createElement("li");
+        dom.setAttribute(el3,"class","active");
+        var el4 = dom.createTextNode("Select Plan");
+        dom.appendChild(el3, el4);
+        dom.appendChild(el2, el3);
+        var el3 = dom.createElement("li");
+        dom.setAttribute(el3,"class","future");
+        var el4 = dom.createTextNode("Confirm Payment ");
+        dom.appendChild(el3, el4);
+        dom.appendChild(el2, el3);
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        var el1 = dom.createElement("div");
+        dom.setAttribute(el1,"class","col s12");
+        var el2 = dom.createComment("");
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        var el1 = dom.createElement("div");
+        dom.setAttribute(el1,"class","col s12");
+        var el2 = dom.createElement("h4");
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        var el1 = dom.createComment("");
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var morphs = new Array(3);
+        morphs[0] = dom.createMorphAt(fragment,1,1,contextualElement);
+        morphs[1] = dom.createUnsafeMorphAt(dom.childAt(fragment, [2]),0,0);
+        morphs[2] = dom.createMorphAt(fragment,4,4,contextualElement);
+        dom.insertBoundary(fragment, null);
+        return morphs;
+      },
+      statements: [
+        ["block","if",[["subexpr","and",[["get","usingDeprecatedPlan",["loc",[null,[1,153],[1,172]]]],["get","isSelectionStage",["loc",[null,[1,173],[1,189]]]]],[],["loc",[null,[1,148],[1,190]]]]],[],0,null,["loc",[null,[1,142],[1,500]]]],
+        ["inline","partial",["o/dashboard/account/price-plans"],[],["loc",[null,[1,521],[1,568]]]],
+        ["block","if",[["get","isBusy",["loc",[null,[1,616],[1,622]]]]],[],1,2,["loc",[null,[1,610],[1,1131]]]]
+      ],
+      locals: [],
+      templates: [child0, child1, child2]
     };
   }()));
 
@@ -4186,6 +6452,46 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
     }());
     var child1 = (function() {
       var child0 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 1,
+                "column": 308
+              },
+              "end": {
+                "line": 1,
+                "column": 417
+              }
+            },
+            "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createComment("");
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+            var morphs = new Array(1);
+            morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+            dom.insertBoundary(fragment, 0);
+            dom.insertBoundary(fragment, null);
+            return morphs;
+          },
+          statements: [
+            ["content","account.companyName",["loc",[null,[1,394],[1,417]]]]
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      var child1 = (function() {
         var child0 = (function() {
           return {
             meta: {
@@ -4194,11 +6500,11 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 324
+                  "column": 857
                 },
                 "end": {
                   "line": 1,
-                  "column": 666
+                  "column": 923
                 }
               },
               "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -4208,176 +6514,21 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
             hasRendered: false,
             buildFragment: function buildFragment(dom) {
               var el0 = dom.createDocumentFragment();
-              var el1 = dom.createElement("dl");
-              var el2 = dom.createElement("dt");
-              dom.setAttribute(el2,"class","bold colon");
-              var el3 = dom.createTextNode("Owner Username");
-              dom.appendChild(el2, el3);
-              dom.appendChild(el1, el2);
-              var el2 = dom.createElement("dd");
-              var el3 = dom.createComment("");
-              dom.appendChild(el2, el3);
-              dom.appendChild(el1, el2);
-              var el2 = dom.createElement("dt");
-              dom.setAttribute(el2,"class","bold colon");
-              var el3 = dom.createTextNode("In Timezone");
-              dom.appendChild(el2, el3);
-              dom.appendChild(el1, el2);
-              var el2 = dom.createElement("dd");
-              var el3 = dom.createComment("");
-              dom.appendChild(el2, el3);
-              dom.appendChild(el1, el2);
-              var el2 = dom.createElement("dt");
-              dom.setAttribute(el2,"class","bold colon");
-              var el3 = dom.createTextNode("Created On");
-              dom.appendChild(el2, el3);
-              dom.appendChild(el1, el2);
-              var el2 = dom.createElement("dd");
-              var el3 = dom.createElement("span");
-              var el4 = dom.createComment("");
-              dom.appendChild(el3, el4);
-              dom.appendChild(el2, el3);
-              dom.appendChild(el1, el2);
-              var el2 = dom.createElement("dt");
-              dom.setAttribute(el2,"class","bold colon");
-              var el3 = dom.createTextNode("Service Plan");
-              dom.appendChild(el2, el3);
-              dom.appendChild(el1, el2);
-              var el2 = dom.createElement("dd");
-              var el3 = dom.createComment("");
-              dom.appendChild(el2, el3);
+              var el1 = dom.createElement("span");
+              var el2 = dom.createTextNode("Launch App");
               dom.appendChild(el1, el2);
               dom.appendChild(el0, el1);
               return el0;
             },
-            buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-              var element0 = dom.childAt(fragment, [0]);
-              var morphs = new Array(4);
-              morphs[0] = dom.createMorphAt(dom.childAt(element0, [1]),0,0);
-              morphs[1] = dom.createMorphAt(dom.childAt(element0, [3]),0,0);
-              morphs[2] = dom.createMorphAt(dom.childAt(element0, [5, 0]),0,0);
-              morphs[3] = dom.createMorphAt(dom.childAt(element0, [7]),0,0);
-              return morphs;
-            },
+            buildRenderNodes: function buildRenderNodes() { return []; },
             statements: [
-              ["content","account.user.username",["loc",[null,[1,394],[1,419]]]],
-              ["content","account.timezone",["loc",[null,[1,467],[1,487]]]],
-              ["inline","moment-format",[["get","account.inserted_at",["loc",[null,[1,556],[1,575]]]]],[],["loc",[null,[1,540],[1,577]]]],
-              ["content","account.servicePlan",["loc",[null,[1,633],[1,656]]]]
+
             ],
             locals: [],
             templates: []
           };
         }());
         var child1 = (function() {
-          var child0 = (function() {
-            return {
-              meta: {
-                "revision": "Ember@1.13.5",
-                "loc": {
-                  "source": null,
-                  "start": {
-                    "line": 1,
-                    "column": 705
-                  },
-                  "end": {
-                    "line": 1,
-                    "column": 771
-                  }
-                },
-                "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
-              },
-              arity: 0,
-              cachedFragment: null,
-              hasRendered: false,
-              buildFragment: function buildFragment(dom) {
-                var el0 = dom.createDocumentFragment();
-                var el1 = dom.createElement("span");
-                var el2 = dom.createTextNode("Launch App");
-                dom.appendChild(el1, el2);
-                dom.appendChild(el0, el1);
-                return el0;
-              },
-              buildRenderNodes: function buildRenderNodes() { return []; },
-              statements: [
-
-              ],
-              locals: [],
-              templates: []
-            };
-          }());
-          var child1 = (function() {
-            return {
-              meta: {
-                "revision": "Ember@1.13.5",
-                "loc": {
-                  "source": null,
-                  "start": {
-                    "line": 1,
-                    "column": 783
-                  },
-                  "end": {
-                    "line": 1,
-                    "column": 846
-                  }
-                },
-                "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
-              },
-              arity: 0,
-              cachedFragment: null,
-              hasRendered: false,
-              buildFragment: function buildFragment(dom) {
-                var el0 = dom.createDocumentFragment();
-                var el1 = dom.createElement("span");
-                var el2 = dom.createTextNode("Config");
-                dom.appendChild(el1, el2);
-                dom.appendChild(el0, el1);
-                return el0;
-              },
-              buildRenderNodes: function buildRenderNodes() { return []; },
-              statements: [
-
-              ],
-              locals: [],
-              templates: []
-            };
-          }());
-          var child2 = (function() {
-            return {
-              meta: {
-                "revision": "Ember@1.13.5",
-                "loc": {
-                  "source": null,
-                  "start": {
-                    "line": 1,
-                    "column": 858
-                  },
-                  "end": {
-                    "line": 1,
-                    "column": 926
-                  }
-                },
-                "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
-              },
-              arity: 0,
-              cachedFragment: null,
-              hasRendered: false,
-              buildFragment: function buildFragment(dom) {
-                var el0 = dom.createDocumentFragment();
-                var el1 = dom.createElement("span");
-                var el2 = dom.createTextNode("Info");
-                dom.appendChild(el1, el2);
-                dom.appendChild(el0, el1);
-                return el0;
-              },
-              buildRenderNodes: function buildRenderNodes() { return []; },
-              statements: [
-
-              ],
-              locals: [],
-              templates: []
-            };
-          }());
           return {
             meta: {
               "revision": "Ember@1.13.5",
@@ -4385,11 +6536,11 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 686
+                  "column": 935
                 },
                 "end": {
                   "line": 1,
-                  "column": 938
+                  "column": 998
                 }
               },
               "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -4399,30 +6550,54 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
             hasRendered: false,
             buildFragment: function buildFragment(dom) {
               var el0 = dom.createDocumentFragment();
-              var el1 = dom.createComment("");
-              dom.appendChild(el0, el1);
-              var el1 = dom.createComment("");
-              dom.appendChild(el0, el1);
-              var el1 = dom.createComment("");
+              var el1 = dom.createElement("span");
+              var el2 = dom.createTextNode("Config");
+              dom.appendChild(el1, el2);
               dom.appendChild(el0, el1);
               return el0;
             },
-            buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-              var morphs = new Array(3);
-              morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
-              morphs[1] = dom.createMorphAt(fragment,1,1,contextualElement);
-              morphs[2] = dom.createMorphAt(fragment,2,2,contextualElement);
-              dom.insertBoundary(fragment, 0);
-              dom.insertBoundary(fragment, null);
-              return morphs;
-            },
+            buildRenderNodes: function buildRenderNodes() { return []; },
             statements: [
-              ["block","link-to",["x.warehouse.index",["get","account.id",["loc",[null,[1,736],[1,746]]]]],[],0,null,["loc",[null,[1,705],[1,783]]]],
-              ["block","link-to",["x.warehouse.config",["get","account.id",["loc",[null,[1,815],[1,825]]]]],[],1,null,["loc",[null,[1,783],[1,858]]]],
-              ["block","link-to",["o.dashboard.account.index",["get","account.id",["loc",[null,[1,897],[1,907]]]]],[],2,null,["loc",[null,[1,858],[1,938]]]]
+
             ],
             locals: [],
-            templates: [child0, child1, child2]
+            templates: []
+          };
+        }());
+        var child2 = (function() {
+          return {
+            meta: {
+              "revision": "Ember@1.13.5",
+              "loc": {
+                "source": null,
+                "start": {
+                  "line": 1,
+                  "column": 1010
+                },
+                "end": {
+                  "line": 1,
+                  "column": 1078
+                }
+              },
+              "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
+            },
+            arity: 0,
+            cachedFragment: null,
+            hasRendered: false,
+            buildFragment: function buildFragment(dom) {
+              var el0 = dom.createDocumentFragment();
+              var el1 = dom.createElement("span");
+              var el2 = dom.createTextNode("Info");
+              dom.appendChild(el1, el2);
+              dom.appendChild(el0, el1);
+              return el0;
+            },
+            buildRenderNodes: function buildRenderNodes() { return []; },
+            statements: [
+
+            ],
+            locals: [],
+            templates: []
           };
         }());
         return {
@@ -4432,11 +6607,11 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
               "source": null,
               "start": {
                 "line": 1,
-                "column": 262
+                "column": 838
               },
               "end": {
                 "line": 1,
-                "column": 957
+                "column": 1090
               }
             },
             "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -4450,22 +6625,26 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
             dom.appendChild(el0, el1);
             var el1 = dom.createComment("");
             dom.appendChild(el0, el1);
+            var el1 = dom.createComment("");
+            dom.appendChild(el0, el1);
             return el0;
           },
           buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-            var morphs = new Array(2);
+            var morphs = new Array(3);
             morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
             morphs[1] = dom.createMorphAt(fragment,1,1,contextualElement);
+            morphs[2] = dom.createMorphAt(fragment,2,2,contextualElement);
             dom.insertBoundary(fragment, 0);
             dom.insertBoundary(fragment, null);
             return morphs;
           },
           statements: [
-            ["block","md-card-content",[],[],0,null,["loc",[null,[1,324],[1,686]]]],
-            ["block","md-card-action",[],[],1,null,["loc",[null,[1,686],[1,957]]]]
+            ["block","link-to",["x.warehouse.index",["get","account.id",["loc",[null,[1,888],[1,898]]]]],[],0,null,["loc",[null,[1,857],[1,935]]]],
+            ["block","link-to",["x.warehouse.config",["get","account.id",["loc",[null,[1,967],[1,977]]]]],[],1,null,["loc",[null,[1,935],[1,1010]]]],
+            ["block","link-to",["o.dashboard.account.index",["get","account.id",["loc",[null,[1,1049],[1,1059]]]]],[],2,null,["loc",[null,[1,1010],[1,1090]]]]
           ],
           locals: [],
-          templates: [child0, child1]
+          templates: [child0, child1, child2]
         };
       }());
       return {
@@ -4479,7 +6658,7 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
             },
             "end": {
               "line": 1,
-              "column": 975
+              "column": 1121
             }
           },
           "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -4491,21 +6670,95 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
           var el0 = dom.createDocumentFragment();
           var el1 = dom.createElement("div");
           dom.setAttribute(el1,"class","col s12 m6 l4");
-          var el2 = dom.createComment("");
+          var el2 = dom.createElement("div");
+          dom.setAttribute(el2,"class","card");
+          var el3 = dom.createElement("div");
+          dom.setAttribute(el3,"class","card-content");
+          var el4 = dom.createComment("");
+          dom.appendChild(el3, el4);
+          var el4 = dom.createElement("p");
+          var el5 = dom.createElement("dl");
+          var el6 = dom.createElement("dt");
+          dom.setAttribute(el6,"class","bold colon");
+          var el7 = dom.createTextNode("Owner Username");
+          dom.appendChild(el6, el7);
+          dom.appendChild(el5, el6);
+          var el6 = dom.createElement("dd");
+          var el7 = dom.createComment("");
+          dom.appendChild(el6, el7);
+          dom.appendChild(el5, el6);
+          var el6 = dom.createElement("dt");
+          dom.setAttribute(el6,"class","bold colon");
+          var el7 = dom.createTextNode("In Timezone");
+          dom.appendChild(el6, el7);
+          dom.appendChild(el5, el6);
+          var el6 = dom.createElement("dd");
+          var el7 = dom.createComment("");
+          dom.appendChild(el6, el7);
+          dom.appendChild(el5, el6);
+          var el6 = dom.createElement("dt");
+          dom.setAttribute(el6,"class","bold colon");
+          var el7 = dom.createTextNode("Created On");
+          dom.appendChild(el6, el7);
+          dom.appendChild(el5, el6);
+          var el6 = dom.createElement("dd");
+          var el7 = dom.createElement("span");
+          var el8 = dom.createComment("");
+          dom.appendChild(el7, el8);
+          dom.appendChild(el6, el7);
+          dom.appendChild(el5, el6);
+          var el6 = dom.createElement("dt");
+          dom.setAttribute(el6,"class","bold colon");
+          var el7 = dom.createTextNode("Service Plan");
+          dom.appendChild(el6, el7);
+          dom.appendChild(el5, el6);
+          var el6 = dom.createElement("dd");
+          var el7 = dom.createComment("");
+          dom.appendChild(el6, el7);
+          dom.appendChild(el5, el6);
+          var el6 = dom.createElement("dt");
+          dom.setAttribute(el6,"class","bold colon");
+          var el7 = dom.createTextNode("Status");
+          dom.appendChild(el6, el7);
+          dom.appendChild(el5, el6);
+          var el6 = dom.createElement("dd");
+          var el7 = dom.createComment("");
+          dom.appendChild(el6, el7);
+          dom.appendChild(el5, el6);
+          dom.appendChild(el4, el5);
+          dom.appendChild(el3, el4);
+          dom.appendChild(el2, el3);
+          var el3 = dom.createComment("");
+          dom.appendChild(el2, el3);
           dom.appendChild(el1, el2);
           dom.appendChild(el0, el1);
           return el0;
         },
         buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-          var morphs = new Array(1);
-          morphs[0] = dom.createMorphAt(dom.childAt(fragment, [0]),0,0);
+          var element0 = dom.childAt(fragment, [0, 0]);
+          var element1 = dom.childAt(element0, [0]);
+          var element2 = dom.childAt(element1, [1, 0]);
+          var morphs = new Array(7);
+          morphs[0] = dom.createMorphAt(element1,0,0);
+          morphs[1] = dom.createMorphAt(dom.childAt(element2, [1]),0,0);
+          morphs[2] = dom.createMorphAt(dom.childAt(element2, [3]),0,0);
+          morphs[3] = dom.createMorphAt(dom.childAt(element2, [5, 0]),0,0);
+          morphs[4] = dom.createMorphAt(dom.childAt(element2, [7]),0,0);
+          morphs[5] = dom.createMorphAt(dom.childAt(element2, [9]),0,0);
+          morphs[6] = dom.createMorphAt(element0,1,1);
           return morphs;
         },
         statements: [
-          ["block","md-card",[],["title",["subexpr","@mut",[["get","account.companyName",["loc",[null,[1,279],[1,298]]]]],[],[]],"titleClass","brown-text"],0,null,["loc",[null,[1,262],[1,969]]]]
+          ["block","link-to",["o.dashboard.account.index",["get","account.id",["loc",[null,[1,347],[1,357]]]]],["classNames","card-title brown-text"],0,null,["loc",[null,[1,308],[1,429]]]],
+          ["content","account.user.username",["loc",[null,[1,482],[1,507]]]],
+          ["content","account.timezone",["loc",[null,[1,555],[1,575]]]],
+          ["inline","moment-format",[["get","account.inserted_at",["loc",[null,[1,644],[1,663]]]]],[],["loc",[null,[1,628],[1,665]]]],
+          ["content","account.servicePlan.presentation",["loc",[null,[1,721],[1,757]]]],
+          ["content","account.status",["loc",[null,[1,800],[1,818]]]],
+          ["block","md-card-action",[],[],1,null,["loc",[null,[1,838],[1,1109]]]]
         ],
         locals: ["account"],
-        templates: [child0]
+        templates: [child0, child1]
       };
     }());
     var child2 = (function() {
@@ -4518,11 +6771,11 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 1054
+                  "column": 1200
                 },
                 "end": {
                   "line": 1,
-                  "column": 1136
+                  "column": 1282
                 }
               },
               "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -4555,11 +6808,11 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
                   "source": null,
                   "start": {
                     "line": 1,
-                    "column": 1175
+                    "column": 1321
                   },
                   "end": {
                     "line": 1,
-                    "column": 1240
+                    "column": 1386
                   }
                 },
                 "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -4590,11 +6843,11 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 1156
+                  "column": 1302
                 },
                 "end": {
                   "line": 1,
-                  "column": 1252
+                  "column": 1398
                 }
               },
               "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -4616,7 +6869,7 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
               return morphs;
             },
             statements: [
-              ["block","link-to",["o.dashboard.accounts.new"],[],0,null,["loc",[null,[1,1175],[1,1252]]]]
+              ["block","link-to",["o.dashboard.accounts.new"],[],0,null,["loc",[null,[1,1321],[1,1398]]]]
             ],
             locals: [],
             templates: [child0]
@@ -4629,11 +6882,11 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
               "source": null,
               "start": {
                 "line": 1,
-                "column": 1010
+                "column": 1156
               },
               "end": {
                 "line": 1,
-                "column": 1271
+                "column": 1417
               }
             },
             "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -4658,8 +6911,8 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
             return morphs;
           },
           statements: [
-            ["block","md-card-content",[],[],0,null,["loc",[null,[1,1054],[1,1156]]]],
-            ["block","md-card-action",[],[],1,null,["loc",[null,[1,1156],[1,1271]]]]
+            ["block","md-card-content",[],[],0,null,["loc",[null,[1,1200],[1,1302]]]],
+            ["block","md-card-action",[],[],1,null,["loc",[null,[1,1302],[1,1417]]]]
           ],
           locals: [],
           templates: [child0, child1]
@@ -4672,11 +6925,11 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
             "source": null,
             "start": {
               "line": 1,
-              "column": 975
+              "column": 1121
             },
             "end": {
               "line": 1,
-              "column": 1289
+              "column": 1435
             }
           },
           "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -4699,7 +6952,7 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
           return morphs;
         },
         statements: [
-          ["block","md-card",[],["title","You Have No Warehouses!"],0,null,["loc",[null,[1,1010],[1,1283]]]]
+          ["block","md-card",[],["title","You Have No Warehouses!"],0,null,["loc",[null,[1,1156],[1,1429]]]]
         ],
         locals: [],
         templates: [child0]
@@ -4716,7 +6969,7 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
           },
           "end": {
             "line": 1,
-            "column": 1310
+            "column": 1456
           }
         },
         "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -4739,15 +6992,15 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
         return el0;
       },
       buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-        var element1 = dom.childAt(fragment, [0]);
+        var element3 = dom.childAt(fragment, [0]);
         var morphs = new Array(2);
-        morphs[0] = dom.createMorphAt(element1,0,0);
-        morphs[1] = dom.createMorphAt(dom.childAt(element1, [1]),0,0);
+        morphs[0] = dom.createMorphAt(element3,0,0);
+        morphs[1] = dom.createMorphAt(dom.childAt(element3, [1]),0,0);
         return morphs;
       },
       statements: [
         ["block","link-to",["o.dashboard.accounts.new"],["classNames","waves-effect waves-light btn-large"],0,null,["loc",[null,[1,21],[1,192]]]],
-        ["block","each",[["get","model",["loc",[null,[1,228],[1,233]]]]],[],1,2,["loc",[null,[1,209],[1,1298]]]]
+        ["block","each",[["get","model",["loc",[null,[1,217],[1,222]]]]],[],1,2,["loc",[null,[1,209],[1,1444]]]]
       ],
       locals: [],
       templates: [child0, child1, child2]
@@ -7063,7 +9316,7 @@ define('forw/templates/x/warehouse', ['exports'], function (exports) {
             },
             "end": {
               "line": 1,
-              "column": 372
+              "column": 365
             }
           },
           "moduleName": "forw/templates/x/warehouse.hbs"
@@ -7074,9 +9327,7 @@ define('forw/templates/x/warehouse', ['exports'], function (exports) {
         buildFragment: function buildFragment(dom) {
           var el0 = dom.createDocumentFragment();
           var el1 = dom.createElement("i");
-          dom.setAttribute(el1,"class","material-icons");
-          var el2 = dom.createTextNode("done");
-          dom.appendChild(el1, el2);
+          dom.setAttribute(el1,"class","fa fa-times");
           dom.appendChild(el0, el1);
           return el0;
         },
@@ -7099,7 +9350,7 @@ define('forw/templates/x/warehouse', ['exports'], function (exports) {
           },
           "end": {
             "line": 1,
-            "column": 476
+            "column": 469
           }
         },
         "moduleName": "forw/templates/x/warehouse.hbs"
@@ -7146,8 +9397,8 @@ define('forw/templates/x/warehouse', ['exports'], function (exports) {
       },
       statements: [
         ["block","link-to",["x.warehouse",["get","model.id",["loc",[null,[1,110],[1,118]]]]],["classNames","btn-floating waves-effect waves-light green"],0,null,["loc",[null,[1,85],[1,229]]]],
-        ["block","link-to",["o.dashboard.account",["get","model.id",["loc",[null,[1,262],[1,270]]]]],["classNames","btn-floating btn-large waves-effect waves-light blue"],1,null,["loc",[null,[1,229],[1,384]]]],
-        ["content","outlet",["loc",[null,[1,440],[1,452]]]]
+        ["block","link-to",["o.dashboard.account",["get","model.id",["loc",[null,[1,262],[1,270]]]]],["classNames","btn-floating btn-large waves-effect waves-light blue"],1,null,["loc",[null,[1,229],[1,377]]]],
+        ["content","outlet",["loc",[null,[1,433],[1,445]]]]
       ],
       locals: [],
       templates: [child0, child1]
@@ -7160,6 +9411,92 @@ define('forw/templates/x/warehouse/config', ['exports'], function (exports) {
   'use strict';
 
   exports['default'] = Ember.HTMLBars.template((function() {
+    var child0 = (function() {
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 27
+            },
+            "end": {
+              "line": 1,
+              "column": 169
+            }
+          },
+          "moduleName": "forw/templates/x/warehouse/config.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createElement("a");
+          dom.setAttribute(el1,"target","blank");
+          dom.setAttribute(el1,"class","btn-floating waves-effect waves-light amber");
+          var el2 = dom.createElement("i");
+          dom.setAttribute(el2,"class","material-icons");
+          var el3 = dom.createTextNode("launch");
+          dom.appendChild(el2, el3);
+          dom.appendChild(el1, el2);
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var element0 = dom.childAt(fragment, [0]);
+          var morphs = new Array(1);
+          morphs[0] = dom.createAttrMorph(element0, 'href');
+          return morphs;
+        },
+        statements: [
+          ["attribute","href",["get","popLink",["loc",[null,[1,52],[1,59]]]]]
+        ],
+        locals: [],
+        templates: []
+      };
+    }());
+    var child1 = (function() {
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 182
+            },
+            "end": {
+              "line": 1,
+              "column": 310
+            }
+          },
+          "moduleName": "forw/templates/x/warehouse/config.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+          dom.insertBoundary(fragment, 0);
+          dom.insertBoundary(fragment, null);
+          return morphs;
+        },
+        statements: [
+          ["inline","md-loader",[],["mode","circular","color","yellow"],["loc",[null,[1,266],[1,310]]]]
+        ],
+        locals: [],
+        templates: []
+      };
+    }());
     return {
       meta: {
         "revision": "Ember@1.13.5",
@@ -7171,7 +9508,7 @@ define('forw/templates/x/warehouse/config', ['exports'], function (exports) {
           },
           "end": {
             "line": 1,
-            "column": 106
+            "column": 327
           }
         },
         "moduleName": "forw/templates/x/warehouse/config.hbs"
@@ -7181,26 +9518,28 @@ define('forw/templates/x/warehouse/config', ['exports'], function (exports) {
       hasRendered: false,
       buildFragment: function buildFragment(dom) {
         var el0 = dom.createDocumentFragment();
-        var el1 = dom.createElement("iframe");
-        dom.setAttribute(el1,"id","external-application");
+        var el1 = dom.createElement("div");
+        dom.setAttribute(el1,"class","popout-action");
         var el2 = dom.createComment("");
         dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        var el1 = dom.createComment("");
         dom.appendChild(el0, el1);
         return el0;
       },
       buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-        var element0 = dom.childAt(fragment, [0]);
         var morphs = new Array(2);
-        morphs[0] = dom.createAttrMorph(element0, 'src');
-        morphs[1] = dom.createMorphAt(element0,0,0);
+        morphs[0] = dom.createMorphAt(dom.childAt(fragment, [0]),0,0);
+        morphs[1] = dom.createMorphAt(fragment,1,1,contextualElement);
+        dom.insertBoundary(fragment, null);
         return morphs;
       },
       statements: [
-        ["attribute","src",["get","configHost",["loc",[null,[1,40],[1,50]]]]],
-        ["inline","md-loader",[],["mode","circular","color","yellow"],["loc",[null,[1,53],[1,97]]]]
+        ["block","if",[["get","popLink",["loc",[null,[1,33],[1,40]]]]],[],0,null,["loc",[null,[1,27],[1,176]]]],
+        ["block","ember-iframe",[],["iframeId","external-application","src",["subexpr","@mut",[["get","configHost",["loc",[null,[1,234],[1,244]]]]],[],[]],"action","hashchange"],1,null,["loc",[null,[1,182],[1,327]]]]
       ],
       locals: [],
-      templates: []
+      templates: [child0, child1]
     };
   }()));
 
@@ -7210,6 +9549,92 @@ define('forw/templates/x/warehouse/index', ['exports'], function (exports) {
   'use strict';
 
   exports['default'] = Ember.HTMLBars.template((function() {
+    var child0 = (function() {
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 27
+            },
+            "end": {
+              "line": 1,
+              "column": 169
+            }
+          },
+          "moduleName": "forw/templates/x/warehouse/index.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createElement("a");
+          dom.setAttribute(el1,"target","blank");
+          dom.setAttribute(el1,"class","btn-floating waves-effect waves-light amber");
+          var el2 = dom.createElement("i");
+          dom.setAttribute(el2,"class","material-icons");
+          var el3 = dom.createTextNode("launch");
+          dom.appendChild(el2, el3);
+          dom.appendChild(el1, el2);
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var element0 = dom.childAt(fragment, [0]);
+          var morphs = new Array(1);
+          morphs[0] = dom.createAttrMorph(element0, 'href');
+          return morphs;
+        },
+        statements: [
+          ["attribute","href",["get","popLink",["loc",[null,[1,52],[1,59]]]]]
+        ],
+        locals: [],
+        templates: []
+      };
+    }());
+    var child1 = (function() {
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 182
+            },
+            "end": {
+              "line": 1,
+              "column": 308
+            }
+          },
+          "moduleName": "forw/templates/x/warehouse/index.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+          dom.insertBoundary(fragment, 0);
+          dom.insertBoundary(fragment, null);
+          return morphs;
+        },
+        statements: [
+          ["inline","md-loader",[],["mode","circular","color","yellow"],["loc",[null,[1,264],[1,308]]]]
+        ],
+        locals: [],
+        templates: []
+      };
+    }());
     return {
       meta: {
         "revision": "Ember@1.13.5",
@@ -7221,7 +9646,7 @@ define('forw/templates/x/warehouse/index', ['exports'], function (exports) {
           },
           "end": {
             "line": 1,
-            "column": 110
+            "column": 325
           }
         },
         "moduleName": "forw/templates/x/warehouse/index.hbs"
@@ -7231,26 +9656,28 @@ define('forw/templates/x/warehouse/index', ['exports'], function (exports) {
       hasRendered: false,
       buildFragment: function buildFragment(dom) {
         var el0 = dom.createDocumentFragment();
-        var el1 = dom.createElement("iframe");
-        dom.setAttribute(el1,"id","external-application");
+        var el1 = dom.createElement("div");
+        dom.setAttribute(el1,"class","popout-action");
         var el2 = dom.createComment("");
         dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        var el1 = dom.createComment("");
         dom.appendChild(el0, el1);
         return el0;
       },
       buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-        var element0 = dom.childAt(fragment, [0]);
         var morphs = new Array(2);
-        morphs[0] = dom.createAttrMorph(element0, 'src');
-        morphs[1] = dom.createMorphAt(element0,0,0);
+        morphs[0] = dom.createMorphAt(dom.childAt(fragment, [0]),0,0);
+        morphs[1] = dom.createMorphAt(fragment,1,1,contextualElement);
+        dom.insertBoundary(fragment, null);
         return morphs;
       },
       statements: [
-        ["attribute","src",["get","model.uiuxHost",["loc",[null,[1,40],[1,54]]]]],
-        ["inline","md-loader",[],["mode","circular","color","yellow"],["loc",[null,[1,57],[1,101]]]]
+        ["block","if",[["get","popLink",["loc",[null,[1,33],[1,40]]]]],[],0,null,["loc",[null,[1,27],[1,176]]]],
+        ["block","ember-iframe",[],["iframeId","external-application","src",["subexpr","@mut",[["get","uiuxHost",["loc",[null,[1,234],[1,242]]]]],[],[]],"action","hashchange"],1,null,["loc",[null,[1,182],[1,325]]]]
       ],
       locals: [],
-      templates: []
+      templates: [child0, child1]
     };
   }()));
 
@@ -7362,6 +9789,22 @@ define('forw/tests/unit/adapters/application-test', ['ember-qunit'], function (e
   });
 
 });
+define('forw/tests/unit/components/ember-iframe-test', ['ember-qunit'], function (ember_qunit) {
+
+  'use strict';
+
+  ember_qunit.moduleForComponent('ember-iframe', {});
+
+  ember_qunit.test('it renders', function (assert) {
+    var component;
+    assert.expect(2);
+    component = this.subject();
+    assert.equal(component._state, 'preRender');
+    this.render();
+    return assert.equal(component._state, 'inDOM');
+  });
+
+});
 define('forw/tests/unit/routes/dashboard-test', ['ember-qunit'], function (ember_qunit) {
 
   'use strict';
@@ -7389,6 +9832,37 @@ define('forw/tests/unit/serializers/session-test', ['ember-qunit'], function (em
     serializedRecord = record.serialize();
     return assert.ok(serializedRecord);
   });
+
+});
+define('forw/tests/unit/transforms/dollar-test', ['ember-qunit'], function (ember_qunit) {
+
+  'use strict';
+
+  ember_qunit.moduleFor('transform:dollar', {});
+
+  ember_qunit.test('it exists', function (assert) {
+    var transform;
+    transform = this.subject();
+    return assert.ok(transform);
+  });
+
+});
+define('forw/transforms/cents', ['exports', 'ember-data'], function (exports, DS) {
+
+  'use strict';
+
+  var CentsTransform;
+
+  CentsTransform = DS['default'].Transform.extend({
+    deserialize: function deserialize(serialized) {
+      return serialized / 100;
+    },
+    serialize: function serialize(deserialized) {
+      return parseInt(deserialized * 100);
+    }
+  });
+
+  exports['default'] = CentsTransform;
 
 });
 define('forw/views/application', ['exports', 'ember'], function (exports, Ember) {
@@ -7444,7 +9918,7 @@ catch(err) {
 if (runningTests) {
   require("forw/tests/test-helper");
 } else {
-  require("forw/app")["default"].create({"name":"forw","version":"0.0.0+e9249aaf"});
+  require("forw/app")["default"].create({"name":"forw","version":"0.0.0+0d73fdb5"});
 }
 
 /* jshint ignore:end */
