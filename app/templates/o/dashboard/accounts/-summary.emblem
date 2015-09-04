@@ -1,0 +1,23 @@
+.card
+  .card-content
+    link-to "o.dashboard.account.index" account.id classNames="card-title brown-text"
+      = account.companyName
+    p
+      dl
+        dt.bold.colon Owner Username
+        dd= account.user.username
+        dt.bold.colon In Timezone
+        dd= account.timezone
+        dt.bold.colon Created On
+        dd: span= moment-format account.inserted_at
+        dt.bold.colon Service Plan
+        dd= account.servicePlan.presentation
+        dt.bold.colon Status
+        dd= account.status
+  md-card-action
+    link-to "x.warehouse.index" account.id
+      span Launch App
+    link-to "x.warehouse.config" account.id
+      span Config
+    link-to "o.dashboard.account.index" account.id
+      span Info

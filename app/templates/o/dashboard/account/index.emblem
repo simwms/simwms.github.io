@@ -12,9 +12,15 @@
           span.bold.colon Owner Username
           span= model.user.username
       .actions
-        link-to "o.dashboard.account.upgrade" model.id classNames="btn-large waves-effect waves-light orange"
-          fa-icon "credit-card" classNames="left"
-          span Change Service Plan
+        if model.isProperlySetup
+          link-to "o.dashboard.account.upgrade" model.id classNames="btn-large waves-effect waves-light orange"
+            fa-icon "credit-card" classNames="left"
+            span Change Service Plan
+        else
+          a.btn-large.disabled
+            fa-icon "credit-card" classNames="left"
+            span Change Service Plan
+
 
     md-collapsible icon="mdi-av-timer" title="Operations and Location"
       ul
@@ -39,6 +45,9 @@
         li
           span.bold.colon Config App Host
           span= model.configHost
+        li
+          span.bold.colon SimWMS Session Key
+          span= model.simwmsAccountKey
     
     md-collapsible icon="mdi-image-filter-drama" title="Database Details"
       form submit="submit"

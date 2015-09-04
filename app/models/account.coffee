@@ -5,6 +5,22 @@
 
 alias = Ember.computed.alias
 
+class TaskRunner
+  constructor: (@account, @time) ->
+  seconds: ->
+    @time = @time * 1000
+    @
+  refreshUntil: (condition) ->
+    @interval = window.setInterval @makeRefreshFun(condition), @time
+  makeRefreshFun: (condition) ->
+    => 
+      if condition(@account)
+        window.clearInterval @interval
+        return @account
+      if @account.id? and @account.get("isLoaded")
+        return @account.reload()
+
+
 Account = DS.Model.extend
   companyName: DS.attr "string"
   accessKeyId: DS.attr "string"
@@ -22,4 +38,12 @@ Account = DS.Model.extend
   paymentSubscription: DS.belongsTo "paymentSubscription", async: true
   isProperlySetup: DS.attr "boolean"
   simwmsAccountKey: DS.attr "string"
+  setupAttempts: DS.attr "number", defaultValue: 0
+
+  considerProperSetup: Ember.on "ready", ->
+    console.log "account ready #{@id}"
+    @every(2.5).seconds().refreshUntil => @get("isProperlySetup") or @get("setupAttempts") > 9
+
+  every: (time) ->
+    @taskRunner = new TaskRunner(@, time)
 `export default Account`

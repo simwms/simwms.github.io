@@ -1,10 +1,14 @@
 .col.s12.m10.l8
-  link-to "x.warehouse.config" model.id classNames="waves-effect waves-light btn-large brown" target="blank"
-    i.material-icons.right open_in_new
-    span Launch Configuration
-  link-to "x.warehouse.index" model.id classNames="waves-effect waves-light btn-large" target="blank"
-    i.material-icons.left open_in_browser
-    span Launch Application
+  if model.isProperlySetup
+    link-to "x.warehouse.config" model.id classNames="waves-effect waves-light btn-large brown" target="blank"
+      i.material-icons.right open_in_new
+      span Launch Configuration
+    link-to "x.warehouse.index" model.id classNames="waves-effect waves-light btn-large" target="blank"
+      i.material-icons.left open_in_browser
+      span Launch Application
+  else
+    md-loader
+    p The server is busy preparing your warehouse account for first time use
 .col.s12
   .row
     == outlet
