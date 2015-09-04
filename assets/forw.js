@@ -1961,9 +1961,41 @@ define('forw/models/account', ['exports', 'ember', 'ember-data', 'forw/shekels/s
 
   'use strict';
 
-  var Account, alias;
+  var Account, TaskRunner, alias;
 
   alias = Ember['default'].computed.alias;
+
+  TaskRunner = (function () {
+    function TaskRunner(account, time1) {
+      this.account = account;
+      this.time = time1;
+    }
+
+    TaskRunner.prototype.seconds = function () {
+      this.time = this.time * 1000;
+      return this;
+    };
+
+    TaskRunner.prototype.refreshUntil = function (condition) {
+      return this.interval = window.setInterval(this.makeRefreshFun(condition), this.time);
+    };
+
+    TaskRunner.prototype.makeRefreshFun = function (condition) {
+      return (function (_this) {
+        return function () {
+          if (condition(_this.account)) {
+            window.clearInterval(_this.interval);
+            return _this.account;
+          }
+          if (_this.account.id != null && _this.account.get("isLoaded")) {
+            return _this.account.reload();
+          }
+        };
+      })(this);
+    };
+
+    return TaskRunner;
+  })();
 
   Account = DS['default'].Model.extend({
     companyName: DS['default'].attr("string"),
@@ -1993,7 +2025,21 @@ define('forw/models/account', ['exports', 'ember', 'ember-data', 'forw/shekels/s
       async: true
     }),
     isProperlySetup: DS['default'].attr("boolean"),
-    simwmsAccountKey: DS['default'].attr("string")
+    simwmsAccountKey: DS['default'].attr("string"),
+    setupAttempts: DS['default'].attr("number", {
+      defaultValue: 0
+    }),
+    considerProperSetup: Ember['default'].on("ready", function () {
+      console.log("account ready " + this.id);
+      return this.every(2.5).seconds().refreshUntil((function (_this) {
+        return function () {
+          return _this.get("isProperlySetup") || _this.get("setupAttempts") > 9;
+        };
+      })(this));
+    }),
+    every: function every(time) {
+      return this.taskRunner = new TaskRunner(this, time);
+    }
   });
 
   exports['default'] = Account;
@@ -5016,6 +5062,88 @@ define('forw/templates/o/dashboard/account', ['exports'], function (exports) {
 
   exports['default'] = Ember.HTMLBars.template((function() {
     var child0 = (function() {
+      var child0 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 1,
+                "column": 57
+              },
+              "end": {
+                "line": 1,
+                "column": 248
+              }
+            },
+            "moduleName": "forw/templates/o/dashboard/account.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createElement("i");
+            dom.setAttribute(el1,"class","material-icons right");
+            var el2 = dom.createTextNode("open_in_new");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("span");
+            var el2 = dom.createTextNode("Launch Configuration");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() { return []; },
+          statements: [
+
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      var child1 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 1,
+                "column": 260
+              },
+              "end": {
+                "line": 1,
+                "column": 445
+              }
+            },
+            "moduleName": "forw/templates/o/dashboard/account.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createElement("i");
+            dom.setAttribute(el1,"class","material-icons left");
+            var el2 = dom.createTextNode("open_in_browser");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            var el1 = dom.createElement("span");
+            var el2 = dom.createTextNode("Launch Application");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() { return []; },
+          statements: [
+
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
       return {
         meta: {
           "revision": "Ember@1.13.5",
@@ -5027,7 +5155,7 @@ define('forw/templates/o/dashboard/account', ['exports'], function (exports) {
             },
             "end": {
               "line": 1,
-              "column": 219
+              "column": 457
             }
           },
           "moduleName": "forw/templates/o/dashboard/account.hbs"
@@ -5037,23 +5165,26 @@ define('forw/templates/o/dashboard/account', ['exports'], function (exports) {
         hasRendered: false,
         buildFragment: function buildFragment(dom) {
           var el0 = dom.createDocumentFragment();
-          var el1 = dom.createElement("i");
-          dom.setAttribute(el1,"class","material-icons right");
-          var el2 = dom.createTextNode("open_in_new");
-          dom.appendChild(el1, el2);
+          var el1 = dom.createComment("");
           dom.appendChild(el0, el1);
-          var el1 = dom.createElement("span");
-          var el2 = dom.createTextNode("Launch Configuration");
-          dom.appendChild(el1, el2);
+          var el1 = dom.createComment("");
           dom.appendChild(el0, el1);
           return el0;
         },
-        buildRenderNodes: function buildRenderNodes() { return []; },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(2);
+          morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+          morphs[1] = dom.createMorphAt(fragment,1,1,contextualElement);
+          dom.insertBoundary(fragment, 0);
+          dom.insertBoundary(fragment, null);
+          return morphs;
+        },
         statements: [
-
+          ["block","link-to",["x.warehouse.config",["get","model.id",["loc",[null,[1,89],[1,97]]]]],["classNames","waves-effect waves-light btn-large brown","target","blank"],0,null,["loc",[null,[1,57],[1,260]]]],
+          ["block","link-to",["x.warehouse.index",["get","model.id",["loc",[null,[1,291],[1,299]]]]],["classNames","waves-effect waves-light btn-large","target","blank"],1,null,["loc",[null,[1,260],[1,457]]]]
         ],
         locals: [],
-        templates: []
+        templates: [child0, child1]
       };
     }());
     var child1 = (function() {
@@ -5064,11 +5195,11 @@ define('forw/templates/o/dashboard/account', ['exports'], function (exports) {
             "source": null,
             "start": {
               "line": 1,
-              "column": 231
+              "column": 457
             },
             "end": {
               "line": 1,
-              "column": 416
+              "column": 555
             }
           },
           "moduleName": "forw/templates/o/dashboard/account.hbs"
@@ -5078,20 +5209,22 @@ define('forw/templates/o/dashboard/account', ['exports'], function (exports) {
         hasRendered: false,
         buildFragment: function buildFragment(dom) {
           var el0 = dom.createDocumentFragment();
-          var el1 = dom.createElement("i");
-          dom.setAttribute(el1,"class","material-icons left");
-          var el2 = dom.createTextNode("open_in_browser");
-          dom.appendChild(el1, el2);
+          var el1 = dom.createComment("");
           dom.appendChild(el0, el1);
-          var el1 = dom.createElement("span");
-          var el2 = dom.createTextNode("Launch Application");
+          var el1 = dom.createElement("p");
+          var el2 = dom.createTextNode("The server is busy preparing your warehouse account for first time use");
           dom.appendChild(el1, el2);
           dom.appendChild(el0, el1);
           return el0;
         },
-        buildRenderNodes: function buildRenderNodes() { return []; },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+          dom.insertBoundary(fragment, 0);
+          return morphs;
+        },
         statements: [
-
+          ["content","md-loader",["loc",[null,[1,465],[1,478]]]]
         ],
         locals: [],
         templates: []
@@ -5108,7 +5241,7 @@ define('forw/templates/o/dashboard/account', ['exports'], function (exports) {
           },
           "end": {
             "line": 1,
-            "column": 496
+            "column": 630
           }
         },
         "moduleName": "forw/templates/o/dashboard/account.hbs"
@@ -5120,8 +5253,6 @@ define('forw/templates/o/dashboard/account', ['exports'], function (exports) {
         var el0 = dom.createDocumentFragment();
         var el1 = dom.createElement("div");
         dom.setAttribute(el1,"class","col s12 m10 l8");
-        var el2 = dom.createComment("");
-        dom.appendChild(el1, el2);
         var el2 = dom.createComment("");
         dom.appendChild(el1, el2);
         dom.appendChild(el0, el1);
@@ -5136,17 +5267,14 @@ define('forw/templates/o/dashboard/account', ['exports'], function (exports) {
         return el0;
       },
       buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-        var element0 = dom.childAt(fragment, [0]);
-        var morphs = new Array(3);
-        morphs[0] = dom.createMorphAt(element0,0,0);
-        morphs[1] = dom.createMorphAt(element0,1,1);
-        morphs[2] = dom.createUnsafeMorphAt(dom.childAt(fragment, [1, 0]),0,0);
+        var morphs = new Array(2);
+        morphs[0] = dom.createMorphAt(dom.childAt(fragment, [0]),0,0);
+        morphs[1] = dom.createUnsafeMorphAt(dom.childAt(fragment, [1, 0]),0,0);
         return morphs;
       },
       statements: [
-        ["block","link-to",["x.warehouse.config",["get","model.id",["loc",[null,[1,60],[1,68]]]]],["classNames","waves-effect waves-light btn-large brown","target","blank"],0,null,["loc",[null,[1,28],[1,231]]]],
-        ["block","link-to",["x.warehouse.index",["get","model.id",["loc",[null,[1,262],[1,270]]]]],["classNames","waves-effect waves-light btn-large","target","blank"],1,null,["loc",[null,[1,231],[1,428]]]],
-        ["content","outlet",["loc",[null,[1,472],[1,484]]]]
+        ["block","if",[["get","model.isProperlySetup",["loc",[null,[1,34],[1,55]]]]],[],0,1,["loc",[null,[1,28],[1,562]]]],
+        ["content","outlet",["loc",[null,[1,606],[1,618]]]]
       ],
       locals: [],
       templates: [child0, child1]
@@ -5528,6 +5656,49 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
     var child0 = (function() {
       var child0 = (function() {
         var child0 = (function() {
+          var child0 = (function() {
+            return {
+              meta: {
+                "revision": "Ember@1.13.5",
+                "loc": {
+                  "source": null,
+                  "start": {
+                    "line": 1,
+                    "column": 474
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 655
+                  }
+                },
+                "moduleName": "forw/templates/o/dashboard/account/index.hbs"
+              },
+              arity: 0,
+              cachedFragment: null,
+              hasRendered: false,
+              buildFragment: function buildFragment(dom) {
+                var el0 = dom.createDocumentFragment();
+                var el1 = dom.createComment("");
+                dom.appendChild(el0, el1);
+                var el1 = dom.createElement("span");
+                var el2 = dom.createTextNode("Change Service Plan");
+                dom.appendChild(el1, el2);
+                dom.appendChild(el0, el1);
+                return el0;
+              },
+              buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+                var morphs = new Array(1);
+                morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+                dom.insertBoundary(fragment, 0);
+                return morphs;
+              },
+              statements: [
+                ["inline","fa-icon",["credit-card"],["classNames","left"],["loc",[null,[1,580],[1,623]]]]
+              ],
+              locals: [],
+              templates: []
+            };
+          }());
           return {
             meta: {
               "revision": "Ember@1.13.5",
@@ -5539,7 +5710,7 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
                 },
                 "end": {
                   "line": 1,
-                  "column": 626
+                  "column": 667
                 }
               },
               "moduleName": "forw/templates/o/dashboard/account/index.hbs"
@@ -5551,20 +5722,62 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
               var el0 = dom.createDocumentFragment();
               var el1 = dom.createComment("");
               dom.appendChild(el0, el1);
-              var el1 = dom.createElement("span");
-              var el2 = dom.createTextNode("Change Service Plan");
-              dom.appendChild(el1, el2);
-              dom.appendChild(el0, el1);
               return el0;
             },
             buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
               var morphs = new Array(1);
               morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
               dom.insertBoundary(fragment, 0);
+              dom.insertBoundary(fragment, null);
               return morphs;
             },
             statements: [
-              ["inline","fa-icon",["credit-card"],["classNames","left"],["loc",[null,[1,551],[1,594]]]]
+              ["block","link-to",["o.dashboard.account.upgrade",["get","model.id",["loc",[null,[1,515],[1,523]]]]],["classNames","btn-large waves-effect waves-light orange"],0,null,["loc",[null,[1,474],[1,667]]]]
+            ],
+            locals: [],
+            templates: [child0]
+          };
+        }());
+        var child1 = (function() {
+          return {
+            meta: {
+              "revision": "Ember@1.13.5",
+              "loc": {
+                "source": null,
+                "start": {
+                  "line": 1,
+                  "column": 667
+                },
+                "end": {
+                  "line": 1,
+                  "column": 784
+                }
+              },
+              "moduleName": "forw/templates/o/dashboard/account/index.hbs"
+            },
+            arity: 0,
+            cachedFragment: null,
+            hasRendered: false,
+            buildFragment: function buildFragment(dom) {
+              var el0 = dom.createDocumentFragment();
+              var el1 = dom.createElement("a");
+              dom.setAttribute(el1,"class","btn-large disabled");
+              var el2 = dom.createComment("");
+              dom.appendChild(el1, el2);
+              var el2 = dom.createElement("span");
+              var el3 = dom.createTextNode("Change Service Plan");
+              dom.appendChild(el2, el3);
+              dom.appendChild(el1, el2);
+              dom.appendChild(el0, el1);
+              return el0;
+            },
+            buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+              var morphs = new Array(1);
+              morphs[0] = dom.createMorphAt(dom.childAt(fragment, [0]),0,0);
+              return morphs;
+            },
+            statements: [
+              ["inline","fa-icon",["credit-card"],["classNames","left"],["loc",[null,[1,705],[1,748]]]]
             ],
             locals: [],
             templates: []
@@ -5581,7 +5794,7 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
               },
               "end": {
                 "line": 1,
-                "column": 644
+                "column": 797
               }
             },
             "moduleName": "forw/templates/o/dashboard/account/index.hbs"
@@ -5646,10 +5859,10 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
             ["content","model.companyName",["loc",[null,[1,195],[1,216]]]],
             ["content","model.servicePlan.presentation",["loc",[null,[1,282],[1,316]]]],
             ["content","model.user.username",["loc",[null,[1,384],[1,407]]]],
-            ["block","link-to",["o.dashboard.account.upgrade",["get","model.id",["loc",[null,[1,486],[1,494]]]]],["classNames","btn-large waves-effect waves-light orange"],0,null,["loc",[null,[1,445],[1,638]]]]
+            ["block","if",[["get","model.isProperlySetup",["loc",[null,[1,451],[1,472]]]]],[],0,1,["loc",[null,[1,445],[1,791]]]]
           ],
           locals: [],
-          templates: [child0]
+          templates: [child0, child1]
         };
       }());
       var child1 = (function() {
@@ -5660,11 +5873,11 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
               "source": null,
               "start": {
                 "line": 1,
-                "column": 663
+                "column": 816
               },
               "end": {
                 "line": 1,
-                "column": 824
+                "column": 977
               }
             },
             "moduleName": "forw/templates/o/dashboard/account/index.hbs"
@@ -5695,7 +5908,7 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
             return morphs;
           },
           statements: [
-            ["content","model.timezone",["loc",[null,[1,789],[1,807]]]]
+            ["content","model.timezone",["loc",[null,[1,942],[1,960]]]]
           ],
           locals: [],
           templates: []
@@ -5709,11 +5922,11 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
               "source": null,
               "start": {
                 "line": 1,
-                "column": 843
+                "column": 996
               },
               "end": {
                 "line": 1,
-                "column": 1112
+                "column": 1265
               }
             },
             "moduleName": "forw/templates/o/dashboard/account/index.hbs"
@@ -5757,8 +5970,8 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
             return morphs;
           },
           statements: [
-            ["content","model.accessKeyId",["loc",[null,[1,978],[1,999]]]],
-            ["content","model.secretAccessKey",["loc",[null,[1,1070],[1,1095]]]]
+            ["content","model.accessKeyId",["loc",[null,[1,1131],[1,1152]]]],
+            ["content","model.secretAccessKey",["loc",[null,[1,1223],[1,1248]]]]
           ],
           locals: [],
           templates: []
@@ -5772,11 +5985,11 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
               "source": null,
               "start": {
                 "line": 1,
-                "column": 1131
+                "column": 1284
               },
               "end": {
                 "line": 1,
-                "column": 1384
+                "column": 1635
               }
             },
             "moduleName": "forw/templates/o/dashboard/account/index.hbs"
@@ -5809,19 +6022,32 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
             dom.appendChild(el3, el4);
             dom.appendChild(el2, el3);
             dom.appendChild(el1, el2);
+            var el2 = dom.createElement("li");
+            var el3 = dom.createElement("span");
+            dom.setAttribute(el3,"class","bold colon");
+            var el4 = dom.createTextNode("SimWMS Session Key");
+            dom.appendChild(el3, el4);
+            dom.appendChild(el2, el3);
+            var el3 = dom.createElement("span");
+            var el4 = dom.createComment("");
+            dom.appendChild(el3, el4);
+            dom.appendChild(el2, el3);
+            dom.appendChild(el1, el2);
             dom.appendChild(el0, el1);
             return el0;
           },
           buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
             var element1 = dom.childAt(fragment, [0]);
-            var morphs = new Array(2);
+            var morphs = new Array(3);
             morphs[0] = dom.createMorphAt(dom.childAt(element1, [0, 1]),0,0);
             morphs[1] = dom.createMorphAt(dom.childAt(element1, [1, 1]),0,0);
+            morphs[2] = dom.createMorphAt(dom.childAt(element1, [2, 1]),0,0);
             return morphs;
           },
           statements: [
-            ["content","model.uiuxHost",["loc",[null,[1,1260],[1,1278]]]],
-            ["content","model.configHost",["loc",[null,[1,1347],[1,1367]]]]
+            ["content","model.uiuxHost",["loc",[null,[1,1413],[1,1431]]]],
+            ["content","model.configHost",["loc",[null,[1,1500],[1,1520]]]],
+            ["content","model.simwmsAccountKey",["loc",[null,[1,1592],[1,1618]]]]
           ],
           locals: [],
           templates: []
@@ -5835,11 +6061,11 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
               "source": null,
               "start": {
                 "line": 1,
-                "column": 1403
+                "column": 1654
               },
               "end": {
                 "line": 1,
-                "column": 1759
+                "column": 2010
               }
             },
             "moduleName": "forw/templates/o/dashboard/account/index.hbs"
@@ -5872,10 +6098,10 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
             return morphs;
           },
           statements: [
-            ["element","action",["submit"],["on","submit"],["loc",[null,[1,1483],[1,1514]]]],
-            ["inline","md-input",[],["value",["subexpr","@mut",[["get","model.namespace",["loc",[null,[1,1532],[1,1547]]]]],[],[]],"label","Backend Namespace","type","text"],["loc",[null,[1,1515],[1,1587]]]],
-            ["inline","md-input",[],["value",["subexpr","@mut",[["get","model.host",["loc",[null,[1,1604],[1,1614]]]]],[],[]],"label","Backend Host","type","text"],["loc",[null,[1,1587],[1,1649]]]],
-            ["inline","md-btn-submit",[],["icon","mdi-content-send","iconPosition","right","text","Change"],["loc",[null,[1,1670],[1,1746]]]]
+            ["element","action",["submit"],["on","submit"],["loc",[null,[1,1734],[1,1765]]]],
+            ["inline","md-input",[],["value",["subexpr","@mut",[["get","model.namespace",["loc",[null,[1,1783],[1,1798]]]]],[],[]],"label","Backend Namespace","type","text"],["loc",[null,[1,1766],[1,1838]]]],
+            ["inline","md-input",[],["value",["subexpr","@mut",[["get","model.host",["loc",[null,[1,1855],[1,1865]]]]],[],[]],"label","Backend Host","type","text"],["loc",[null,[1,1838],[1,1900]]]],
+            ["inline","md-btn-submit",[],["icon","mdi-content-send","iconPosition","right","text","Change"],["loc",[null,[1,1921],[1,1997]]]]
           ],
           locals: [],
           templates: []
@@ -5892,7 +6118,7 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
             },
             "end": {
               "line": 1,
-              "column": 1778
+              "column": 2029
             }
           },
           "moduleName": "forw/templates/o/dashboard/account/index.hbs"
@@ -5926,11 +6152,11 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
           return morphs;
         },
         statements: [
-          ["block","md-collapsible",[],["icon","mdi-action-perm-identity","title","Warehouse Identity","active",true],0,null,["loc",[null,[1,45],[1,663]]]],
-          ["block","md-collapsible",[],["icon","mdi-av-timer","title","Operations and Location"],1,null,["loc",[null,[1,663],[1,843]]]],
-          ["block","md-collapsible",[],["icon","mdi-image-filter-drama","title","Asset Storage Keys"],2,null,["loc",[null,[1,843],[1,1131]]]],
-          ["block","md-collapsible",[],["icon","mdi-image-filter-drama","title","Application Hosts"],3,null,["loc",[null,[1,1131],[1,1403]]]],
-          ["block","md-collapsible",[],["icon","mdi-image-filter-drama","title","Database Details"],4,null,["loc",[null,[1,1403],[1,1778]]]]
+          ["block","md-collapsible",[],["icon","mdi-action-perm-identity","title","Warehouse Identity","active",true],0,null,["loc",[null,[1,45],[1,816]]]],
+          ["block","md-collapsible",[],["icon","mdi-av-timer","title","Operations and Location"],1,null,["loc",[null,[1,816],[1,996]]]],
+          ["block","md-collapsible",[],["icon","mdi-image-filter-drama","title","Asset Storage Keys"],2,null,["loc",[null,[1,996],[1,1284]]]],
+          ["block","md-collapsible",[],["icon","mdi-image-filter-drama","title","Application Hosts"],3,null,["loc",[null,[1,1284],[1,1654]]]],
+          ["block","md-collapsible",[],["icon","mdi-image-filter-drama","title","Database Details"],4,null,["loc",[null,[1,1654],[1,2029]]]]
         ],
         locals: [],
         templates: [child0, child1, child2, child3, child4]
@@ -5947,7 +6173,7 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
           },
           "end": {
             "line": 1,
-            "column": 1808
+            "column": 2059
           }
         },
         "moduleName": "forw/templates/o/dashboard/account/index.hbs"
@@ -5970,7 +6196,7 @@ define('forw/templates/o/dashboard/account/index', ['exports'], function (export
         return morphs;
       },
       statements: [
-        ["block","md-card-collapsible",[],[],0,null,["loc",[null,[1,21],[1,1802]]]]
+        ["block","md-card-collapsible",[],[],0,null,["loc",[null,[1,21],[1,2053]]]]
       ],
       locals: [],
       templates: [child0]
@@ -6404,6 +6630,482 @@ define('forw/templates/o/dashboard/accounts', ['exports'], function (exports) {
   }()));
 
 });
+define('forw/templates/o/dashboard/accounts/-setup', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    var child0 = (function() {
+      var child0 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 1,
+                "column": 375
+              },
+              "end": {
+                "line": 1,
+                "column": 443
+              }
+            },
+            "moduleName": "forw/templates/o/dashboard/accounts/-setup.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createElement("span");
+            var el2 = dom.createTextNode("Info");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() { return []; },
+          statements: [
+
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 356
+            },
+            "end": {
+              "line": 1,
+              "column": 455
+            }
+          },
+          "moduleName": "forw/templates/o/dashboard/accounts/-setup.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+          dom.insertBoundary(fragment, 0);
+          dom.insertBoundary(fragment, null);
+          return morphs;
+        },
+        statements: [
+          ["block","link-to",["o.dashboard.account.index",["get","account.id",["loc",[null,[1,414],[1,424]]]]],[],0,null,["loc",[null,[1,375],[1,455]]]]
+        ],
+        locals: [],
+        templates: [child0]
+      };
+    }());
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 480
+          }
+        },
+        "moduleName": "forw/templates/o/dashboard/accounts/-setup.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createElement("div");
+        dom.setAttribute(el1,"class","card grey lighten-4");
+        var el2 = dom.createElement("div");
+        dom.setAttribute(el2,"class","card-content");
+        var el3 = dom.createElement("div");
+        dom.setAttribute(el3,"class","card-title brown-text");
+        var el4 = dom.createComment("");
+        dom.appendChild(el3, el4);
+        var el4 = dom.createElement("span");
+        dom.setAttribute(el4,"class","right");
+        var el5 = dom.createComment("");
+        dom.appendChild(el4, el5);
+        dom.appendChild(el3, el4);
+        dom.appendChild(el2, el3);
+        var el3 = dom.createElement("p");
+        var el4 = dom.createElement("span");
+        var el5 = dom.createTextNode("The server is setting up your warehouse account");
+        dom.appendChild(el4, el5);
+        dom.appendChild(el3, el4);
+        dom.appendChild(el2, el3);
+        var el3 = dom.createElement("p");
+        var el4 = dom.createElement("span");
+        dom.setAttribute(el4,"class","bold colon");
+        var el5 = dom.createTextNode("Setup Attempts");
+        dom.appendChild(el4, el5);
+        dom.appendChild(el3, el4);
+        var el4 = dom.createElement("span");
+        var el5 = dom.createComment("");
+        dom.appendChild(el4, el5);
+        dom.appendChild(el3, el4);
+        dom.appendChild(el2, el3);
+        dom.appendChild(el1, el2);
+        var el2 = dom.createComment("");
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var element0 = dom.childAt(fragment, [0]);
+        var element1 = dom.childAt(element0, [0]);
+        var element2 = dom.childAt(element1, [0]);
+        var morphs = new Array(4);
+        morphs[0] = dom.createMorphAt(element2,0,0);
+        morphs[1] = dom.createMorphAt(dom.childAt(element2, [1]),0,0);
+        morphs[2] = dom.createMorphAt(dom.childAt(element1, [2, 1]),0,0);
+        morphs[3] = dom.createMorphAt(element0,1,1);
+        return morphs;
+      },
+      statements: [
+        ["content","account.companyName",["loc",[null,[1,94],[1,117]]]],
+        ["inline","md-loader",[],["mode","circular","size","small"],["loc",[null,[1,137],[1,179]]]],
+        ["content","account.setupAttempts",["loc",[null,[1,314],[1,339]]]],
+        ["block","md-card-action",[],[],0,null,["loc",[null,[1,356],[1,474]]]]
+      ],
+      locals: [],
+      templates: [child0]
+    };
+  }()));
+
+});
+define('forw/templates/o/dashboard/accounts/-summary', ['exports'], function (exports) {
+
+  'use strict';
+
+  exports['default'] = Ember.HTMLBars.template((function() {
+    var child0 = (function() {
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 44
+            },
+            "end": {
+              "line": 1,
+              "column": 153
+            }
+          },
+          "moduleName": "forw/templates/o/dashboard/accounts/-summary.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+          dom.insertBoundary(fragment, 0);
+          dom.insertBoundary(fragment, null);
+          return morphs;
+        },
+        statements: [
+          ["content","account.companyName",["loc",[null,[1,130],[1,153]]]]
+        ],
+        locals: [],
+        templates: []
+      };
+    }());
+    var child1 = (function() {
+      var child0 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 1,
+                "column": 593
+              },
+              "end": {
+                "line": 1,
+                "column": 659
+              }
+            },
+            "moduleName": "forw/templates/o/dashboard/accounts/-summary.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createElement("span");
+            var el2 = dom.createTextNode("Launch App");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() { return []; },
+          statements: [
+
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      var child1 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 1,
+                "column": 671
+              },
+              "end": {
+                "line": 1,
+                "column": 734
+              }
+            },
+            "moduleName": "forw/templates/o/dashboard/accounts/-summary.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createElement("span");
+            var el2 = dom.createTextNode("Config");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() { return []; },
+          statements: [
+
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      var child2 = (function() {
+        return {
+          meta: {
+            "revision": "Ember@1.13.5",
+            "loc": {
+              "source": null,
+              "start": {
+                "line": 1,
+                "column": 746
+              },
+              "end": {
+                "line": 1,
+                "column": 814
+              }
+            },
+            "moduleName": "forw/templates/o/dashboard/accounts/-summary.hbs"
+          },
+          arity: 0,
+          cachedFragment: null,
+          hasRendered: false,
+          buildFragment: function buildFragment(dom) {
+            var el0 = dom.createDocumentFragment();
+            var el1 = dom.createElement("span");
+            var el2 = dom.createTextNode("Info");
+            dom.appendChild(el1, el2);
+            dom.appendChild(el0, el1);
+            return el0;
+          },
+          buildRenderNodes: function buildRenderNodes() { return []; },
+          statements: [
+
+          ],
+          locals: [],
+          templates: []
+        };
+      }());
+      return {
+        meta: {
+          "revision": "Ember@1.13.5",
+          "loc": {
+            "source": null,
+            "start": {
+              "line": 1,
+              "column": 574
+            },
+            "end": {
+              "line": 1,
+              "column": 826
+            }
+          },
+          "moduleName": "forw/templates/o/dashboard/accounts/-summary.hbs"
+        },
+        arity: 0,
+        cachedFragment: null,
+        hasRendered: false,
+        buildFragment: function buildFragment(dom) {
+          var el0 = dom.createDocumentFragment();
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          var el1 = dom.createComment("");
+          dom.appendChild(el0, el1);
+          return el0;
+        },
+        buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+          var morphs = new Array(3);
+          morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+          morphs[1] = dom.createMorphAt(fragment,1,1,contextualElement);
+          morphs[2] = dom.createMorphAt(fragment,2,2,contextualElement);
+          dom.insertBoundary(fragment, 0);
+          dom.insertBoundary(fragment, null);
+          return morphs;
+        },
+        statements: [
+          ["block","link-to",["x.warehouse.index",["get","account.id",["loc",[null,[1,624],[1,634]]]]],[],0,null,["loc",[null,[1,593],[1,671]]]],
+          ["block","link-to",["x.warehouse.config",["get","account.id",["loc",[null,[1,703],[1,713]]]]],[],1,null,["loc",[null,[1,671],[1,746]]]],
+          ["block","link-to",["o.dashboard.account.index",["get","account.id",["loc",[null,[1,785],[1,795]]]]],[],2,null,["loc",[null,[1,746],[1,826]]]]
+        ],
+        locals: [],
+        templates: [child0, child1, child2]
+      };
+    }());
+    return {
+      meta: {
+        "revision": "Ember@1.13.5",
+        "loc": {
+          "source": null,
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 851
+          }
+        },
+        "moduleName": "forw/templates/o/dashboard/accounts/-summary.hbs"
+      },
+      arity: 0,
+      cachedFragment: null,
+      hasRendered: false,
+      buildFragment: function buildFragment(dom) {
+        var el0 = dom.createDocumentFragment();
+        var el1 = dom.createElement("div");
+        dom.setAttribute(el1,"class","card");
+        var el2 = dom.createElement("div");
+        dom.setAttribute(el2,"class","card-content");
+        var el3 = dom.createComment("");
+        dom.appendChild(el2, el3);
+        var el3 = dom.createElement("p");
+        var el4 = dom.createElement("dl");
+        var el5 = dom.createElement("dt");
+        dom.setAttribute(el5,"class","bold colon");
+        var el6 = dom.createTextNode("Owner Username");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("dd");
+        var el6 = dom.createComment("");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("dt");
+        dom.setAttribute(el5,"class","bold colon");
+        var el6 = dom.createTextNode("In Timezone");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("dd");
+        var el6 = dom.createComment("");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("dt");
+        dom.setAttribute(el5,"class","bold colon");
+        var el6 = dom.createTextNode("Created On");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("dd");
+        var el6 = dom.createElement("span");
+        var el7 = dom.createComment("");
+        dom.appendChild(el6, el7);
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("dt");
+        dom.setAttribute(el5,"class","bold colon");
+        var el6 = dom.createTextNode("Service Plan");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("dd");
+        var el6 = dom.createComment("");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("dt");
+        dom.setAttribute(el5,"class","bold colon");
+        var el6 = dom.createTextNode("Status");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        var el5 = dom.createElement("dd");
+        var el6 = dom.createComment("");
+        dom.appendChild(el5, el6);
+        dom.appendChild(el4, el5);
+        dom.appendChild(el3, el4);
+        dom.appendChild(el2, el3);
+        dom.appendChild(el1, el2);
+        var el2 = dom.createComment("");
+        dom.appendChild(el1, el2);
+        dom.appendChild(el0, el1);
+        return el0;
+      },
+      buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
+        var element0 = dom.childAt(fragment, [0]);
+        var element1 = dom.childAt(element0, [0]);
+        var element2 = dom.childAt(element1, [1, 0]);
+        var morphs = new Array(7);
+        morphs[0] = dom.createMorphAt(element1,0,0);
+        morphs[1] = dom.createMorphAt(dom.childAt(element2, [1]),0,0);
+        morphs[2] = dom.createMorphAt(dom.childAt(element2, [3]),0,0);
+        morphs[3] = dom.createMorphAt(dom.childAt(element2, [5, 0]),0,0);
+        morphs[4] = dom.createMorphAt(dom.childAt(element2, [7]),0,0);
+        morphs[5] = dom.createMorphAt(dom.childAt(element2, [9]),0,0);
+        morphs[6] = dom.createMorphAt(element0,1,1);
+        return morphs;
+      },
+      statements: [
+        ["block","link-to",["o.dashboard.account.index",["get","account.id",["loc",[null,[1,83],[1,93]]]]],["classNames","card-title brown-text"],0,null,["loc",[null,[1,44],[1,165]]]],
+        ["content","account.user.username",["loc",[null,[1,218],[1,243]]]],
+        ["content","account.timezone",["loc",[null,[1,291],[1,311]]]],
+        ["inline","moment-format",[["get","account.inserted_at",["loc",[null,[1,380],[1,399]]]]],[],["loc",[null,[1,364],[1,401]]]],
+        ["content","account.servicePlan.presentation",["loc",[null,[1,457],[1,493]]]],
+        ["content","account.status",["loc",[null,[1,536],[1,554]]]],
+        ["block","md-card-action",[],[],1,null,["loc",[null,[1,574],[1,845]]]]
+      ],
+      locals: [],
+      templates: [child0, child1]
+    };
+  }()));
+
+});
 define('forw/templates/o/dashboard/accounts/index', ['exports'], function (exports) {
 
   'use strict';
@@ -6459,11 +7161,11 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
               "source": null,
               "start": {
                 "line": 1,
-                "column": 308
+                "column": 264
               },
               "end": {
                 "line": 1,
-                "column": 417
+                "column": 339
               }
             },
             "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -6479,127 +7181,19 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
           },
           buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
             var morphs = new Array(1);
-            morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
+            morphs[0] = dom.createUnsafeMorphAt(fragment,0,0,contextualElement);
             dom.insertBoundary(fragment, 0);
             dom.insertBoundary(fragment, null);
             return morphs;
           },
           statements: [
-            ["content","account.companyName",["loc",[null,[1,394],[1,417]]]]
+            ["inline","partial",["o/dashboard/accounts/summary"],[],["loc",[null,[1,295],[1,339]]]]
           ],
           locals: [],
           templates: []
         };
       }());
       var child1 = (function() {
-        var child0 = (function() {
-          return {
-            meta: {
-              "revision": "Ember@1.13.5",
-              "loc": {
-                "source": null,
-                "start": {
-                  "line": 1,
-                  "column": 857
-                },
-                "end": {
-                  "line": 1,
-                  "column": 923
-                }
-              },
-              "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
-            },
-            arity: 0,
-            cachedFragment: null,
-            hasRendered: false,
-            buildFragment: function buildFragment(dom) {
-              var el0 = dom.createDocumentFragment();
-              var el1 = dom.createElement("span");
-              var el2 = dom.createTextNode("Launch App");
-              dom.appendChild(el1, el2);
-              dom.appendChild(el0, el1);
-              return el0;
-            },
-            buildRenderNodes: function buildRenderNodes() { return []; },
-            statements: [
-
-            ],
-            locals: [],
-            templates: []
-          };
-        }());
-        var child1 = (function() {
-          return {
-            meta: {
-              "revision": "Ember@1.13.5",
-              "loc": {
-                "source": null,
-                "start": {
-                  "line": 1,
-                  "column": 935
-                },
-                "end": {
-                  "line": 1,
-                  "column": 998
-                }
-              },
-              "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
-            },
-            arity: 0,
-            cachedFragment: null,
-            hasRendered: false,
-            buildFragment: function buildFragment(dom) {
-              var el0 = dom.createDocumentFragment();
-              var el1 = dom.createElement("span");
-              var el2 = dom.createTextNode("Config");
-              dom.appendChild(el1, el2);
-              dom.appendChild(el0, el1);
-              return el0;
-            },
-            buildRenderNodes: function buildRenderNodes() { return []; },
-            statements: [
-
-            ],
-            locals: [],
-            templates: []
-          };
-        }());
-        var child2 = (function() {
-          return {
-            meta: {
-              "revision": "Ember@1.13.5",
-              "loc": {
-                "source": null,
-                "start": {
-                  "line": 1,
-                  "column": 1010
-                },
-                "end": {
-                  "line": 1,
-                  "column": 1078
-                }
-              },
-              "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
-            },
-            arity: 0,
-            cachedFragment: null,
-            hasRendered: false,
-            buildFragment: function buildFragment(dom) {
-              var el0 = dom.createDocumentFragment();
-              var el1 = dom.createElement("span");
-              var el2 = dom.createTextNode("Info");
-              dom.appendChild(el1, el2);
-              dom.appendChild(el0, el1);
-              return el0;
-            },
-            buildRenderNodes: function buildRenderNodes() { return []; },
-            statements: [
-
-            ],
-            locals: [],
-            templates: []
-          };
-        }());
         return {
           meta: {
             "revision": "Ember@1.13.5",
@@ -6607,11 +7201,11 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
               "source": null,
               "start": {
                 "line": 1,
-                "column": 838
+                "column": 339
               },
               "end": {
                 "line": 1,
-                "column": 1090
+                "column": 389
               }
             },
             "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -6623,28 +7217,20 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
             var el0 = dom.createDocumentFragment();
             var el1 = dom.createComment("");
             dom.appendChild(el0, el1);
-            var el1 = dom.createComment("");
-            dom.appendChild(el0, el1);
-            var el1 = dom.createComment("");
-            dom.appendChild(el0, el1);
             return el0;
           },
           buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-            var morphs = new Array(3);
-            morphs[0] = dom.createMorphAt(fragment,0,0,contextualElement);
-            morphs[1] = dom.createMorphAt(fragment,1,1,contextualElement);
-            morphs[2] = dom.createMorphAt(fragment,2,2,contextualElement);
+            var morphs = new Array(1);
+            morphs[0] = dom.createUnsafeMorphAt(fragment,0,0,contextualElement);
             dom.insertBoundary(fragment, 0);
             dom.insertBoundary(fragment, null);
             return morphs;
           },
           statements: [
-            ["block","link-to",["x.warehouse.index",["get","account.id",["loc",[null,[1,888],[1,898]]]]],[],0,null,["loc",[null,[1,857],[1,935]]]],
-            ["block","link-to",["x.warehouse.config",["get","account.id",["loc",[null,[1,967],[1,977]]]]],[],1,null,["loc",[null,[1,935],[1,1010]]]],
-            ["block","link-to",["o.dashboard.account.index",["get","account.id",["loc",[null,[1,1049],[1,1059]]]]],[],2,null,["loc",[null,[1,1010],[1,1090]]]]
+            ["inline","partial",["o/dashboard/accounts/setup"],[],["loc",[null,[1,347],[1,389]]]]
           ],
           locals: [],
-          templates: [child0, child1, child2]
+          templates: []
         };
       }());
       return {
@@ -6658,7 +7244,7 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
             },
             "end": {
               "line": 1,
-              "column": 1121
+              "column": 402
             }
           },
           "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -6670,92 +7256,18 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
           var el0 = dom.createDocumentFragment();
           var el1 = dom.createElement("div");
           dom.setAttribute(el1,"class","col s12 m6 l4");
-          var el2 = dom.createElement("div");
-          dom.setAttribute(el2,"class","card");
-          var el3 = dom.createElement("div");
-          dom.setAttribute(el3,"class","card-content");
-          var el4 = dom.createComment("");
-          dom.appendChild(el3, el4);
-          var el4 = dom.createElement("p");
-          var el5 = dom.createElement("dl");
-          var el6 = dom.createElement("dt");
-          dom.setAttribute(el6,"class","bold colon");
-          var el7 = dom.createTextNode("Owner Username");
-          dom.appendChild(el6, el7);
-          dom.appendChild(el5, el6);
-          var el6 = dom.createElement("dd");
-          var el7 = dom.createComment("");
-          dom.appendChild(el6, el7);
-          dom.appendChild(el5, el6);
-          var el6 = dom.createElement("dt");
-          dom.setAttribute(el6,"class","bold colon");
-          var el7 = dom.createTextNode("In Timezone");
-          dom.appendChild(el6, el7);
-          dom.appendChild(el5, el6);
-          var el6 = dom.createElement("dd");
-          var el7 = dom.createComment("");
-          dom.appendChild(el6, el7);
-          dom.appendChild(el5, el6);
-          var el6 = dom.createElement("dt");
-          dom.setAttribute(el6,"class","bold colon");
-          var el7 = dom.createTextNode("Created On");
-          dom.appendChild(el6, el7);
-          dom.appendChild(el5, el6);
-          var el6 = dom.createElement("dd");
-          var el7 = dom.createElement("span");
-          var el8 = dom.createComment("");
-          dom.appendChild(el7, el8);
-          dom.appendChild(el6, el7);
-          dom.appendChild(el5, el6);
-          var el6 = dom.createElement("dt");
-          dom.setAttribute(el6,"class","bold colon");
-          var el7 = dom.createTextNode("Service Plan");
-          dom.appendChild(el6, el7);
-          dom.appendChild(el5, el6);
-          var el6 = dom.createElement("dd");
-          var el7 = dom.createComment("");
-          dom.appendChild(el6, el7);
-          dom.appendChild(el5, el6);
-          var el6 = dom.createElement("dt");
-          dom.setAttribute(el6,"class","bold colon");
-          var el7 = dom.createTextNode("Status");
-          dom.appendChild(el6, el7);
-          dom.appendChild(el5, el6);
-          var el6 = dom.createElement("dd");
-          var el7 = dom.createComment("");
-          dom.appendChild(el6, el7);
-          dom.appendChild(el5, el6);
-          dom.appendChild(el4, el5);
-          dom.appendChild(el3, el4);
-          dom.appendChild(el2, el3);
-          var el3 = dom.createComment("");
-          dom.appendChild(el2, el3);
+          var el2 = dom.createComment("");
           dom.appendChild(el1, el2);
           dom.appendChild(el0, el1);
           return el0;
         },
         buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-          var element0 = dom.childAt(fragment, [0, 0]);
-          var element1 = dom.childAt(element0, [0]);
-          var element2 = dom.childAt(element1, [1, 0]);
-          var morphs = new Array(7);
-          morphs[0] = dom.createMorphAt(element1,0,0);
-          morphs[1] = dom.createMorphAt(dom.childAt(element2, [1]),0,0);
-          morphs[2] = dom.createMorphAt(dom.childAt(element2, [3]),0,0);
-          morphs[3] = dom.createMorphAt(dom.childAt(element2, [5, 0]),0,0);
-          morphs[4] = dom.createMorphAt(dom.childAt(element2, [7]),0,0);
-          morphs[5] = dom.createMorphAt(dom.childAt(element2, [9]),0,0);
-          morphs[6] = dom.createMorphAt(element0,1,1);
+          var morphs = new Array(1);
+          morphs[0] = dom.createMorphAt(dom.childAt(fragment, [0]),0,0);
           return morphs;
         },
         statements: [
-          ["block","link-to",["o.dashboard.account.index",["get","account.id",["loc",[null,[1,347],[1,357]]]]],["classNames","card-title brown-text"],0,null,["loc",[null,[1,308],[1,429]]]],
-          ["content","account.user.username",["loc",[null,[1,482],[1,507]]]],
-          ["content","account.timezone",["loc",[null,[1,555],[1,575]]]],
-          ["inline","moment-format",[["get","account.inserted_at",["loc",[null,[1,644],[1,663]]]]],[],["loc",[null,[1,628],[1,665]]]],
-          ["content","account.servicePlan.presentation",["loc",[null,[1,721],[1,757]]]],
-          ["content","account.status",["loc",[null,[1,800],[1,818]]]],
-          ["block","md-card-action",[],[],1,null,["loc",[null,[1,838],[1,1109]]]]
+          ["block","if",[["get","account.isProperlySetup",["loc",[null,[1,270],[1,293]]]]],[],0,1,["loc",[null,[1,264],[1,396]]]]
         ],
         locals: ["account"],
         templates: [child0, child1]
@@ -6771,11 +7283,11 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 1200
+                  "column": 481
                 },
                 "end": {
                   "line": 1,
-                  "column": 1282
+                  "column": 563
                 }
               },
               "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -6808,11 +7320,11 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
                   "source": null,
                   "start": {
                     "line": 1,
-                    "column": 1321
+                    "column": 602
                   },
                   "end": {
                     "line": 1,
-                    "column": 1386
+                    "column": 667
                   }
                 },
                 "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -6843,11 +7355,11 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
                 "source": null,
                 "start": {
                   "line": 1,
-                  "column": 1302
+                  "column": 583
                 },
                 "end": {
                   "line": 1,
-                  "column": 1398
+                  "column": 679
                 }
               },
               "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -6869,7 +7381,7 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
               return morphs;
             },
             statements: [
-              ["block","link-to",["o.dashboard.accounts.new"],[],0,null,["loc",[null,[1,1321],[1,1398]]]]
+              ["block","link-to",["o.dashboard.accounts.new"],[],0,null,["loc",[null,[1,602],[1,679]]]]
             ],
             locals: [],
             templates: [child0]
@@ -6882,11 +7394,11 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
               "source": null,
               "start": {
                 "line": 1,
-                "column": 1156
+                "column": 437
               },
               "end": {
                 "line": 1,
-                "column": 1417
+                "column": 698
               }
             },
             "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -6911,8 +7423,8 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
             return morphs;
           },
           statements: [
-            ["block","md-card-content",[],[],0,null,["loc",[null,[1,1200],[1,1302]]]],
-            ["block","md-card-action",[],[],1,null,["loc",[null,[1,1302],[1,1417]]]]
+            ["block","md-card-content",[],[],0,null,["loc",[null,[1,481],[1,583]]]],
+            ["block","md-card-action",[],[],1,null,["loc",[null,[1,583],[1,698]]]]
           ],
           locals: [],
           templates: [child0, child1]
@@ -6925,11 +7437,11 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
             "source": null,
             "start": {
               "line": 1,
-              "column": 1121
+              "column": 402
             },
             "end": {
               "line": 1,
-              "column": 1435
+              "column": 716
             }
           },
           "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -6952,7 +7464,7 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
           return morphs;
         },
         statements: [
-          ["block","md-card",[],["title","You Have No Warehouses!"],0,null,["loc",[null,[1,1156],[1,1429]]]]
+          ["block","md-card",[],["title","You Have No Warehouses!"],0,null,["loc",[null,[1,437],[1,710]]]]
         ],
         locals: [],
         templates: [child0]
@@ -6969,7 +7481,7 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
           },
           "end": {
             "line": 1,
-            "column": 1456
+            "column": 737
           }
         },
         "moduleName": "forw/templates/o/dashboard/accounts/index.hbs"
@@ -6992,15 +7504,15 @@ define('forw/templates/o/dashboard/accounts/index', ['exports'], function (expor
         return el0;
       },
       buildRenderNodes: function buildRenderNodes(dom, fragment, contextualElement) {
-        var element3 = dom.childAt(fragment, [0]);
+        var element0 = dom.childAt(fragment, [0]);
         var morphs = new Array(2);
-        morphs[0] = dom.createMorphAt(element3,0,0);
-        morphs[1] = dom.createMorphAt(dom.childAt(element3, [1]),0,0);
+        morphs[0] = dom.createMorphAt(element0,0,0);
+        morphs[1] = dom.createMorphAt(dom.childAt(element0, [1]),0,0);
         return morphs;
       },
       statements: [
         ["block","link-to",["o.dashboard.accounts.new"],["classNames","waves-effect waves-light btn-large"],0,null,["loc",[null,[1,21],[1,192]]]],
-        ["block","each",[["get","model",["loc",[null,[1,217],[1,222]]]]],[],1,2,["loc",[null,[1,209],[1,1444]]]]
+        ["block","each",[["get","model",["loc",[null,[1,217],[1,222]]]]],[],1,2,["loc",[null,[1,209],[1,725]]]]
       ],
       locals: [],
       templates: [child0, child1, child2]
@@ -9918,7 +10430,7 @@ catch(err) {
 if (runningTests) {
   require("forw/tests/test-helper");
 } else {
-  require("forw/app")["default"].create({"name":"forw","version":"0.0.0+0d73fdb5"});
+  require("forw/app")["default"].create({"name":"forw","version":"0.0.0+77e14469"});
 }
 
 /* jshint ignore:end */
