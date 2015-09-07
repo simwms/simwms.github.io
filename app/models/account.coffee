@@ -41,9 +41,22 @@ Account = DS.Model.extend
   setupAttempts: DS.attr "number", defaultValue: 0
 
   considerProperSetup: Ember.on "ready", ->
-    console.log "account ready #{@id}"
     @every(2.5).seconds().refreshUntil => @get("isProperlySetup") or @get("setupAttempts") > 9
 
   every: (time) ->
     @taskRunner = new TaskRunner(@, time)
+
+  configUri: Ember.computed "configHost", "id", "simwmsAccountKey", ->
+    url = @get "configHost"
+    token = @get "simwmsAccountKey"
+    id = @get "id"
+    paramString = Ember.$.param token: token, account: id
+    "#{url}/#/?#{paramString}"
+
+  uiuxUri: Ember.computed "uiuxHost", "id", "simwmsAccountKey", ->
+    url = @get "uiuxHost"
+    token = @get "simwmsAccountKey"
+    id = @get "id"
+    paramString = Ember.$.param token: token, account: id
+    "#{url}/#/?#{paramString}"
 `export default Account`

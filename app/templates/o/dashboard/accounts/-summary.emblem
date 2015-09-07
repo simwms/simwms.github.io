@@ -15,9 +15,11 @@
         dt.bold.colon Status
         dd= account.status
   md-card-action
-    link-to "x.warehouse.index" account.id
-      span Launch App
-    link-to "x.warehouse.config" account.id
-      span Config
+    a href=model.configUri target="blank"
+      i.material-icons.right open_in_new
+      span Launch Configuration
+    a href=model.uiuxUri target="blank"
+      i.material-icons.left open_in_browser
+      span Launch Application
     link-to "o.dashboard.account.index" account.id
       span Info
