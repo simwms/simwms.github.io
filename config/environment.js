@@ -14,10 +14,10 @@ module.exports = function(environment) {
       "font-src": "*",
       "style-src": "'self' 'unsafe-inline' *",
       "script-src": "'self' https://checkout.stripe.com",
-      "frame-src": "'self' https://simwms.github.io https://checkout.stripe.com"
+      "frame-src": "'self' https://simwms.github.io https://checkout.stripe.com http://*.pisources.com"
     },
-    uiuxHost: "https://simwms.github.io/uiux",
-    configHost: "https://simwms.github.io/config",
+    uiuxHost: "http://uiux.pisources.com",
+    configHost: "http://config.pisources.com",
     stripe: {
       key: "pk_test_9VNs5lmJpCba3wXgHTbjTcCh"
     },
