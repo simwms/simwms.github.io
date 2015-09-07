@@ -10340,7 +10340,7 @@ catch(err) {
 if (runningTests) {
   require("forw/tests/test-helper");
 } else {
-  require("forw/app")["default"].create({"name":"forw","version":"0.0.0+06e80662"});
+  require("forw/app")["default"].create({"name":"forw","version":"0.0.0+6dec141f"});
 }
 
 /* jshint ignore:end */
