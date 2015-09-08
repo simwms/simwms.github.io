@@ -46,15 +46,15 @@ Account = DS.Model.extend
   every: (time) ->
     @taskRunner = new TaskRunner(@, time)
 
-  configUri: Ember.computed "configHost", "id", "simwmsAccountKey", ->
-    url = @get "configHost"
+  configUri: Ember.computed "id", "simwmsAccountKey", ->
+    url = ENV.configHost
     token = @get "simwmsAccountKey"
     id = @get "id"
     paramString = Ember.$.param token: token, account: id
     "#{url}/#/?#{paramString}"
 
-  uiuxUri: Ember.computed "uiuxHost", "id", "simwmsAccountKey", ->
-    url = @get "uiuxHost"
+  uiuxUri: Ember.computed "id", "simwmsAccountKey", ->
+    url = ENV.uiuxHost
     token = @get "simwmsAccountKey"
     id = @get "id"
     paramString = Ember.$.param token: token, account: id

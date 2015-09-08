@@ -9,6 +9,12 @@ ember github-pages:commit --message "redeploying to gh pages for staging" \
                           --environment=staging
 ```
 
+production
+```sh
+ember github-pages:commit --message "redeploying to gh pages for production" \
+                          --branch="master"
+```
+
 ## Prerequisites
 
 You will need the following things properly installed on your computer.
