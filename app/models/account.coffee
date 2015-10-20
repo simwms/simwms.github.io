@@ -39,24 +39,42 @@ Account = DS.Model.extend
   isProperlySetup: DS.attr "boolean"
   simwmsAccountKey: DS.attr "string"
   setupAttempts: DS.attr "number", defaultValue: 0
-
+  email: DS.attr "string"
   considerProperSetup: Ember.on "ready", ->
     @every(2.5).seconds().refreshUntil => @get("isProperlySetup") or @get("setupAttempts") > 9
 
   every: (time) ->
     @taskRunner = new TaskRunner(@, time)
 
-  configUri: Ember.computed "id", "simwmsAccountKey", ->
+  configUri: Ember.computed "email", "simwmsAccountKey", ->
     url = ENV.configHost
     token = @get "simwmsAccountKey"
-    id = @get "id"
-    paramString = Ember.$.param token: token, account: id
+    email = @get "email"
+    paramString = Ember.$.param {token, email}
     "#{url}/#/?#{paramString}"
 
-  uiuxUri: Ember.computed "id", "simwmsAccountKey", ->
+  configUriPromise: Ember.computed "user", "simwmsAccountKey", ->
+    @get "user"
+    .then (user) =>
+      url = ENV.configHost
+      token = @get "simwmsAccountKey"
+      email = user.get "email"
+      paramString = Ember.$.param {token, email}
+      "#{url}/#/?#{paramString}"      
+
+  uiuxUri: Ember.computed "email", "simwmsAccountKey", ->
     url = ENV.uiuxHost
     token = @get "simwmsAccountKey"
-    id = @get "id"
-    paramString = Ember.$.param token: token, account: id
+    email = @get "email"
+    paramString = Ember.$.param {token, email}
     "#{url}/#/?#{paramString}"
+
+  uiuxUriPromise: Ember.computed "user", "simwmsAccountKey", ->
+    @get "user"
+    .then (user) =>
+      url = ENV.uiuxHost
+      token = @get "simwmsAccountKey"
+      email = user.get "email"
+      paramString = Ember.$.param {token, email}
+      "#{url}/#/?#{paramString}"      
 `export default Account`
