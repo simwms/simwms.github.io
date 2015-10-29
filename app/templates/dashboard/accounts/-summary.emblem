@@ -1,0 +1,25 @@
+.card
+  .card-content
+    link-to "dashboard.account.index" account.id classNames="card-title brown-text"
+      = account.companyName
+    p
+      dl
+        dt.bold.colon Owner Username
+        dd= account.user.username
+        dt.bold.colon In Timezone
+        dd= account.timezone
+        dt.bold.colon Created On
+        dd: span= moment-format account.inserted_at
+        dt.bold.colon Service Plan
+        dd= account.servicePlan.presentation
+        dt.bold.colon Status
+        dd= account.status
+  md-card-action
+    a href=model.configUri target="blank"
+      i.material-icons.right open_in_new
+      span Launch Configuration
+    a href=model.uiuxUri target="blank"
+      i.material-icons.left open_in_browser
+      span Launch Application
+    link-to "dashboard.account.index" account.id
+      span Info

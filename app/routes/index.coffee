@@ -1,6 +1,5 @@
 `import Ember from 'ember'`
 
-IndexRoute = Ember.Route.extend
-  afterModel: -> @transitionTo "o.index"
+IndexRoute = Ember.Route.extend()
 
 `export default IndexRoute`

@@ -1,0 +1,14 @@
+#session
+  .artwork-buffer
+    img src="images/logo.png"
+  .container
+    .row
+      .col.s12.m8.l6.offset-m2.offset-l3
+        form submit="submitLogin"
+          md-input name="email" type="email" label="Email" value=model.email errors=errors.email
+          md-input name="password" type="password" label="Password" value=model.password errors=errors.password
+          .actions
+            if isBusy
+              md-loader
+            else
+              md-btn-submit icon='mdi-content-send' iconPosition='right' text='Submit' buttonType="large"

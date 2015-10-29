@@ -1,0 +1,15 @@
+.card.grey.lighten-4
+  .card-content
+    .card-title.brown-text
+      = account.companyName
+      span.right
+        md-loader mode="circular" size="small"
+    p 
+      span The server is setting up your warehouse account
+    p
+      span.bold.colon Setup Attempts
+      span= account.setupAttempts
+
+  md-card-action
+    link-to "dashboard.account.index" account.id
+      span Info

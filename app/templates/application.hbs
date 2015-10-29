@@ -1,1 +1,65 @@
-{{outlet}}
+<main>
+  <section id="navigation">
+    {{#md-navbar name='Example' class='custom-nav'}}
+      {{#link-to 'index' tagName='li'}}
+        {{#link-to 'index'}}home{{/link-to}}
+      {{/link-to}}
+      {{#link-to 'about' tagName='li'}}
+        {{#link-to 'about'}}about{{/link-to}}
+      {{/link-to}}
+      {{#link-to 'guides' tagName='li'}}
+        {{#link-to 'guides'}}guides{{/link-to}}
+      {{/link-to}}
+      {{#link-to 'sample' tagName='li'}}
+        {{#link-to 'sample'}}sample{{/link-to}}
+      {{/link-to}}
+      {{#if currentUser.isLoggedIn}}
+        {{#link-to 'dashboard' tagName='li'}}
+          {{#link-to 'dashboard'}}my account{{/link-to}}
+        {{/link-to}}
+      {{else}}
+        {{#link-to 'session' tagName='li'}}
+          {{#link-to 'session'}}login{{/link-to}}
+        {{/link-to}}
+        {{#link-to 'register' tagName='li'}}
+          {{#link-to 'register'}}register{{/link-to}}
+        {{/link-to}}
+      {{/if}}
+    {{/md-navbar}}
+  </section>
+  <section id="content">
+    {{outlet}}
+  </section>
+  {{ember-notify closeAfter=4000 messageStyle='bootstrap'}}
+  {{md-modal-container}}
+</main>
+<footer class="page-footer blue-grey darken-4">
+  <div class="container">
+    <div class="row">
+      <div class="col l6 s12">
+        <h5 class="white-text">Footer Content</h5>
+        <p class="grey-text text-lighten-4">You can use rows and columns here to organize your footer content.</p>
+      </div>
+      <div class="col l4 offset-l2 s12">
+        <h5 class="white-text">Links</h5>
+        <ul>
+          <li><a class="grey-text text-lighten-3" href="#!">Link 1</a></li>
+          <li><a class="grey-text text-lighten-3" href="#!">Link 2</a></li>
+          <li><a class="grey-text text-lighten-3" href="#!">Link 3</a></li>
+          <li><a class="grey-text text-lighten-3" href="#!">Link 4</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  {{#md-copyright text='Copyright Text' startYear=2014}}
+    <a class="grey-text text-lighten-1 right" href="#!">More Links</a>
+  {{/md-copyright}}
+</footer>
+
+{{#if (eq modal "login")}}
+  {{render "login"}}
+{{else if (eq modal "register")}}
+  {{render "register"}}
+{{else}}
+  <span class="hidden"></span>
+{{/if}}

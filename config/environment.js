@@ -6,7 +6,9 @@ module.exports = function(environment) {
     environment: environment,
     baseURL: '/',
     locationType: 'auto',
-    namespace: "api",
+    apiNamespace: "api",
+    apixNamespace: "apix",
+    apizNamespace: "apiz",
     contentSecurityPolicy: { 
       'connect-src': "'self' ws://localhost:4000 https://*.amazonaws.com http://*.simwms.com https://*.herokuapp.com",
       "img-src": "*",
