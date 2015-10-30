@@ -9,6 +9,7 @@ Router.map ->
   @route "pricing"
   @route "about"
   @route "session"
+  @route "login"
   @route "register"
   @resource "guides", path: "/guides", ->
     @resource "guides.guide", path: "/:id", ->

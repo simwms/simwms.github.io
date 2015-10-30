@@ -5,17 +5,13 @@
 SessionController = Ember.Controller.extend
   errors: alias "model.errors"
   user: alias "model"
-
+  email: alias "user.email"
+  password: alias "user.password"
   actions:
     submitLogin: ->
-      @set "isBusy", true
-      @get("user").smartLogin
-        email: @get "model.email"
-        password: @get "model.password"
-      .finally =>
-        if @currentUser.get("isLoggedIn")
-          @transitionToRoute "dashboard"
-        @set "isBusy", false
-      
+      email = @get "email"
+      password = @get "password"
+      @transitionToRoute "login", 
+        queryParams: {email, password}
 
 `export default SessionController`

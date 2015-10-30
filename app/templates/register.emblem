@@ -10,8 +10,6 @@
           md-input name="email" type="email" label="Email" value=model.email errors=errors.email
           md-input name="password" type="password" label="Password" value=model.password errors=errors.password
           md-input name="passwordConfirmation" type="password" label="Password confirmation" value=model.passwordConfirmation errors=passwordMatchError
-
-          md-switch checked=model.rememberMe onLabel="Remember me"
           .actions
             if isBusy
               md-loader

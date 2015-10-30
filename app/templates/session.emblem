@@ -8,7 +8,4 @@
           md-input name="email" type="email" label="Email" value=model.email errors=errors.email
           md-input name="password" type="password" label="Password" value=model.password errors=errors.password
           .actions
-            if isBusy
-              md-loader
-            else
-              md-btn-submit icon='mdi-content-send' iconPosition='right' text='Submit' buttonType="large"
+            md-btn-submit icon='mdi-content-send' iconPosition='right' text='Submit' buttonType="large"
