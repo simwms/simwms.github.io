@@ -15,12 +15,10 @@ Router.map ->
     @resource "guides.guide", path: "/:id", ->
   @resource "dashboard", path: "/dashboard", ->
     @resource "dashboard.preferences", path: "/preferences", ->
-    @resource "dashboard.payment", path: "payment", ->
     @resource "dashboard.account", path: "/account/:id", ->
-      @route "upgrade"
-      @route "config"
       @route "edit"
     @resource "dashboard.accounts", path: "/accounts", ->
       @route "new"
+
 
 `export default Router`

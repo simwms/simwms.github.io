@@ -22,4 +22,8 @@ DashboardAccountController = Ember.Controller.extend
     get: ->
       ENV.configHost + "/#/?" + @get("appParams")
 
+  upgradeUri: computed "appParams",
+    get: ->
+      ENV.configHost + "/#/plan?" + @get("appParams")
+
 `export default DashboardAccountController`

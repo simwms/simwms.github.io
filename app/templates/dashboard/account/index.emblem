@@ -20,11 +20,6 @@
           li
             span.bold.colon Deleted At
             span= moment-format account.deletedAt
-      if (eq account.username currentUser.username)
-        .actions
-          link-to "dashboard.account.upgrade" account.id class="btn-large waves-effect waves-light orange"
-            fa-icon "credit-card" class="left"
-            span &nbsp;Change Service Plan
 
     md-collapsible icon="mdi-av-timer" title="Operations and Location"
       ul
