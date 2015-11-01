@@ -30,7 +30,10 @@ RegisterController = Ember.Controller.extend
         @hashifyErrors errors
       .finally =>
         if @currentUser.get("isLoggedIn")
+          @notify.success "user registration success"
           @transitionToRoute "dashboard"
+        else
+          @notify.alert "user registration failed"
         @set "isBusy", false
 
 `export default RegisterController`

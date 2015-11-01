@@ -14,8 +14,10 @@ LoginRoute = Ember.Route.extend
 
   afterModel: ->
     if @currentUser.get("isLoggedIn")
+      @notify.success "you are logged in"
       @transitionTo "dashboard"
     else
+      @notify.alert "unable to log in"
       @transitionTo "session"
 
 `export default LoginRoute`

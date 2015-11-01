@@ -4,54 +4,48 @@
       ul
         li
           span.bold.colon Warehouse Name
-          span= model.companyName
+          span= account.companyName
         li
           span.bold.colon Service Plan
-          span= model.servicePlan.presentation
+          span= plan.presentation
         li
           span.bold.colon Owner Username
-          span= model.user.username
-      .actions
-        if model.isProperlySetup
-          link-to "o.dashboard.account.upgrade" model.id classNames="btn-large waves-effect waves-light orange"
-            fa-icon "credit-card" classNames="left"
-            span Change Service Plan
-        else
-          a.btn-large.disabled
-            fa-icon "credit-card" classNames="left"
-            span Change Service Plan
-
+          span= account.username
+          if (eq account.username currentUser.username)
+            span.parantheses you
+        li
+          span.bold.colon Created At
+          span= moment-format account.insertedAt
+        if account.deletedAt
+          li
+            span.bold.colon Deleted At
+            span= moment-format account.deletedAt
+      if (eq account.username currentUser.username)
+        .actions
+          link-to "dashboard.account.upgrade" account.id class="btn-large waves-effect waves-light orange"
+            fa-icon "credit-card" class="left"
+            span &nbsp;Change Service Plan
 
     md-collapsible icon="mdi-av-timer" title="Operations and Location"
       ul
         li
           span.bold.colon Time zone
-          span= model.timezone
-
-    md-collapsible icon="mdi-image-filter-drama" title="Asset Storage Keys"
-      ul
-        li
-          span.bold.colon Access Key Id
-          span= model.accessKeyId
-        li
-          span.bold.colon Secret Access Key
-          span= model.secretAccessKey
+          span= account.timezone
 
     md-collapsible icon="mdi-image-filter-drama" title="Application Hosts"
       ul
         li
           span.bold.colon App Host
-          span= model.uiuxHost
+          span= account.uiuxHost
         li
           span.bold.colon Config App Host
-          span= model.configHost
+          span= account.configHost
         li
           span.bold.colon SimWMS Session Key
-          span= model.simwmsAccountKey
+          span= account.permalink
     
-    md-collapsible icon="mdi-image-filter-drama" title="Database Details"
-      form submit="submit"
-        md-input value=model.namespace label="Backend Namespace" type="text"
-        md-input value=model.host label="Backend Host" type="text"
-        .actions
-          md-btn-submit icon='mdi-content-send' iconPosition='right' text='Change'
+    md-collapsible icon="mdi-image-filter-drama" title="Danger Zone"
+      button.btn-large.destroy.red click="destroy"
+        fa-icon "warning" class="left"
+        span &nbsp;Delete Warehouse
+      

@@ -1,14 +1,11 @@
 .col.s12.m10.l8
-  if model.isProperlySetup
-    a.waves-effect.waves-light.btn-large.brown href=model.configUri target="blank"
-      i.material-icons.right open_in_new
-      span Launch Configuration
-    a.waves-effect.waves-light.btn-large href=model.uiuxUri target="blank"
-      i.material-icons.left open_in_browser
-      span Launch Application
-  else
-    md-loader
-    p The server is busy preparing your warehouse account for first time use
+  a.waves-effect.waves-light.btn-large href=launchUri target="blank"
+    fa-icon "rocket" class="left"
+    span &nbsp;Launch
+  a.waves-effect.waves-light.btn-large.brown href=configUri target="blank"
+    fa-icon "gears" class="left"
+    span &nbsp;Setup
+
 .col.s12
   .row
     == outlet

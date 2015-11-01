@@ -18,7 +18,7 @@ module.exports = function(environment) {
       "script-src": "'self' https://checkout.stripe.com",
       "frame-src": "'self' https://simwms.github.io https://checkout.stripe.com http://*.pisources.com"
     },
-    uiuxHost: "http://uiux.pisources.com",
+    launchHost: "http://uiux.pisources.com",
     configHost: "http://config.pisources.com",
     stripe: {
       key: "pk_test_9VNs5lmJpCba3wXgHTbjTcCh"

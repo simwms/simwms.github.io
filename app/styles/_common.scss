@@ -14,9 +14,7 @@ body,
 }
 
 // utility
-.hidden {
-  display: none;
-}
+
 .spacious {
   padding-top: 15px;
   padding-bottom: 15px;
@@ -24,19 +22,6 @@ body,
 .very-spacious {
   padding-top: 25px;
   padding-bottom: 25px;
-}
-.float-right {
-  float: right;
-}
-.pointer {
-  cursor: pointer;
-}
-
-.colon::after {
-  content: ": ";
-}
-.bold {
-  font-weight: bold;
 }
 
 // extensions

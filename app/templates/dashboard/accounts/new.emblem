@@ -13,7 +13,7 @@
         md-loader mode="circular" color="yellow"
       else
         form submit="submit"
-          md-input value=model.companyName label="Warehouse Name" type="text"
+          md-input value=model.companyName label="Warehouse Name" type="text" errors=errors.companyName
 
           label for="timezone" Select Warehouse Timezone
           em-timezone-input name="timezone" value=model.region selectClass="browser-default"
